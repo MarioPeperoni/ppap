@@ -1,8 +1,8 @@
 {
   "name": "ppap",
-  "productName": "ppap",
+  "productName": "Pure Pen & Paper",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Just a canvas, that's all.",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
   "keywords": [],
   "author": {
     "name": "Mateusz Wiącek",
-    "email": "68820849+MarioPeperoni@users.noreply.github.com"
+    "email": "mwiacek.work@icloud.com"
   },
   "license": "MIT",
   "devDependencies": {
