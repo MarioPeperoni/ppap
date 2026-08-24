@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_NIB, STROKE_SIZE_UNITS } from '@/constants/stroke.constants';
+import {
+  DEFAULT_NIB,
+  DEFAULT_STROKE_SCALE,
+  NIB_THINNING,
+  NIB_TOKENS,
+  NIB_WIDTH_PRESSURE,
+  STROKE_SIZE_UNITS,
+} from '@/constants/stroke.constants';
 import { createStroke } from '@/core/element/element.factory';
 import { strokeBounds } from '@/core/stroke/stroke-bounds';
 import { hasRealPressure, outlineForPoints, strokeOutline } from '@/core/stroke/stroke-outline';
-import type { StrokePoint } from '@/types';
+import { strokeWidth } from '@/core/stroke/stroke-width';
+import type { NibToken, StrokePoint } from '@/types';
 
 const RISING: StrokePoint[] = [
   [0, 0, 0.2],
@@ -16,6 +24,13 @@ const FALLING: StrokePoint[] = [
   [10, 0, 0.5],
   [20, 0, 0.2],
 ];
+
+/** What `perfect-freehand` draws for a nib at a given pressure. */
+function widthAtPressure(nib: NibToken, pressure: number): number {
+  const base = strokeWidth('m', DEFAULT_STROKE_SCALE, nib);
+
+  return 2 * base * (0.5 - NIB_THINNING[nib] * (0.5 - pressure));
+}
 
 describe('stroke outline', () => {
   it('caches the outline of an unchanged stroke', () => {
@@ -81,8 +96,25 @@ describe('stroke bounds', () => {
       ),
     );
 
-    expect(bounds.minX).toBe(-STROKE_SIZE_UNITS.l);
-    expect(bounds.maxX).toBe(100 + STROKE_SIZE_UNITS.l);
-    expect(bounds.maxY).toBe(50 + STROKE_SIZE_UNITS.l);
+    const width = strokeWidth('l', DEFAULT_STROKE_SCALE, DEFAULT_NIB);
+
+    expect(bounds.minX).toBe(-width);
+    expect(bounds.maxX).toBe(100 + width);
+    expect(bounds.maxY).toBe(50 + width);
+  });
+});
+
+describe('stroke width', () => {
+  it('draws the picked width at every nib', () => {
+    for (const nib of NIB_TOKENS) {
+      expect(widthAtPressure(nib, NIB_WIDTH_PRESSURE)).toBeCloseTo(STROKE_SIZE_UNITS.m, 6);
+    }
+  });
+
+  it('keeps the picked width in the middle of the pen taper', () => {
+    const thin = widthAtPressure('pen', 0);
+    const thick = widthAtPressure('pen', 2 * NIB_WIDTH_PRESSURE);
+
+    expect((thin + thick) / 2).toBeCloseTo(STROKE_SIZE_UNITS.m, 6);
   });
 });

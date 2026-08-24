@@ -11,7 +11,10 @@ export function strokeBounds(stroke: StrokeElement): Bounds {
   if (cached !== undefined) return cached;
 
   const points = boundsOf(stroke.points.map(([x, y]) => ({ x, y })));
-  const bounds = expandBounds(points ?? EMPTY_BOUNDS, strokeWidth(stroke.size, stroke.scale));
+  const bounds = expandBounds(
+    points ?? EMPTY_BOUNDS,
+    strokeWidth(stroke.size, stroke.scale, stroke.nib),
+  );
   boundsCache.set(stroke, bounds);
 
   return bounds;

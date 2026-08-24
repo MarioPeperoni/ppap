@@ -39,7 +39,7 @@ export function strokeOutline(stroke: StrokeElement): StrokeOutline {
 
   const outline = outlineForPoints(
     stroke.points,
-    strokeWidth(stroke.size, stroke.scale),
+    strokeWidth(stroke.size, stroke.scale, stroke.nib),
     stroke.nib,
   );
   outlineCache.set(stroke, outline);

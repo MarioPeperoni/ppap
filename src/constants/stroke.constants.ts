@@ -10,6 +10,9 @@ export const DEFAULT_NIB: NibToken = 'pen';
 /** How far pressure narrows a stroke: the pencil holds one width, the pen tapers. */
 export const NIB_THINNING: Record<NibToken, number> = { pen: 0.5, pencil: 0 };
 
+/** The pressure that draws the picked width, so the pen lands mid-taper rather than at its top. */
+export const NIB_WIDTH_PRESSURE = 0.25;
+
 export const FREEHAND_SMOOTHING = 0.5;
 
 /** Streamlining is an input filter, so stored points stay the geometry that gets drawn. */

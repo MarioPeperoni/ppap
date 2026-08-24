@@ -78,7 +78,11 @@ export class StrokeTool implements Tool {
       ctx.fillStyle = colors[this.color];
       ctx.fill(
         outlinePath(
-          outlineForPoints(drawing, strokeWidth(this.size, DEFAULT_STROKE_SCALE), this.nib),
+          outlineForPoints(
+            drawing,
+            strokeWidth(this.size, DEFAULT_STROKE_SCALE, this.nib),
+            this.nib,
+          ),
         ),
       );
     });
