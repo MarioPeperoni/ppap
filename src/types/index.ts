@@ -1,4 +1,6 @@
+export type * from './asset.types';
 export type * from './board.types';
+export type * from './bytes.types';
 export type * from './dev.types';
 export type * from './camera.types';
 export type * from './canvas.types';

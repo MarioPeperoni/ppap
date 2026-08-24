@@ -1,6 +1,8 @@
 import { ELEMENT_TYPES } from '@/constants/element.constants';
+import { IMAGE_MIMES } from '@/constants/image.constants';
 import { TOOL_COLORS, TOOL_SIZES } from '@/constants/tool.constants';
 import type { Element, ImageElement, StrokeElement, StrokePoint } from '@/types';
+import { parseAssetId } from '@/validation/asset.validator';
 import {
   expectArray,
   expectNumber,
@@ -36,8 +38,8 @@ function parseImage(source: Record<string, unknown>): ImageElement {
     id: expectString(source.id, 'Element id'),
     createdAt: expectNumber(source.createdAt, 'Element createdAt'),
     type: 'image',
-    assetId: expectString(source.assetId, 'Image assetId'),
-    mime: expectString(source.mime, 'Image mime'),
+    assetId: parseAssetId(source.assetId),
+    mime: expectOneOf(source.mime, IMAGE_MIMES, 'Image mime'),
     x: expectNumber(source.x, 'Image x'),
     y: expectNumber(source.y, 'Image y'),
     width: expectNumber(source.width, 'Image width'),

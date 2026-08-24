@@ -1,3 +1,5 @@
+import type { Bytes } from '@/types';
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -45,8 +47,12 @@ export function expectOneOf<T>(value: unknown, allowed: readonly T[], label: str
   return match;
 }
 
-export function expectBytes(value: unknown, label: string, maxBytes: number): Uint8Array {
-  if (!(value instanceof Uint8Array)) throw new Error(`${label} must be a byte array`);
+export function isBytes(value: unknown): value is Bytes {
+  return value instanceof Uint8Array && value.buffer instanceof ArrayBuffer;
+}
+
+export function expectBytes(value: unknown, label: string, maxBytes: number): Bytes {
+  if (!isBytes(value)) throw new Error(`${label} must be a byte array`);
   if (value.byteLength > maxBytes) throw new Error(`${label} exceeds ${maxBytes} bytes`);
 
   return value;

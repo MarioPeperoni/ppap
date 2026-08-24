@@ -1,3 +1,5 @@
+import type { ImageMime } from './asset.types';
+
 export type ColorToken = 'ink' | 'blue' | 'red' | 'green';
 
 export type SizeToken = 's' | 'm' | 'l';
@@ -20,7 +22,7 @@ export interface StrokeElement extends ElementBase {
 export interface ImageElement extends ElementBase {
   type: 'image';
   assetId: string;
-  mime: string;
+  mime: ImageMime;
   x: number;
   y: number;
   width: number;
