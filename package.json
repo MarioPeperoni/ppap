@@ -1,10 +1,14 @@
 {
   "name": "ppap",
   "productName": "Pure Pen & Paper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Just a canvas, that's all.",
   "main": ".vite/build/main.js",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarioPeperoni/ppap"
+  },
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
