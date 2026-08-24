@@ -10,6 +10,7 @@ export interface ElementPlacement {
 export interface ScenePatch {
   removed: readonly string[];
   added: readonly ElementPlacement[];
+  updated: readonly Element[];
 }
 
 export interface PatchResult {

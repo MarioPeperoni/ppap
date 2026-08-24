@@ -7,6 +7,7 @@ import {
   isAppendOnly,
   isEmptyPatch,
   removePatch,
+  updatePatch,
 } from '@/core/scene/scene-patch';
 import type { Element, Scene } from '@/types';
 
@@ -35,6 +36,7 @@ describe('scene patch', () => {
         { element: left, before: second.id },
         { element: right, before: second.id },
       ],
+      updated: [],
     });
 
     expect([...scene.keys()]).toEqual([first.id, left.id, right.id, third.id]);
@@ -47,6 +49,7 @@ describe('scene patch', () => {
     const { scene, inverse } = applyPatch(original, {
       removed: [second.id],
       added: [{ element: fragment, before: second.id }],
+      updated: [],
     });
     const restored = applyPatch(scene, inverse).scene;
 
@@ -73,10 +76,42 @@ describe('scene patch', () => {
     expect([...restored.keys()]).toEqual([first?.id, second?.id, third?.id, fourth?.id]);
   });
 
+  it('replaces an element without moving it in the z-order', () => {
+    const [first, second, third] = [stroke(0), stroke(1), stroke(2)];
+    const moved = { ...second, points: [[9, 9, 0.5]] } satisfies Element;
+    const { scene } = applyPatch(sceneOf([first, second, third]), updatePatch([moved]));
+
+    expect([...scene.keys()]).toEqual([first.id, second.id, third.id]);
+    expect(scene.get(second.id)).toBe(moved);
+  });
+
+  it('inverts a replacement back to the previous element', () => {
+    const [first, second] = [stroke(0), stroke(1)];
+    const original = sceneOf([first, second]);
+    const moved = { ...second, points: [[9, 9, 0.5]] } satisfies Element;
+    const { scene, inverse } = applyPatch(original, updatePatch([moved]));
+    const restored = applyPatch(scene, inverse).scene;
+
+    expect([...restored.keys()]).toEqual([...original.keys()]);
+    expect(restored.get(second.id)).toBe(second);
+  });
+
+  it('ignores an update for an element the scene does not hold', () => {
+    const only = stroke(0);
+    const stranger = stroke(1);
+    const { scene, inverse } = applyPatch(sceneOf([only]), updatePatch([stranger]));
+
+    expect([...scene.keys()]).toEqual([only.id]);
+    expect(inverse.updated).toEqual([]);
+  });
+
   it('recognises empty and append-only patches', () => {
     expect(isEmptyPatch(EMPTY_PATCH)).toBe(true);
     expect(isAppendOnly(appendPatch([stroke(0)]))).toBe(true);
     expect(isAppendOnly(removePatch(['x']))).toBe(false);
-    expect(isAppendOnly({ removed: [], added: [{ element: stroke(0), before: 'x' }] })).toBe(false);
+    expect(
+      isAppendOnly({ removed: [], added: [{ element: stroke(0), before: 'x' }], updated: [] }),
+    ).toBe(false);
+    expect(isAppendOnly(updatePatch([stroke(0)]))).toBe(false);
   });
 });

@@ -91,6 +91,7 @@ export class EraserTool implements Tool {
       added: hits.flatMap((hit) =>
         hit.fragments.map((fragment) => ({ element: fragment, before: hit.source.id })),
       ),
+      updated: [],
     };
 
     this.forward.push(patch);
