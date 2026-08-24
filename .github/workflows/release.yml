@@ -23,14 +23,23 @@ jobs:
       - name: Extract version from commit message
         id: extract
         shell: bash
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          MSG="${{ github.event.head_commit.message }}"
-          VERSION=$(echo "$MSG" | grep -oE '\[[0-9]+\.[0-9]+\.[0-9]+\]' | head -1 | tr -d '[]')
-          if [ -z "$VERSION" ]; then
+          if [[ ! "$MESSAGE" =~ \[([0-9]+\.[0-9]+\.[0-9]+)\] ]]; then
             echo "Brak [x.y.z] w wiadomości commita, pomijam release."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          VERSION="${BASH_REMATCH[1]}"
+          PACKAGED=$(node -p "require('./package.json').version")
+
+          if [ "$VERSION" != "$PACKAGED" ]; then
+            echo "Wersja $VERSION nie zgadza sie z package.json ($PACKAGED)."
+            exit 1
+          fi
+
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
