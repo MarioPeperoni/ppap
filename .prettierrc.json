@@ -4,6 +4,13 @@
   "trailingComma": "all",
   "semi": true,
   "plugins": ["@ianvs/prettier-plugin-sort-imports"],
-  "importOrder": ["^react$", "^react-dom(.*)$", "<THIRD_PARTY_MODULES>", "^@/(.*)$", "^[./]"],
+  "importOrder": [
+    "^react$",
+    "^react-dom(.*)$",
+    "<THIRD_PARTY_MODULES>",
+    "^~/(.*)$",
+    "^@/(.*)$",
+    "^[./]"
+  ],
   "importOrderTypeScriptVersion": "5.9.3"
 }
