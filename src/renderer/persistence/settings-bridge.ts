@@ -32,6 +32,13 @@ export function watchSettings(): Unsubscribe {
     ),
     watchStore(
       useToolStore,
+      (state) => state.customColors,
+      (customColors) => {
+        patch({ customColors });
+      },
+    ),
+    watchStore(
+      useToolStore,
       (state) => state.penSize,
       (penSize) => {
         patch({ penSize });
