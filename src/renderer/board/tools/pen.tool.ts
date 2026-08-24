@@ -1,8 +1,10 @@
+import { DEFAULT_STROKE_SCALE } from '@/constants/stroke.constants';
 import { DEFAULT_COLOR, DEFAULT_SIZE } from '@/constants/tool.constants';
 import { createStroke } from '@/core/element/element.factory';
 import { appendPatch } from '@/core/scene/scene-patch';
 import { outlineForPoints } from '@/core/stroke/stroke-outline';
 import { streamlinePoint } from '@/core/stroke/stroke-streamline';
+import { strokeWidth } from '@/core/stroke/stroke-width';
 import { outlinePath } from '@/renderer/board/render/stroke-renderer';
 import { withBoardTransform } from '@/renderer/board/view-transform';
 import { commitPatch } from '@/renderer/commands/scene.command';
@@ -68,7 +70,9 @@ export class PenTool implements Tool {
 
     withBoardTransform(ctx, view, () => {
       ctx.fillStyle = colors[this.color];
-      ctx.fill(outlinePath(outlineForPoints(drawing, this.size)));
+      ctx.fill(
+        outlinePath(outlineForPoints(drawing, strokeWidth(this.size, DEFAULT_STROKE_SCALE))),
+      );
     });
   }
 

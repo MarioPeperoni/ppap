@@ -14,6 +14,7 @@ export interface StrokeElement extends ElementBase {
   points: StrokePoint[];
   color: ColorToken;
   size: SizeToken;
+  scale: number;
 }
 
 export interface ImageElement extends ElementBase {

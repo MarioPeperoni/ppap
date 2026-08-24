@@ -37,7 +37,7 @@ describe('stroke outline', () => {
   });
 
   it('produces a closed outline for a single point', () => {
-    expect(outlineForPoints([[5, 5, 0.5]], 's').length).toBeGreaterThan(2);
+    expect(outlineForPoints([[5, 5, 0.5]], STROKE_SIZE_UNITS.s).length).toBeGreaterThan(2);
   });
 });
 

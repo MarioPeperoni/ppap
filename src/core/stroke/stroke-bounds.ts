@@ -1,5 +1,5 @@
-import { STROKE_SIZE_UNITS } from '@/constants/stroke.constants';
 import { boundsOf, expandBounds } from '@/core/geometry/bounds';
+import { strokeWidth } from '@/core/stroke/stroke-width';
 import type { Bounds, StrokeElement } from '@/types';
 
 const EMPTY_BOUNDS: Bounds = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
@@ -11,7 +11,7 @@ export function strokeBounds(stroke: StrokeElement): Bounds {
   if (cached !== undefined) return cached;
 
   const points = boundsOf(stroke.points.map(([x, y]) => ({ x, y })));
-  const bounds = expandBounds(points ?? EMPTY_BOUNDS, STROKE_SIZE_UNITS[stroke.size]);
+  const bounds = expandBounds(points ?? EMPTY_BOUNDS, strokeWidth(stroke.size, stroke.scale));
   boundsCache.set(stroke, bounds);
 
   return bounds;

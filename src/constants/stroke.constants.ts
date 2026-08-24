@@ -2,6 +2,8 @@ import type { SizeToken } from '@/types';
 
 export const STROKE_SIZE_UNITS: Record<SizeToken, number> = { s: 2, m: 4, l: 8 };
 
+export const DEFAULT_STROKE_SCALE = 1;
+
 export const FREEHAND_THINNING = 0.5;
 export const FREEHAND_SMOOTHING = 0.5;
 
