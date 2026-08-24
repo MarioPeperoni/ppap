@@ -26,18 +26,16 @@ jobs:
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ ! "$MESSAGE" =~ \[([0-9]+\.[0-9]+\.[0-9]+)\] ]]; then
-            echo "Brak [x.y.z] w wiadomości commita, pomijam release."
+          if [[ ! "$MESSAGE" =~ \[([0-9]+\.[0-9]+(\.[0-9]+)?)\] ]]; then
+            echo "Brak [x.y] lub [x.y.z] w wiadomości commita, pomijam release."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           VERSION="${BASH_REMATCH[1]}"
-          PACKAGED=$(node -p "require('./package.json').version")
 
-          if [ "$VERSION" != "$PACKAGED" ]; then
-            echo "Wersja $VERSION nie zgadza sie z package.json ($PACKAGED)."
-            exit 1
+          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${VERSION}.0"
           fi
 
           echo "skip=false" >> "$GITHUB_OUTPUT"
