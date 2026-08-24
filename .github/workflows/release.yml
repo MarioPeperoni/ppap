@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Determine version and tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      skip: ${{ steps.extract.outputs.skip }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from commit message
+        id: extract
+        shell: bash
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ ! "$MESSAGE" =~ \[([0-9]+\.[0-9]+(\.[0-9]+)?)\] ]]; then
+            echo "Brak [x.y] lub [x.y.z] w wiadomości commita, pomijam release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VERSION="${BASH_REMATCH[1]}"
+
+          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${VERSION}.0"
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        if: steps.extract.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ steps.extract.outputs.version }}"
+          git push origin "v${{ steps.extract.outputs.version }}"
+
+  build:
+    name: Build installers
+    needs: version
+    if: needs.version.outputs.skip != 'true'
+    strategy:
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run make
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ppap-${{ matrix.os }}
+          path: out/make/**
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          files: artifacts/**/*
