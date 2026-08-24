@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_STROKE_FRAGMENTS } from '@/constants/erase.constants';
+import { MAX_STROKE_FRAGMENTS } from '@/constants/fragment.constants';
 import { createImage, createStroke } from '@/core/element/element.factory';
 import { eraseSegment } from '@/core/erase/erase-stroke';
 import type { EraseHit, StrokeElement, StrokePoint } from '@/types';

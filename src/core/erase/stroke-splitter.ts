@@ -1,18 +1,14 @@
-import {
-  MAX_STROKE_FRAGMENTS,
-  MIN_FRAGMENT_LENGTH,
-  MIN_FRAGMENT_POINTS,
-} from '@/constants/erase.constants';
-import { STROKE_SIZE_UNITS } from '@/constants/stroke.constants';
-import { createStroke } from '@/core/element/element.factory';
+import { MAX_STROKE_FRAGMENTS } from '@/constants/fragment.constants';
 import { segmentCapsuleOverlap } from '@/core/geometry/capsule';
 import { pointSegmentDistance } from '@/core/geometry/distance';
-import { lerpStrokePoint, polylineLength, toPoint } from '@/core/stroke/stroke-point';
+import { fragmentOf, isSubstantialRun } from '@/core/stroke/stroke-fragment';
+import { lerpStrokePoint, toPoint } from '@/core/stroke/stroke-point';
+import { strokeWidth } from '@/core/stroke/stroke-width';
 import type { Point, StrokeElement, StrokePoint } from '@/types';
 
 /** How far the eraser reaches from its centre, so it clears exactly the ink its circle covers. */
 export function eraserReach(stroke: StrokeElement, radius: number): number {
-  return radius + STROKE_SIZE_UNITS[stroke.size] / 2;
+  return radius + strokeWidth(stroke.size, stroke.scale) / 2;
 }
 
 function keptRuns(
@@ -58,10 +54,6 @@ function keptRuns(
   return touched ? runs : null;
 }
 
-function isSubstantial(points: StrokePoint[]): boolean {
-  return points.length >= MIN_FRAGMENT_POINTS && polylineLength(points) >= MIN_FRAGMENT_LENGTH;
-}
-
 /**
  * Cuts the ink covered by the eraser out of a stroke. Returns the surviving fragments, or null
  * when the eraser never touched it.
@@ -82,8 +74,8 @@ export function splitStroke(
   const runs = keptRuns(stroke.points, from, to, reach);
   if (runs === null) return null;
 
-  const kept = runs.filter(isSubstantial);
+  const kept = runs.filter(isSubstantialRun);
   if (kept.length > MAX_STROKE_FRAGMENTS) return [];
 
-  return kept.map((points) => createStroke(points, stroke.color, stroke.size));
+  return kept.map((points) => fragmentOf(stroke, points));
 }
