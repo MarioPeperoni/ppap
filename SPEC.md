@@ -451,8 +451,9 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`, outside
-click, and selection. The zoom percentage sits in the bottom-right corner; clicking it sets 100 %.
+colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`,
+outside click, and selection. The zoom percentage sits in the bottom-right corner between a `−`
+and a `+` button; clicking it sets 100 %, and the step buttons grey out at the zoom limits.
 
 ### 8.3 Library grid
 
