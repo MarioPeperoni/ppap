@@ -4,6 +4,7 @@ export type * from './bytes.types';
 export type * from './dev.types';
 export type * from './camera.types';
 export type * from './canvas.types';
+export type * from './changelog.types';
 export type * from './element.types';
 export type * from './erase.types';
 export type * from './geometry.types';
