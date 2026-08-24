@@ -3,8 +3,10 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { SORT_ORDERS } from '@/constants/settings.constants';
 import { THEMES } from '@/constants/theme.constants';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
+import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
 import { useLibraryStore } from '@/renderer/stores/library.store';
 import { useThemeStore } from '@/renderer/stores/theme.store';
+import { useUiStore } from '@/renderer/stores/ui.store';
 import type { SortOrder, Theme } from '@/types';
 
 const THEME_LABELS: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
@@ -64,6 +66,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
   const sortOrder = useLibraryStore((state) => state.sortOrder);
   const setSortOrder = useLibraryStore((state) => state.setSortOrder);
   const version = useAppVersion();
+  const release = useReleaseNotes();
+  const setWhatsNew = useUiStore((state) => state.setWhatsNew);
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -90,6 +94,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
               active={sortOrder}
               onSelect={setSortOrder}
             />
+            {release === null ? null : (
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] text-muted">What&apos;s new</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenChange(false);
+                    setWhatsNew(true);
+                  }}
+                  className="rounded-lg bg-raised px-2.5 py-1.5 text-[12px] text-muted hover:text-ink"
+                >
+                  Show
+                </button>
+              </div>
+            )}
           </div>
 
           <p className="mt-6 text-[11px] text-muted">ppap {version}</p>
