@@ -1,47 +1,54 @@
-import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
+import { useCallback, useState, type ReactElement } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { NameInput } from '@/renderer/components/NameInput/NameInput';
 import { useRenameShortcut } from '@/renderer/hooks/use-rename-shortcut';
+import { leaveBoard, renameBoard } from '@/renderer/session/board-session';
 import { useBoardStore } from '@/renderer/stores/board.store';
 
 export function BoardTitle(): ReactElement {
+  const id = useBoardStore((state) => state.id);
   const name = useBoardStore((state) => state.name);
-  const setName = useBoardStore((state) => state.setName);
   const [editing, setEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const startEditing = useCallback(() => {
     setEditing(true);
   }, []);
   useRenameShortcut(startEditing);
 
-  useEffect(() => {
-    if (editing) inputRef.current?.select();
-  }, [editing]);
-
-  if (!editing) {
-    return (
+  return (
+    <>
       <button
         type="button"
-        onClick={startEditing}
-        className="app-no-drag rounded px-2 py-0.5 text-[12px] text-ink/80 hover:bg-raised"
+        aria-label="Back to the library"
+        onClick={() => {
+          void leaveBoard();
+        }}
+        className="app-no-drag flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink"
       >
-        {name}
+        <ChevronLeft size={16} strokeWidth={1.75} />
       </button>
-    );
-  }
 
-  return (
-    <input
-      ref={inputRef}
-      defaultValue={name}
-      onBlur={(event) => {
-        setName(event.target.value.trim() || name);
-        setEditing(false);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') event.currentTarget.blur();
-        if (event.key === 'Escape') setEditing(false);
-      }}
-      className="app-no-drag rounded bg-raised px-2 py-0.5 text-[12px] text-ink outline-none"
-    />
+      {editing ? (
+        <NameInput
+          value={name}
+          className="app-no-drag rounded bg-raised px-2 py-0.5 text-[12px] text-ink outline-none"
+          onCommit={(next) => {
+            setEditing(false);
+            void renameBoard(id, next);
+          }}
+          onCancel={() => {
+            setEditing(false);
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={startEditing}
+          className="app-no-drag rounded px-2 py-0.5 text-[12px] text-ink/80 hover:bg-raised"
+        >
+          {name}
+        </button>
+      )}
+    </>
   );
 }
