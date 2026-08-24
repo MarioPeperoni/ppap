@@ -1,5 +1,6 @@
 import { ELEMENT_TYPES } from '@/constants/element.constants';
 import { IMAGE_MIMES } from '@/constants/image.constants';
+import { DEFAULT_NIB, NIB_TOKENS } from '@/constants/stroke.constants';
 import { TOOL_COLORS, TOOL_SIZES } from '@/constants/tool.constants';
 import type { Element, ImageElement, StrokeElement, StrokePoint } from '@/types';
 import { parseAssetId } from '@/validation/asset.validator';
@@ -29,6 +30,7 @@ function parseStroke(source: Record<string, unknown>): StrokeElement {
     points: expectArray(source.points, 'Stroke points').map(parseStrokePoint),
     color: expectOneOf(source.color, TOOL_COLORS, 'Stroke color'),
     size: expectOneOf(source.size, TOOL_SIZES, 'Stroke size'),
+    nib: source.nib === undefined ? DEFAULT_NIB : expectOneOf(source.nib, NIB_TOKENS, 'Stroke nib'),
     scale: expectNumber(source.scale, 'Stroke scale'),
   };
 }

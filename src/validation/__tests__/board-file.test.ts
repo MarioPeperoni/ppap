@@ -26,6 +26,7 @@ const FILE: BoardFile = {
         ],
         color: 'blue',
         size: 'm',
+        nib: 'pen',
         scale: 1,
       },
     ],
@@ -67,6 +68,34 @@ describe('board file validation', () => {
         content: { ...broken.content, elements: [{ ...stroke, color: undefined }] },
       }),
     ).toThrow('Stroke color');
+  });
+
+  it('reads a stroke without a nib as a pen stroke', () => {
+    const source = clone();
+    const [stroke] = source.content.elements;
+    if (stroke === undefined || stroke.type !== 'stroke') throw new Error('fixture');
+
+    const { nib, ...withoutNib } = stroke;
+    const parsed = parseBoardFile({
+      meta: source.meta,
+      content: { ...source.content, elements: [withoutNib] },
+    });
+
+    expect(nib).toBe('pen');
+    expect(parsed.content.elements[0]).toEqual(stroke);
+  });
+
+  it('rejects a nib it does not know', () => {
+    const broken = clone();
+    const [stroke] = broken.content.elements;
+    if (stroke === undefined || stroke.type !== 'stroke') throw new Error('fixture');
+
+    expect(() =>
+      parseBoardFile({
+        meta: broken.meta,
+        content: { ...broken.content, elements: [{ ...stroke, nib: 'quill' }] },
+      }),
+    ).toThrow('Stroke nib');
   });
 
   it('rejects a point that is not numeric', () => {

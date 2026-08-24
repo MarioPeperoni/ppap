@@ -4,6 +4,8 @@ export type ColorToken = 'ink' | 'blue' | 'red' | 'green';
 
 export type SizeToken = 's' | 'm' | 'l';
 
+export type NibToken = 'pen' | 'pencil';
+
 export type StrokePoint = [x: number, y: number, pressure: number];
 
 export interface ElementBase {
@@ -16,6 +18,7 @@ export interface StrokeElement extends ElementBase {
   points: StrokePoint[];
   color: ColorToken;
   size: SizeToken;
+  nib: NibToken;
   scale: number;
 }
 

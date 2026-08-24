@@ -8,5 +8,5 @@ export function isSubstantialRun(points: readonly StrokePoint[]): boolean {
 }
 
 export function fragmentOf(source: StrokeElement, points: StrokePoint[]): StrokeElement {
-  return createStroke(points, source.color, source.size, source.scale);
+  return createStroke(points, source.color, source.size, source.nib, source.scale);
 }

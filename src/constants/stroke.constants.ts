@@ -1,10 +1,15 @@
-import type { SizeToken } from '@/types';
+import type { NibToken, SizeToken } from '@/types';
 
 export const STROKE_SIZE_UNITS: Record<SizeToken, number> = { s: 2, m: 4, l: 8 };
 
 export const DEFAULT_STROKE_SCALE = 1;
 
-export const FREEHAND_THINNING = 0.5;
+export const NIB_TOKENS: readonly NibToken[] = ['pen', 'pencil'];
+export const DEFAULT_NIB: NibToken = 'pen';
+
+/** How far pressure narrows a stroke: the pencil holds one width, the pen tapers. */
+export const NIB_THINNING: Record<NibToken, number> = { pen: 0.5, pencil: 0 };
+
 export const FREEHAND_SMOOTHING = 0.5;
 
 /** Streamlining is an input filter, so stored points stay the geometry that gets drawn. */

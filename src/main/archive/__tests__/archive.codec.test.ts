@@ -36,6 +36,7 @@ const ARCHIVE: BoardArchive = {
         ],
         color: 'red',
         size: 'l',
+        nib: 'pen',
         scale: 1.25,
       },
     ],
