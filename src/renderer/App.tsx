@@ -1,11 +1,18 @@
-import { Toolbar } from './components/Toolbar';
-import { Canvas } from './components/Canvas';
+import type { ReactElement } from 'react';
+import * as Tooltip from '@radix-ui/react-tooltip';
+import { Board } from '@/renderer/board/Board';
+import { TitleBar } from '@/renderer/components/TitleBar/TitleBar';
+import { useThemeBridge } from '@/renderer/hooks/use-theme-bridge';
 
-export const App = () => {
+export function App(): ReactElement {
+  useThemeBridge();
+
   return (
-    <div className="app">
-      <Toolbar />
-      <Canvas />
-    </div>
+    <Tooltip.Provider delayDuration={400} skipDelayDuration={200}>
+      <div className="flex h-full flex-col bg-canvas text-ink">
+        <TitleBar />
+        <Board />
+      </div>
+    </Tooltip.Provider>
   );
-};
+}
