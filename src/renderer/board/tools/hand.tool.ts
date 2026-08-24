@@ -5,7 +5,7 @@ import type { PanOrigin, PointerSample, Tool } from '@/types';
 export class HandTool implements Tool {
   readonly id = 'hand';
   readonly label = 'Hand';
-  readonly keys = ['h', '5'];
+  readonly keys = ['h', '6'];
   readonly cursor = 'grab';
 
   private origin: PanOrigin | null = null;

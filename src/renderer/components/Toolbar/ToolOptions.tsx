@@ -3,23 +3,26 @@ import { EraserOptions } from '@/renderer/components/Toolbar/EraserOptions';
 import { PenOptions } from '@/renderer/components/Toolbar/PenOptions';
 import type { ToolId } from '@/types';
 
+const OPTIONS: Record<ToolId, (() => ReactElement) | null> = {
+  pen: PenOptions,
+  pencil: PenOptions,
+  eraser: EraserOptions,
+  marquee: null,
+  lasso: null,
+  hand: null,
+};
+
 interface ToolOptionsProps {
   tool: ToolId;
 }
 
 export function hasOptions(tool: ToolId): boolean {
-  return tool === 'pen' || tool === 'eraser';
+  return OPTIONS[tool] !== null;
 }
 
 export function ToolOptions({ tool }: ToolOptionsProps): ReactElement | null {
-  switch (tool) {
-    case 'pen':
-      return <PenOptions />;
-    case 'eraser':
-      return <EraserOptions />;
-    case 'marquee':
-    case 'lasso':
-    case 'hand':
-      return null;
-  }
+  const Options = OPTIONS[tool];
+  if (Options === null) return null;
+
+  return <Options />;
 }
