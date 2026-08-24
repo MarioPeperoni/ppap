@@ -12,6 +12,11 @@ Every release of Pure Pen & Paper, in plain language.
 - A What's new window that opens once after every update and lists what changed.
 - A Show button in Settings that brings the What's new window back any time.
 
+### Changed
+
+- Thicker pen and pencil sizes; the unusable hairline is gone.
+- The pen draws at the width you picked instead of below it.
+
 ## 1.0.1 — 2026-08-24
 
 ### Fixed

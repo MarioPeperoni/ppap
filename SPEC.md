@@ -209,7 +209,7 @@ interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
   color: ColorToken;
-  size: SizeToken; // s=2, m=4, l=8 board units
+  size: SizeToken; // s=4, m=8, l=16 board units
   nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
 
@@ -262,6 +262,8 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
 - `perfect-freehand` with `{ size, thinning, smoothing: 0.5, streamline: 0.5, simulatePressure }`,
   where `simulatePressure` is true for devices that report no real pressure. `thinning` is `0.5`
   for the pen and `0` for the pencil, so the pencil holds one width from end to end.
+- The size a nib is given is the width it draws at pressure `0.25`, so the picked width sits in the
+  middle of the pen's taper instead of at its top.
 - `event.getCoalescedEvents()` supplies the full input sample rate; every sample is appended.
 - The live stroke draws on `OverlayLayer`; `pointerup` commits it as one command and clears the
   overlay.
