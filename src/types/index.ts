@@ -10,6 +10,7 @@ export type * from './history.types';
 export type * from './ipc.types';
 export type * from './platform.types';
 export type * from './scene.types';
+export type * from './select.types';
 export type * from './store.types';
 export type * from './stroke.types';
 export type * from './theme.types';

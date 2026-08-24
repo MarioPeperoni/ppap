@@ -75,3 +75,12 @@ export function boundsContainBounds(outer: Bounds, inner: Bounds): boolean {
 export function boundsCenter(bounds: Bounds): Point {
   return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
 }
+
+export function boundsCorners(bounds: Bounds): Point[] {
+  return [
+    { x: bounds.minX, y: bounds.minY },
+    { x: bounds.maxX, y: bounds.minY },
+    { x: bounds.maxX, y: bounds.maxY },
+    { x: bounds.minX, y: bounds.maxY },
+  ];
+}
