@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { DEFAULT_CAMERA } from '@/constants/camera.constants';
 import { defaultBoardName } from '@/core/board/board-name';
 import { applyPatch } from '@/core/scene/scene-patch';
+import { retainExisting } from '@/core/scene/scene-selection';
 import type { CameraState, Element, Scene, ScenePatch } from '@/types';
 
 interface BoardStore {
@@ -30,7 +31,11 @@ export const useBoardStore = create<BoardStore>()((set, get) => ({
 
   applyScenePatch: (patch) => {
     const { scene, inverse } = applyPatch(get().elements, patch);
-    set({ elements: scene, lastPatch: patch });
+    set({
+      elements: scene,
+      lastPatch: patch,
+      selection: retainExisting(get().selection, scene),
+    });
 
     return inverse;
   },
