@@ -1,4 +1,5 @@
 import { CameraController } from '@/renderer/board/camera-controller';
+import { DropRouter } from '@/renderer/board/input/drop-router';
 import { GestureRouter } from '@/renderer/board/input/gesture-router';
 import { KeyboardRouter } from '@/renderer/board/input/keyboard-router';
 import { WheelRouter } from '@/renderer/board/input/wheel-router';
@@ -23,6 +24,7 @@ export class BoardHost {
   private readonly gestures: GestureRouter;
   private readonly keyboard: KeyboardRouter;
   private readonly wheel: WheelRouter;
+  private readonly drop: DropRouter;
   private readonly viewport: ViewportTracker;
   private readonly layerSync: LayerSync;
   private readonly selectionSync = new SelectionSync();
@@ -62,6 +64,7 @@ export class BoardHost {
     this.camera = new CameraController(this.view);
     this.gestures = new GestureRouter(canvases.host, this.view, context);
     this.wheel = new WheelRouter(canvases.host, this.camera);
+    this.drop = new DropRouter(canvases.host, this.view);
     this.keyboard = new KeyboardRouter(this.camera, {
       setPanOverride: (active) => {
         this.gestures.setPanOverride(active);
@@ -90,6 +93,7 @@ export class BoardHost {
     this.selectionSync.destroy();
     this.layerSync.destroy();
     this.keyboard.destroy();
+    this.drop.destroy();
     this.wheel.destroy();
     this.gestures.destroy();
     this.scheduler.stop();

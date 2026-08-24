@@ -13,7 +13,7 @@ import { useBoardStore } from '@/renderer/stores/board.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import type { Element, Point } from '@/types';
 
-function showSelection(): void {
+export function activateSelectionTool(): void {
   const { tool, setTool } = useToolStore.getState();
   if (isSelectionTool(tool)) return;
 
@@ -25,7 +25,7 @@ function idsOf(elements: readonly Element[]): string[] {
 }
 
 export function selectAll(): void {
-  showSelection();
+  activateSelectionTool();
   const { elements, setSelection } = useBoardStore.getState();
   setSelection(elements.keys());
 }
@@ -63,7 +63,7 @@ export function pasteClipboard(at: Point): void {
     translateElement(cloneElement(element), at.x - centre.x, at.y - centre.y),
   );
 
-  showSelection();
+  activateSelectionTool();
   commitSelectionPatch('paste', appendPatch(pasted), idsOf(pasted));
 }
 
@@ -75,6 +75,6 @@ export function duplicateSelection(): void {
     translateElement(cloneElement(element), DUPLICATE_OFFSET, DUPLICATE_OFFSET),
   );
 
-  showSelection();
+  activateSelectionTool();
   commitSelectionPatch('duplicate', appendPatch(copies), idsOf(copies));
 }

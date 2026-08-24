@@ -1,4 +1,5 @@
 import type { CameraController } from '@/renderer/board/camera-controller';
+import { pasteAt } from '@/renderer/board/images/image-paste';
 import { isTypingTarget } from '@/renderer/board/input/typing-target';
 import {
   clearSelection,
@@ -6,7 +7,6 @@ import {
   cutSelection,
   deleteSelection,
   duplicateSelection,
-  pasteClipboard,
   selectAll,
 } from '@/renderer/board/selection/selection-actions';
 import { findToolByKey } from '@/renderer/board/tools/tool-registry';
@@ -129,7 +129,7 @@ export class KeyboardRouter {
         cutSelection();
         break;
       case 'v':
-        pasteClipboard(this.handlers.pointerBoard() ?? this.camera.boardCenter());
+        void pasteAt(this.handlers.pointerBoard() ?? this.camera.boardCenter());
         break;
       case 'd':
         duplicateSelection();
