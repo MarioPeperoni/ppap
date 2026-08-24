@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { SORT_ORDERS } from '@/constants/settings.constants';
 import { THEMES } from '@/constants/theme.constants';
 import { BrandMark } from '@/renderer/components/Brand/BrandMark';
+import { Choices } from '@/renderer/components/Settings/Choices';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
 import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
 import { useLibraryStore } from '@/renderer/stores/library.store';
@@ -21,44 +22,6 @@ const SORT_LABELS: Record<SortOrder, string> = {
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-interface ChoicesProps<T extends string> {
-  label: string;
-  values: readonly T[];
-  labels: Record<T, string>;
-  active: T;
-  onSelect: (value: T) => void;
-}
-
-function Choices<T extends string>({
-  label,
-  values,
-  labels,
-  active,
-  onSelect,
-}: ChoicesProps<T>): ReactElement {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-[12px] text-muted">{label}</span>
-      <div className="flex gap-1 rounded-lg bg-raised p-0.5">
-        {values.map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => {
-              onSelect(value);
-            }}
-            className={`rounded-md px-2.5 py-1 text-[12px] transition-colors ${
-              value === active ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'
-            }`}
-          >
-            {labels[value]}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): ReactElement {
