@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron';
+import { fileOpener } from '@/main/app/file-opener';
 import { registerIpc } from '@/main/ipc/ipc-registry';
 import { saveQueue } from '@/main/library/save-queue';
 import { settingsService } from '@/main/settings/settings.service';
@@ -33,7 +34,13 @@ function flushBeforeExit(event: Electron.Event): void {
 async function start(): Promise<void> {
   registerIpc();
   themeService.adopt((await settingsService.get()).theme);
-  createMainWindow();
+
+  const window = createMainWindow();
+  window.webContents.once('did-finish-load', () => {
+    void fileOpener.deliver();
+  });
+
+  fileOpener.fromArguments(process.argv);
 }
 
 export function startApp(): void {
@@ -42,7 +49,13 @@ export function startApp(): void {
     return;
   }
 
-  app.on('second-instance', focusExistingWindow);
+  fileOpener.watch();
+
+  app.on('second-instance', (_event, argv) => {
+    focusExistingWindow();
+    fileOpener.fromArguments(argv);
+  });
+
   app.on('will-quit', flushBeforeExit);
 
   app.on('window-all-closed', () => {

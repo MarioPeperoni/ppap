@@ -10,6 +10,8 @@ import {
   selectAll,
 } from '@/renderer/board/selection/selection-actions';
 import { findToolByKey } from '@/renderer/board/tools/tool-registry';
+import { copySelectionImage } from '@/renderer/export/board-export';
+import { autosave } from '@/renderer/persistence/autosave';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
@@ -117,8 +119,11 @@ export class KeyboardRouter {
         selectAll();
         break;
       case 'c':
-        if (event.shiftKey) return;
-        copySelection();
+        if (event.shiftKey) void copySelectionImage();
+        else copySelection();
+        break;
+      case 's':
+        void autosave.flush();
         break;
       case 'x':
         cutSelection();
