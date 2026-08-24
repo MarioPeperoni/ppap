@@ -6,6 +6,21 @@ export const IPC_CHANNELS = {
   themeGet: 'theme:get',
   themeSet: 'theme:set',
   themeChanged: 'theme:changed',
+  libraryList: 'library:list',
+  libraryCreate: 'library:create',
+  libraryLoad: 'library:load',
+  librarySave: 'library:save',
+  libraryRename: 'library:rename',
+  libraryRemove: 'library:remove',
+  libraryThumbnail: 'library:thumbnail',
+  libraryExportFile: 'library:export-file',
+  libraryExportImage: 'library:export-image',
+  libraryImportFile: 'library:import-file',
+  libraryOpenBoard: 'library:open-board',
+  settingsGet: 'settings:get',
+  settingsPatch: 'settings:patch',
+  clipboardWriteImage: 'clipboard:write-image',
+  appVersion: 'app:version',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
