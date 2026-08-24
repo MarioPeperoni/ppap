@@ -1,0 +1,608 @@
+# ppap — Pure Pen & Paper
+
+Implementation specification. Sections 1–9 are binding for all work. Section 10 splits the build
+into phases; implement them in order, and close a phase only when its acceptance criteria hold.
+
+---
+
+## 1. Product
+
+An infinite dotted canvas you write on with a pen, plus the minimum needed to keep many boards.
+Handwritten notes and sketches, nothing more.
+
+**Design principle:** every pixel of chrome must justify itself. The canvas is the app. The
+interface is a floating toolbar and a thin title bar.
+
+**Platform:** Windows first (Electron Forge + Vite + React 19 + TypeScript). macOS is one entry
+in the release matrix, not a design constraint.
+
+**Out of scope:** collaboration, cloud sync, shape and arrow tools, text elements, sticky notes,
+PDF and SVG export, element rotation, layers, grouping, freeform color picking, mobile and web
+builds, plugins.
+
+---
+
+## 2. Architecture
+
+### 2.1 Stack
+
+| Concern    | Choice                                                              |
+| ---------- | ------------------------------------------------------------------- |
+| UI         | React 19, TypeScript                                                |
+| State      | `zustand` (v5), vanilla store shared with non-React canvas code     |
+| Styling    | `tailwindcss@4` with `@tailwindcss/vite`, CSS-first `@theme` config |
+| Primitives | `@radix-ui/react-popover`, `-dialog`, `-tooltip`                    |
+| Icons      | `lucide-react`, named imports                                       |
+| Ink        | `perfect-freehand`                                                  |
+| Archive    | `fflate`                                                            |
+| Tests      | `vitest`                                                            |
+| Updates    | `update-electron-app`                                               |
+| Build      | Electron Forge + Vite                                               |
+
+A new dependency has to beat "thirty lines in `src/core`".
+
+### 2.2 Process split
+
+| Process      | Owns                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **main**     | Window lifecycle, window controls, all filesystem access, the board repository, archive encoding, the asset protocol, native dialogs. |
+| **preload**  | The single bridge. A typed `window.ppap` API over `contextBridge`.                                                                    |
+| **renderer** | Library grid, canvas, tools, camera, history. No Node, no filesystem.                                                                 |
+
+### 2.3 Directory layout
+
+```
+src/
+  main/
+    main.ts               bootstrap only
+    window/               BrowserWindow factory, window-control handlers
+    board/
+      BoardRepository.ts       interface
+      FileBoardRepository.ts   implementation over the library directory
+      LibraryIndex.ts          index cache, rebuild by scan
+    archive/
+      ArchiveCodec.ts          .ppap read/write over fflate
+      AssetStore.ts            content-addressed assets, orphan collection
+    protocol/assetProtocol.ts  ppap-asset:// scheme
+    ipc/                       one contract table, one handler per entry
+  preload/preload.ts
+  shared/
+    types.ts              BoardFile, BoardMeta, Element
+    ipc.ts                channel names and payload types
+  core/                   pure: no React, no DOM, no Electron
+    camera.ts             screen<->board transforms, zoom-to-point, zoom-to-fit
+    geometry.ts           bbox, point-segment distance, polygon containment, rect intersection
+    stroke.ts             perfect-freehand wrapper, outline and bbox
+    erase.ts              stroke splitting against an eraser path
+    select.ts             marquee and lasso predicates, uniform scaling
+    grid.ts               adaptive dot levels
+    history.ts            command stack
+    elements.ts           element factory
+    serialize.ts          BoardFile validation and version migration
+  renderer/
+    App.tsx               route: library | board
+    state/                zustand slices
+    library/              LibraryGrid, BoardTile
+    board/
+      Board.tsx           canvas host, pointer routing, keyboard map
+      layers/             GridLayer, SceneLayer, OverlayLayer
+      render/             ElementRenderer registry
+      tools/              pen, eraser, marquee, lasso, hand + ToolRegistry
+    components/           Toolbar, TitleBar, ToolPopover
+```
+
+Anything expressible as a pure function belongs in `src/core`.
+
+### 2.4 Patterns
+
+| Pattern    | Where                          | Contract                                                                                                                                                             |
+| ---------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository | `main/board`                   | `BoardRepository` exposes `list / load / save / create / rename / remove`. Callers never learn that boards are files.                                                |
+| Factory    | `core/elements.ts`             | `createStroke`, `createImage` own id generation and defaults.                                                                                                        |
+| Strategy   | `renderer/board/tools`         | Every tool implements `Tool { id, cursor, onPointerDown, onPointerMove, onPointerUp, onCancel, drawOverlay }`. Adding a tool means adding a file and registering it. |
+| Strategy   | `renderer/board/render`        | One `ElementRenderer` per element type, keyed by `Element['type']`.                                                                                                  |
+| Command    | `core/history.ts`              | `Command { apply, revert }`. One gesture produces one command.                                                                                                       |
+| Adapter    | `main/archive/ArchiveCodec.ts` | The only module that knows the archive is a zip.                                                                                                                     |
+
+### 2.5 Rendering
+
+Three absolutely positioned canvases, each sized `clientSize * devicePixelRatio`:
+
+| Layer          | Contents                                                                   | Repaints on                           |
+| -------------- | -------------------------------------------------------------------------- | ------------------------------------- |
+| `GridLayer`    | Dot grid                                                                   | Camera, viewport size, theme          |
+| `SceneLayer`   | Committed elements                                                         | Element mutation, camera, theme       |
+| `OverlayLayer` | Live stroke, lasso path, marquee, selection box and handles, eraser cursor | Every pointer sample during a gesture |
+
+One `requestAnimationFrame` scheduler with per-layer dirty flags drives all painting. Event
+handlers set flags; they never paint. `SceneLayer` culls by element bbox against the visible
+board rect.
+
+### 2.6 State
+
+| Store          | Holds                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------- |
+| `libraryStore` | Board metadata, sort order, loading state                                               |
+| `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>` |
+| `toolStore`    | Active tool, pen color, pen width, eraser width; persisted to settings                  |
+| `historyStore` | Undo and redo command stacks, capped at 200 commands per board                          |
+
+Canvas layers subscribe to the vanilla store directly, so a pointer move never rerenders a React
+component. React components use narrow selectors with `useShallow`. Element mutations go through
+store actions that push a command and mark layers dirty.
+
+---
+
+## 3. Coordinate system and camera
+
+Board space is unbounded. One board unit is one CSS pixel at zoom 1.
+
+```
+camera = { x, y, zoom }        // x,y is the board coordinate at the viewport's top-left corner
+screen = (board - camera.xy) * camera.zoom
+board  = screen / camera.zoom + camera.xy
+```
+
+- Zoom clamps to `0.1 … 8`.
+- Wheel pans vertically, `Shift`+wheel horizontally. `Ctrl`+wheel and trackpad pinch zoom
+  **anchored at the cursor**, factor `1.1` per notch.
+- `Ctrl` `+` / `-` zoom by ×1.25 anchored at the viewport centre. `Ctrl+0` sets 100 %.
+- `Ctrl+1` fits the bbox of all elements with 64 units of padding, capped at 100 %.
+- The camera is stored in the board file and restored on open.
+
+`core/camera.ts` owns every transform; screen↔board round-trips exactly.
+
+---
+
+## 4. Dot grid
+
+- Base spacing `24` board units; levels are `24 · 2^n`.
+- The coarsest level whose on-screen spacing is `>= 16 px` is drawn solid; the next finer level
+  fades in linearly as its spacing crosses `16 → 28 px`.
+- Dot radius `1.1 px` in screen space.
+- Colors: light `#D4D4D4`, dark `#333333`.
+- Only dots inside the viewport are drawn, batched into one `Path2D` per level.
+- `Ctrl+G` toggles the grid; visibility is a board property.
+
+`core/grid.ts` exports `gridLevels(zoom, base) -> { spacing, alpha }[]`.
+
+---
+
+## 5. Data model
+
+`src/shared/types.ts` is the single source of truth.
+
+```ts
+type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+type SizeToken = 's' | 'm' | 'l';
+
+interface BoardMeta {
+  format: 'ppap';
+  version: 1;
+  id: string; // uuid v4, also the file name
+  name: string;
+  createdAt: string; // ISO 8601
+  modifiedAt: string; // ISO 8601
+  folderId: string | null;
+}
+
+interface BoardContent {
+  gridVisible: boolean;
+  camera: { x: number; y: number; zoom: number };
+  elements: Element[]; // array order is z-order
+}
+
+interface BoardFile {
+  meta: BoardMeta;
+  content: BoardContent;
+}
+
+type Element = StrokeElement | ImageElement;
+
+interface ElementBase {
+  id: string;
+  createdAt: number;
+}
+
+interface StrokeElement extends ElementBase {
+  type: 'stroke';
+  points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
+  color: ColorToken;
+  size: SizeToken; // s=2, m=4, l=8 board units
+}
+
+interface ImageElement extends ElementBase {
+  type: 'image';
+  assetId: string; // sha256 of the bytes
+  mime: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  naturalWidth: number;
+  naturalHeight: number;
+}
+```
+
+Bounding boxes and stroke outlines are cached in memory, keyed by element id, invalidated on
+mutation, and never written to disk.
+
+### 5.1 Palette
+
+| Token      | Light     | Dark      |
+| ---------- | --------- | --------- |
+| `ink`      | `#111111` | `#EDEDED` |
+| `blue`     | `#2563EB` | `#5B8DEF` |
+| `red`      | `#DC2626` | `#F0616B` |
+| `green`    | `#16A34A` | `#4ADE80` |
+| background | `#FFFFFF` | `#191919` |
+| dots       | `#D4D4D4` | `#333333` |
+
+The palette is declared once as CSS custom properties in `@theme`, with dark values under
+`@media (prefers-color-scheme: dark)` and a `[data-theme="dark"]` selector so the manual override
+wins in both directions. Canvas code resolves the variables through `getComputedStyle` once per
+theme change and caches the result.
+
+PNG export renders with the light palette on opaque white.
+
+---
+
+## 6. Tools
+
+Exactly one tool is active. Held `Space` and the middle mouse button temporarily override it with
+pan and restore it on release. All pointer types drive the active tool identically until P5.
+
+The canvas host sets `touch-action: none` and calls `setPointerCapture` on pointerdown.
+
+### 6.1 Pen — `P` / `1`
+
+- `perfect-freehand` with `{ size, thinning: 0.5, smoothing: 0.5, streamline: 0.5,
+simulatePressure }`, where `simulatePressure` is true for devices that report no real pressure.
+- `event.getCoalescedEvents()` supplies the full input sample rate; every sample is appended.
+- The live stroke draws on `OverlayLayer`; `pointerup` commits it as one command and clears the
+  overlay.
+- Four colors × three widths in a popover above the pen icon. `C` and `Shift+C` cycle color,
+  `[` and `]` step width. Choices persist per tool in settings.
+
+### 6.2 Eraser — `E` / `2`
+
+Splits strokes. For each pointer segment, with eraser radius `r`:
+
+1. Select strokes whose bbox intersects the eraser segment bbox inflated by `r`.
+2. Mark stroke points within `r` of the segment.
+3. Drop marked points; each surviving run becomes a stroke inheriting color, size and order. Runs
+   under 2 points are discarded.
+4. Images are removed when the eraser centre enters their bbox.
+
+A whole `pointerdown … pointerup` gesture is one command holding `{ removed, added }`. A single
+source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
+a circle outline on the overlay. `[` and `]` step its radius.
+
+### 6.3 Selection — marquee `V` / `3`, lasso `L` / `4`
+
+- **Marquee** selects elements whose bbox intersects the dragged rectangle.
+- **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
+
+A non-empty selection shows a bounding box with four corner handles:
+
+- Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
+  widths scale with the selection.
+- `Delete` and `Backspace` delete. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
+  cursor. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all. `Escape` clears.
+
+### 6.4 Hand — `H` / `5`
+
+Drags the camera.
+
+### 6.5 Images
+
+- `Ctrl+V` with an image on the clipboard, and dropping image files on the canvas, insert an
+  `ImageElement` centred at the cursor.
+- Bytes are stored verbatim. `assetId` is their SHA-256, so the same image pasted repeatedly
+  occupies one archive entry.
+- Initial size fits the natural size within 800 board units, preserving aspect ratio.
+- The renderer references `ppap-asset://<boardId>/<assetId>` and never holds the bytes.
+
+### 6.6 Keyboard reference
+
+| Keys                                                  | Action                                 |
+| ----------------------------------------------------- | -------------------------------------- |
+| `P` `1` / `E` `2` / `V` `3` / `L` `4` / `H` `5`       | Pen / eraser / marquee / lasso / hand  |
+| `Space` held, middle-drag                             | Temporary pan                          |
+| `C`, `Shift+C`                                        | Cycle color                            |
+| `[`, `]`                                              | Step pen or eraser width               |
+| `Ctrl`+wheel, pinch                                   | Zoom at cursor                         |
+| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit            |
+| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                             |
+| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                   |
+| `Ctrl+Shift+C`                                        | Copy selection to the clipboard as PNG |
+| `Ctrl+G`                                              | Toggle grid                            |
+| `Ctrl+S`                                              | Flush pending save                     |
+| `Ctrl+N`                                              | New board                              |
+| `F2`                                                  | Rename board                           |
+| `Alt+←`                                               | Back to the library                    |
+| `Escape`                                              | Cancel gesture, clear selection        |
+
+---
+
+## 7. Persistence
+
+### 7.1 Archive format
+
+A `.ppap` file is a zip:
+
+```
+board.ppap
+├─ meta.json            BoardMeta
+├─ board.json           BoardContent
+├─ thumb.png            480×300
+└─ assets/<sha256>      raw image bytes
+```
+
+JSON entries use deflate; `thumb.png` and `assets/*` are stored uncompressed. Listing reads only
+`meta.json` and `thumb.png`, using the `filter` option of `fflate`'s `unzip`.
+
+`ArchiveCodec` is the only module aware of the container. `serialize.ts` validates `meta.format`
+and `meta.version` on read and runs migrations keyed by version.
+
+### 7.2 Library directory
+
+```
+<userData>/ppap/
+  boards/<uuid>.ppap
+  folders.json         [{ id, name, createdAt }]
+  index.json           cache of BoardMeta, rebuilt by scanning boards/
+  settings.json        theme, active tool, pen color and width, sort order
+```
+
+`index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
+`LibraryIndex` rebuilds it by reading each archive's `meta.json`.
+
+`folders.json` is durable. A board's `folderId` travels inside its archive, so filing survives an
+index rebuild; folder names survive in `folders.json`. A `folderId` pointing at a missing folder
+resolves to the library root.
+
+### 7.3 Saving
+
+- Element mutations schedule a save debounced by **800 ms**. Camera changes schedule one on a
+  lazy 5 s timer and on board close.
+- The renderer sends `BoardContent` plus any new asset buffers; main encodes and writes.
+- Writes go to `<id>.ppap.tmp` and land with `fs.rename`. A board never exists half-written.
+- At most one save is queued per board while another is in flight.
+- On save, `AssetStore` keeps only assets referenced by the element list.
+- Thumbnails regenerate at most every 10 s and on board close.
+- `Ctrl+S` flushes immediately. Quitting flushes pending writes first.
+
+### 7.4 Asset protocol
+
+Main registers `ppap-asset` before `app.ready` via `protocol.registerSchemesAsPrivileged`
+(`{ standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true }`) and
+serves it with `protocol.handle`. Responses carry the asset's mime type and
+`Access-Control-Allow-Origin: *`, which keeps the canvas untainted so PNG export works.
+
+The handler resolves `<boardId>` and `<assetId>` against the open board only, and rejects any id
+failing `/^[0-9a-f-]{36}$/` and `/^[0-9a-f]{64}$/` respectively.
+
+### 7.5 Export and import
+
+- **Export .ppap** copies the archive through a native save dialog.
+- **Import .ppap** validates the archive, assigns a new `id`, and adds it to the library.
+- **Export PNG** renders the content bbox plus 40 units of padding at 2×.
+- **`Ctrl+Shift+C`** renders the selection bbox to the clipboard as `image/png`.
+- Squirrel registers the `.ppap` extension through `fileAssociations`; opening a file from the
+  shell imports it and navigates to that board.
+
+### 7.6 IPC
+
+```ts
+window.ppap = {
+  library: {
+    list():                            Promise<BoardMeta[]>;
+    create(name?: string):             Promise<BoardMeta>;
+    load(id: string):                  Promise<BoardFile>;
+    save(id: string, content: BoardContent, assets: NewAsset[], thumb?: Uint8Array): Promise<void>;
+    rename(id: string, name: string):  Promise<void>;
+    remove(id: string):                Promise<void>;
+    setFolder(id: string, folderId: string | null): Promise<void>;
+    exportFile(id: string):            Promise<boolean>;
+    importFile():                      Promise<BoardMeta | null>;
+  },
+  window:    { minimize(); toggleMaximize(); close(); onMaximizeChange(cb) },
+  theme:     { get(): Promise<Theme>; set(t: Theme); onChange(cb) },
+  clipboard: { writeImage(png: Uint8Array): Promise<void> },
+}
+```
+
+Channel names and payload types live in `shared/ipc.ts` and are registered from one table. Every
+handler validates its arguments in main: ids against their pattern, sizes against a cap, and
+resolved paths against the library directory.
+
+---
+
+## 8. UI
+
+### 8.1 Window
+
+One window hosts both views, and `requestSingleInstanceLock` focuses the running instance instead
+of opening a second. Frameless, `titleBarStyle: 'hidden'`, shown on `ready-to-show` with a
+`backgroundColor` matching the active theme. A 36 px title bar:
+
+```
+┌───────────────────────────────────────────────┐
+│ ←   sprint planning                  ─  □  × │
+├───────────────────────────────────────────────┤
+│                    canvas                     │
+│              ┌────────────────┐               │
+│              │  ✎  ⌫  ▭  ⌾  ✋ │               │
+└──────────────┴────────────────┴───────────────┘
+```
+
+The back arrow and the board name appear on the board screen; the name is edited in place by
+click or `F2`. The library screen carries the app name and a gear icon. Window buttons are HTML
+with `-webkit-app-region: no-drag`; the rest of the bar drags, and double-click maximizes. There
+is no menu bar.
+
+### 8.2 Toolbar
+
+One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
+borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
+name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
+colors and widths for the pen, radius for the eraser. The popover closes on `Escape`, outside
+click, and selection. The zoom percentage sits in the bottom-right corner; clicking it sets 100 %.
+
+### 8.3 Library grid
+
+- Tiles of thumbnail, name, and relative modified date, in a responsive grid.
+- The `+` tile comes first and opens the new board immediately.
+- Default name is the creation date (`23 Aug 2026`); `F2` or double-click renames.
+- Sorted by modified date descending, with name and creation date available.
+- `Delete` opens a Radix confirmation dialog, then removes the archive.
+- Empty state: one line of text and the `+` tile.
+
+### 8.4 Settings
+
+The gear in the library title bar opens a Radix dialog holding the theme control
+(`System | Light | Dark`), the default sort order, and the application version. `Escape` closes
+it. The board screen has no settings surface.
+
+---
+
+## 9. Engineering standards
+
+### 9.1 TypeScript
+
+`strict`, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`,
+`verbatimModuleSyntax`. No `any`, no non-null assertions on values crossing a process boundary,
+no casts on IPC payloads — validation instead. Element handling uses exhaustive switches on
+`Element['type']`, so a new element type breaks the build wherever it must be handled.
+`tsc --noEmit` gates every phase.
+
+### 9.2 Lint and format
+
+ESLint 9 flat config (`eslint.config.js`) with `typescript-eslint` type-aware rules on:
+`no-floating-promises`, `no-misused-promises`, `consistent-type-imports`,
+`switch-exhaustiveness-check`, `no-unnecessary-condition`. Prettier owns formatting; ESLint
+carries no stylistic rules. `husky` and `lint-staged` run `eslint --fix` and `tsc --noEmit` on
+pre-commit.
+
+Lint and type errors are fixed at their root. Suppression comments are not part of this codebase.
+
+### 9.3 Electron security
+
+`contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`, `webSecurity: true`. A CSP
+that allows `'self'` and `ppap-asset:` only. `will-navigate` and `setWindowOpenHandler` deny
+everything. `session.setPermissionRequestHandler` denies everything. `requestSingleInstanceLock`
+guards a second instance and routes file-open arguments to the running one. The Fuses plugin in
+`forge.config.ts` disables `runAsNode` and Node CLI inspection in packaged builds.
+
+### 9.4 Tests
+
+`vitest` over `src/core`, run with `npm test` and `npm run test:watch`:
+
+| Module      | Covered behaviour                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| `camera`    | Round-trip, zoom-at-point keeps its anchor fixed, clamping, zoom-to-fit                            |
+| `geometry`  | Point-segment distance, concave and self-intersecting polygon containment, rect intersection       |
+| `erase`     | Middle cut yields two strokes, end cut trims, full cover removes, style inherited, 64-fragment cap |
+| `select`    | Marquee intersects, lasso contains, uniform scaling preserves aspect and scales widths             |
+| `grid`      | Level selection and fade alpha across the zoom range                                               |
+| `history`   | Command apply and revert restore identical state                                                   |
+| `serialize` | Archive round-trip, malformed input rejected, migration path                                       |
+| `elements`  | Factory defaults, asset hashing and dedup                                                          |
+
+In development builds only, `window.__ppapDev.seed(n)` fills the open board with `n` generated
+strokes for hands-on checks of the targets in §9.5.
+
+### 9.5 Performance targets
+
+| Metric                                                 | Target     |
+| ------------------------------------------------------ | ---------- |
+| Frame time while drawing on a board of ~10 000 strokes | ≤ 16.6 ms  |
+| Pointer-to-ink latency on the overlay layer            | ≤ 2 frames |
+| Board open (5 MB archive) to first paint               | ≤ 300 ms   |
+| Save encoding on the renderer thread                   | ≤ 50 ms    |
+| Cold start to library grid                             | ≤ 1.5 s    |
+
+The rules that hold them:
+
+- All painting flows through the single rAF scheduler.
+- `SceneLayer` never repaints for an overlay-only change; `GridLayer` repaints only on camera,
+  viewport or theme change.
+- Elements are culled by bbox before drawing.
+- Stroke outlines and bboxes are cached and invalidated on mutation.
+- Store selectors stay narrow; a pointer move touches no React component.
+- Elements live in a `Map` copied shallowly on write, with no proxy layer on the drawing path.
+
+### 9.6 Updates
+
+`update-electron-app` checks GitHub Releases every 6 hours, downloads in the background, and
+installs on restart. It is disabled in development builds.
+
+### 9.7 CI
+
+`.github/workflows/ci.yml` runs on pull requests: `lint → tsc --noEmit → test → build`.
+`release.yml` runs on push to `main` and takes its version from the `type [x.y.z] description`
+PR title.
+
+---
+
+## 10. Phases
+
+Each phase ends with a clean `tsc --noEmit`, a clean lint, passing tests, and a working
+`npm start`. Within a phase, work lands in small commits: one piece at a time, each leaving the
+app in a running state.
+
+### P0 — Canvas, camera, pen, eraser
+
+Three-layer canvas host and rAF scheduler, camera and transforms, adaptive dot grid, tool registry
+with pen, eraser and hand, command history, floating toolbar, frameless title bar, theme tokens.
+One in-memory board.
+
+**Done when** drawing stays fluid on a board seeded with 10 000 strokes, the eraser cuts a stroke
+into two independent strokes, pan and zoom hold their anchor, and every gesture undoes in one step.
+
+### P1 — Selection
+
+Marquee and lasso, selection box with corner handles, move, uniform scale, delete, copy, cut,
+paste, duplicate, select all.
+
+**Done when** a lasso drawn around part of a drawing takes exactly the strokes fully inside it,
+and scaling a multi-stroke selection keeps relative positions and stroke weights coherent.
+
+### P2 — Persistence and library
+
+`ArchiveCodec`, `BoardRepository`, `LibraryIndex`, autosave with the camera and element split,
+atomic writes, thumbnails, library grid with rename, delete and sort, export and import, PNG
+export, `Ctrl+Shift+C`, settings.
+
+**Done when** a board reopens with identical content and camera, a deleted `index.json` rebuilds
+silently, and killing the app mid-stroke leaves a valid archive.
+
+### P3 — Images
+
+`AssetStore` with SHA-256 addressing and orphan collection, the `ppap-asset` protocol, clipboard
+paste and file drop, images in selection, scaling, erasing and export.
+
+**Done when** the same screenshot pasted five times adds one archive entry, and PNG export of a
+board containing images produces a full image rather than a blank canvas.
+
+### P4 — Folders
+
+`folderId` on `BoardMeta`, `folders.json`, folder tiles, dragging a board onto a folder,
+breadcrumb navigation. The on-disk board layout stays flat.
+
+**Done when** boards can be filed and unfiled and the grouping survives an index rebuild.
+
+### P5 — Windows Ink
+
+- `pointerType === 'pen'` drives the tool; `pointerType === 'touch'` pans and pinch-zooms. A
+  **Draw with touch** setting, default off, restores touch drawing.
+- Palm rejection: while a pen has been seen within the last 500 ms, touch pointers never draw.
+- Barrel button (`event.buttons & 2`) acts as eraser while held. The inverted eraser tip
+  (`event.buttons & 32`) erases regardless of the active tool.
+- `tiltX`, `tiltY` and `twist` feed the stroke when they improve it.
+- Press-and-hold right-click and edge flicks are suppressed over the canvas.
+- `pointerrawupdate` and `getPredictedEvents()` are adopted for the live stroke when the measured
+  latency gain is real.
+
+**Done when** a palm resting on a Surface-class screen leaves no marks and flipping the pen erases.

@@ -1,0 +1,4 @@
+.vite
+out
+dist
+package-lock.json
