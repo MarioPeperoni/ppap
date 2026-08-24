@@ -6,6 +6,7 @@ Every release of Pure Pen & Paper, in plain language.
 
 ### Added
 
+- A pencil tool with fixed width.
 - An app icon!
 - A What's new window that opens once after every update and lists what changed.
 - A Show button in Settings that brings the What's new window back any time.

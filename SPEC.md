@@ -87,7 +87,7 @@ src/
       Board.tsx           canvas host, pointer routing, keyboard map
       layers/             GridLayer, SceneLayer, OverlayLayer
       render/             ElementRenderer registry
-      tools/              pen, eraser, marquee, lasso, hand + ToolRegistry
+      tools/              pen, pencil, eraser, marquee, lasso, hand + ToolRegistry
     components/           Toolbar, TitleBar, ToolPopover
 ```
 
@@ -175,6 +175,7 @@ board  = screen / camera.zoom + camera.xy
 ```ts
 type ColorToken = 'ink' | 'blue' | 'red' | 'green';
 type SizeToken = 's' | 'm' | 'l';
+type NibToken = 'pen' | 'pencil';
 
 interface BoardMeta {
   format: 'ppap';
@@ -209,6 +210,7 @@ interface StrokeElement extends ElementBase {
   points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
   color: ColorToken;
   size: SizeToken; // s=2, m=4, l=8 board units
+  nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
 
 interface ImageElement extends ElementBase {
@@ -254,17 +256,19 @@ pan and restore it on release. All pointer types drive the active tool identical
 
 The canvas host sets `touch-action: none` and calls `setPointerCapture` on pointerdown.
 
-### 6.1 Pen — `P` / `1`
+### 6.1 Pen and pencil — pen `P` / `1`, pencil `N` / `2`
 
-- `perfect-freehand` with `{ size, thinning: 0.5, smoothing: 0.5, streamline: 0.5,
-simulatePressure }`, where `simulatePressure` is true for devices that report no real pressure.
+- One `StrokeTool` drives both; the nib it carries is stored on every stroke it commits.
+- `perfect-freehand` with `{ size, thinning, smoothing: 0.5, streamline: 0.5, simulatePressure }`,
+  where `simulatePressure` is true for devices that report no real pressure. `thinning` is `0.5`
+  for the pen and `0` for the pencil, so the pencil holds one width from end to end.
 - `event.getCoalescedEvents()` supplies the full input sample rate; every sample is appended.
 - The live stroke draws on `OverlayLayer`; `pointerup` commits it as one command and clears the
   overlay.
-- Four colors × three widths in a popover above the pen icon. `C` and `Shift+C` cycle color,
-  `[` and `]` step width. Choices persist per tool in settings.
+- Four colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
+  cycle color, `[` and `]` step width. Choices persist per tool in settings.
 
-### 6.2 Eraser — `E` / `2`
+### 6.2 Eraser — `E` / `3`
 
 Splits strokes. For each pointer segment, with eraser radius `r`:
 
@@ -278,7 +282,7 @@ A whole `pointerdown … pointerup` gesture is one command holding `{ removed, a
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
 a circle outline on the overlay. `[` and `]` step its radius.
 
-### 6.3 Selection — marquee `V` / `3`, lasso `L` / `4`
+### 6.3 Selection — marquee `V` / `4`, lasso `L` / `5`
 
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
 - **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
@@ -290,7 +294,7 @@ A non-empty selection shows a bounding box with four corner handles:
 - `Delete` and `Backspace` delete. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all. `Escape` clears.
 
-### 6.4 Hand — `H` / `5`
+### 6.4 Hand — `H` / `6`
 
 Drags the camera.
 
@@ -305,23 +309,23 @@ Drags the camera.
 
 ### 6.6 Keyboard reference
 
-| Keys                                                  | Action                                 |
-| ----------------------------------------------------- | -------------------------------------- |
-| `P` `1` / `E` `2` / `V` `3` / `L` `4` / `H` `5`       | Pen / eraser / marquee / lasso / hand  |
-| `Space` held, middle-drag                             | Temporary pan                          |
-| `C`, `Shift+C`                                        | Cycle color                            |
-| `[`, `]`                                              | Step pen or eraser width               |
-| `Ctrl`+wheel, pinch                                   | Zoom at cursor                         |
-| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit            |
-| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                             |
-| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                   |
-| `Ctrl+Shift+C`                                        | Copy selection to the clipboard as PNG |
-| `Ctrl+G`                                              | Toggle grid                            |
-| `Ctrl+S`                                              | Flush pending save                     |
-| `Ctrl+N`                                              | New board                              |
-| `F2`                                                  | Rename board                           |
-| `Alt+←`                                               | Back to the library                    |
-| `Escape`                                              | Cancel gesture, clear selection        |
+| Keys                                                  | Action                                         |
+| ----------------------------------------------------- | ---------------------------------------------- |
+| `P` `1` `N` `2` `E` `3` `V` `4` `L` `5` `H` `6`       | Pen / pencil / eraser / marquee / lasso / hand |
+| `Space` held, middle-drag                             | Temporary pan                                  |
+| `C`, `Shift+C`                                        | Cycle color                                    |
+| `[`, `]`                                              | Step stroke or eraser width                    |
+| `Ctrl`+wheel, pinch                                   | Zoom at cursor                                 |
+| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit                    |
+| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                                     |
+| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                           |
+| `Ctrl+Shift+C`                                        | Copy selection to the clipboard as PNG         |
+| `Ctrl+G`                                              | Toggle grid                                    |
+| `Ctrl+S`                                              | Flush pending save                             |
+| `Ctrl+N`                                              | New board                                      |
+| `F2`                                                  | Rename board                                   |
+| `Alt+←`                                               | Back to the library                            |
+| `Escape`                                              | Cancel gesture, clear selection                |
 
 ---
 
@@ -447,7 +451,7 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors and widths for the pen, radius for the eraser. The popover closes on `Escape`, outside
+colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`, outside
 click, and selection. The zoom percentage sits in the bottom-right corner; clicking it sets 100 %.
 
 ### 8.3 Library grid
