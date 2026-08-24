@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { fileOpener } from '@/main/app/file-opener';
+import { registerAssetScheme, serveAssets } from '@/main/assets/asset-protocol';
 import { registerIpc } from '@/main/ipc/ipc-registry';
 import { saveQueue } from '@/main/library/save-queue';
 import { settingsService } from '@/main/settings/settings.service';
@@ -32,6 +33,7 @@ function flushBeforeExit(event: Electron.Event): void {
 }
 
 async function start(): Promise<void> {
+  serveAssets();
   registerIpc();
   themeService.adopt((await settingsService.get()).theme);
 
@@ -49,6 +51,7 @@ export function startApp(): void {
     return;
   }
 
+  registerAssetScheme();
   fileOpener.watch();
 
   app.on('second-instance', (_event, argv) => {
