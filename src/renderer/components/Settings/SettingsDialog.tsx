@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { SORT_ORDERS } from '@/constants/settings.constants';
 import { THEMES } from '@/constants/theme.constants';
+import { BrandMark } from '@/renderer/components/Brand/BrandMark';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
 import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
 import { useLibraryStore } from '@/renderer/stores/library.store';
@@ -111,7 +112,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
             )}
           </div>
 
-          <p className="mt-6 text-[11px] text-muted">ppap {version}</p>
+          <footer className="mt-6 flex flex-col items-center gap-2 border-t border-line pt-5">
+            <BrandMark size={36} />
+            <span className="text-[11px] text-muted">
+              ppap <span className="font-mono">{version}</span>
+            </span>
+          </footer>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
