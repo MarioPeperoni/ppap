@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { TOOL_IDS } from '@/renderer/board/tools/tool-registry';
+import { TOOL_IDS } from '@/constants/tool.constants';
 import { ToolButton } from '@/renderer/components/Toolbar/ToolButton';
 
 export function Toolbar(): ReactElement {

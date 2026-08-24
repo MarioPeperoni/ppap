@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '@/constants/ipc.constants';
 import { subscribe } from '@/preload/ipc/ipc-subscription';
 import type { WindowApi } from '@/types';
-import { parseBoolean } from '@/validation/ipc-payload.validator';
+import { expectBoolean } from '@/validation/primitive.validator';
 
 export const windowApi: WindowApi = {
   minimize: () => {
@@ -15,5 +15,9 @@ export const windowApi: WindowApi = {
     ipcRenderer.send(IPC_CHANNELS.windowClose);
   },
   onMaximizeChange: (callback) =>
-    subscribe(IPC_CHANNELS.windowMaximizeChanged, parseBoolean, callback),
+    subscribe(
+      IPC_CHANNELS.windowMaximizeChanged,
+      (value) => expectBoolean(value, 'Maximized state'),
+      callback,
+    ),
 };

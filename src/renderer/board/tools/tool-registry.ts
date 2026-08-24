@@ -1,4 +1,4 @@
-import { SELECTION_TOOLS } from '@/constants/tool.constants';
+import { SELECTION_TOOLS, TOOL_IDS } from '@/constants/tool.constants';
 import { EraserTool } from '@/renderer/board/tools/eraser.tool';
 import { HandTool } from '@/renderer/board/tools/hand.tool';
 import { LassoTool } from '@/renderer/board/tools/lasso.tool';
@@ -13,8 +13,6 @@ const TOOLS: Record<ToolId, Tool> = {
   lasso: new LassoTool(),
   hand: new HandTool(),
 };
-
-export const TOOL_IDS: readonly ToolId[] = ['pen', 'eraser', 'marquee', 'lasso', 'hand'];
 
 export function getTool(id: ToolId): Tool {
   return TOOLS[id];
