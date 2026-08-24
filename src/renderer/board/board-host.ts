@@ -62,15 +62,15 @@ export class BoardHost {
     this.camera = new CameraController(this.view);
     this.gestures = new GestureRouter(canvases.host, this.view, context);
     this.wheel = new WheelRouter(canvases.host, this.camera);
-    this.keyboard = new KeyboardRouter(
-      this.camera,
-      (active) => {
+    this.keyboard = new KeyboardRouter(this.camera, {
+      setPanOverride: (active) => {
         this.gestures.setPanOverride(active);
       },
-      () => {
+      cancelGesture: () => {
         this.gestures.cancelGesture();
       },
-    );
+      pointerBoard: () => this.gestures.pointerBoard(),
+    });
 
     this.layerSync = new LayerSync(
       this.view,

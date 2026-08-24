@@ -1,18 +1,27 @@
 import type { CameraController } from '@/renderer/board/camera-controller';
 import { isTypingTarget } from '@/renderer/board/input/typing-target';
+import {
+  clearSelection,
+  copySelection,
+  cutSelection,
+  deleteSelection,
+  duplicateSelection,
+  pasteClipboard,
+  selectAll,
+} from '@/renderer/board/selection/selection-actions';
 import { findToolByKey } from '@/renderer/board/tools/tool-registry';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
+import type { BoardInputHandlers } from '@/types';
 
 export class KeyboardRouter {
   private spaceHeld = false;
 
   constructor(
     private readonly camera: CameraController,
-    private readonly onPanOverride: (active: boolean) => void,
-    private readonly onCancelGesture: () => void,
+    private readonly handlers: BoardInputHandlers,
   ) {
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('keyup', this.onKeyUp);
@@ -38,21 +47,27 @@ export class KeyboardRouter {
     if (event.key !== ' ') return;
 
     this.spaceHeld = false;
-    this.onPanOverride(false);
+    this.handlers.setPanOverride(false);
   };
 
   private handleKey(event: KeyboardEvent): void {
     if (event.key === ' ') {
       if (this.spaceHeld) return;
       this.spaceHeld = true;
-      this.onPanOverride(true);
+      this.handlers.setPanOverride(true);
       event.preventDefault();
       return;
     }
 
     if (event.key === 'Escape') {
-      this.onCancelGesture();
+      this.handlers.cancelGesture();
+      clearSelection();
       useUiStore.getState().setPopover(null);
+      return;
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      deleteSelection();
       return;
     }
 
@@ -97,6 +112,22 @@ export class KeyboardRouter {
         break;
       case 'y':
         history.redo();
+        break;
+      case 'a':
+        selectAll();
+        break;
+      case 'c':
+        if (event.shiftKey) return;
+        copySelection();
+        break;
+      case 'x':
+        cutSelection();
+        break;
+      case 'v':
+        pasteClipboard(this.handlers.pointerBoard() ?? this.camera.boardCenter());
+        break;
+      case 'd':
+        duplicateSelection();
         break;
       case 'g':
         useBoardStore.getState().toggleGrid();

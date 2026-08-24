@@ -1,10 +1,9 @@
 import { STEP_ZOOM_FACTOR } from '@/constants/camera.constants';
-import { panByScreen } from '@/core/camera/camera-transform';
+import { panByScreen, toBoard } from '@/core/camera/camera-transform';
 import { zoomBy, zoomTo, zoomToFit } from '@/core/camera/camera-zoom';
-import { elementBounds } from '@/core/element/element-bounds';
-import { unionBounds } from '@/core/geometry/bounds';
+import { boundsOfElements } from '@/core/element/element-bounds';
 import { useBoardStore } from '@/renderer/stores/board.store';
-import type { Bounds, Point, ViewState } from '@/types';
+import type { Point, ViewState } from '@/types';
 
 export class CameraController {
   constructor(private readonly view: ViewState) {}
@@ -30,7 +29,7 @@ export class CameraController {
 
   fitContent(): void {
     const board = useBoardStore.getState();
-    const bounds = this.contentBounds();
+    const bounds = boundsOfElements(board.elements.values());
 
     if (bounds === null) {
       this.resetZoom();
@@ -40,15 +39,8 @@ export class CameraController {
     board.setCamera(zoomToFit(bounds, this.view));
   }
 
-  private contentBounds(): Bounds | null {
-    let bounds: Bounds | null = null;
-
-    for (const element of useBoardStore.getState().elements.values()) {
-      const box = elementBounds(element);
-      bounds = bounds === null ? box : unionBounds(bounds, box);
-    }
-
-    return bounds;
+  boardCenter(): Point {
+    return toBoard(this.view.camera, this.center());
   }
 
   private center(): Point {

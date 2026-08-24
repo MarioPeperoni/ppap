@@ -7,6 +7,7 @@ export type * from './erase.types';
 export type * from './geometry.types';
 export type * from './grid.types';
 export type * from './history.types';
+export type * from './input.types';
 export type * from './ipc.types';
 export type * from './platform.types';
 export type * from './scene.types';
