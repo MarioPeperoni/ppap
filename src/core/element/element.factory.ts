@@ -1,17 +1,17 @@
 import { DEFAULT_NIB, DEFAULT_STROKE_SCALE } from '@/constants/stroke.constants';
 import type {
-  ColorToken,
   Element,
   ImageElement,
   NibToken,
   SizeToken,
+  StrokeColor,
   StrokeElement,
   StrokePoint,
 } from '@/types';
 
 export function createStroke(
   points: StrokePoint[],
-  color: ColorToken,
+  color: StrokeColor,
   size: SizeToken,
   nib: NibToken = DEFAULT_NIB,
   scale: number = DEFAULT_STROKE_SCALE,

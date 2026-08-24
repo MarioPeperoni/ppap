@@ -1,5 +1,6 @@
 import { DEFAULT_STROKE_SCALE } from '@/constants/stroke.constants';
 import { DEFAULT_COLOR, DEFAULT_SIZE } from '@/constants/tool.constants';
+import { strokeColor } from '@/core/color/stroke-color';
 import { createStroke } from '@/core/element/element.factory';
 import { appendPatch } from '@/core/scene/scene-patch';
 import { outlineForPoints } from '@/core/stroke/stroke-outline';
@@ -10,11 +11,11 @@ import { withBoardTransform } from '@/renderer/board/view-transform';
 import { commitPatch } from '@/renderer/commands/scene.command';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import type {
-  ColorToken,
   NibToken,
   Palette,
   PointerSample,
   SizeToken,
+  StrokeColor,
   StrokePoint,
   Tool,
   ToolContext,
@@ -26,7 +27,7 @@ export class StrokeTool implements Tool {
   readonly cursor = 'crosshair';
 
   private points: StrokePoint[] | null = null;
-  private color: ColorToken = DEFAULT_COLOR;
+  private color: StrokeColor = DEFAULT_COLOR;
   private size: SizeToken = DEFAULT_SIZE;
 
   constructor(
@@ -75,7 +76,7 @@ export class StrokeTool implements Tool {
     if (drawing === null) return;
 
     withBoardTransform(ctx, view, () => {
-      ctx.fillStyle = colors[this.color];
+      ctx.fillStyle = strokeColor(this.color, colors);
       ctx.fill(
         outlinePath(
           outlineForPoints(

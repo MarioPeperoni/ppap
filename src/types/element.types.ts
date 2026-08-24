@@ -1,6 +1,5 @@
 import type { ImageMime } from './asset.types';
-
-export type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+import type { StrokeColor } from './color.types';
 
 export type SizeToken = 's' | 'm' | 'l';
 
@@ -16,7 +15,7 @@ export interface ElementBase {
 export interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: StrokePoint[];
-  color: ColorToken;
+  color: StrokeColor;
   size: SizeToken;
   nib: NibToken;
   scale: number;

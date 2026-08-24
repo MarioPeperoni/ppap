@@ -1,8 +1,8 @@
-import type { ColorToken } from './element.types';
+import type { ColorToken, HexColor } from './color.types';
 
 export type Theme = 'system' | 'light' | 'dark';
 
-export type Palette = Record<ColorToken, string> & {
-  canvas: string;
-  dots: string;
+export type Palette = Record<ColorToken, HexColor> & {
+  canvas: HexColor;
+  dots: HexColor;
 };

@@ -1,4 +1,6 @@
-import type { Palette } from '@/types';
+import { LIGHT_PALETTE } from '@/constants/palette.constants';
+import { isHexColor } from '@/core/color/srgb';
+import type { HexColor, Palette } from '@/types';
 
 class CssPalette {
   private cached: Palette | null = null;
@@ -8,12 +10,12 @@ class CssPalette {
 
     const styles = getComputedStyle(document.documentElement);
     this.cached = {
-      ink: this.token(styles, '--color-ink'),
-      blue: this.token(styles, '--color-blue'),
-      red: this.token(styles, '--color-red'),
-      green: this.token(styles, '--color-green'),
-      canvas: this.token(styles, '--color-canvas'),
-      dots: this.token(styles, '--color-dots'),
+      ink: this.token(styles, '--color-ink', LIGHT_PALETTE.ink),
+      blue: this.token(styles, '--color-blue', LIGHT_PALETTE.blue),
+      red: this.token(styles, '--color-red', LIGHT_PALETTE.red),
+      green: this.token(styles, '--color-green', LIGHT_PALETTE.green),
+      canvas: this.token(styles, '--color-canvas', LIGHT_PALETTE.canvas),
+      dots: this.token(styles, '--color-dots', LIGHT_PALETTE.dots),
     };
 
     return this.cached;
@@ -23,8 +25,10 @@ class CssPalette {
     this.cached = null;
   }
 
-  private token(styles: CSSStyleDeclaration, name: string): string {
-    return styles.getPropertyValue(name).trim();
+  private token(styles: CSSStyleDeclaration, name: string, fallback: HexColor): HexColor {
+    const value = styles.getPropertyValue(name).trim();
+
+    return isHexColor(value) ? value : fallback;
   }
 }
 

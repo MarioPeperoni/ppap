@@ -85,6 +85,33 @@ describe('board file validation', () => {
     expect(parsed.content.elements[0]).toEqual(stroke);
   });
 
+  it('carries a custom colour on a stroke', () => {
+    const source = clone();
+    const [stroke] = source.content.elements;
+    if (stroke === undefined || stroke.type !== 'stroke') throw new Error('fixture');
+
+    const custom = { ...stroke, color: '#7c3aed' };
+    const parsed = parseBoardFile({
+      meta: source.meta,
+      content: { ...source.content, elements: [custom] },
+    });
+
+    expect(parsed.content.elements[0]).toEqual(custom);
+  });
+
+  it('rejects a colour that is neither a token nor a hex', () => {
+    const broken = clone();
+    const [stroke] = broken.content.elements;
+    if (stroke === undefined || stroke.type !== 'stroke') throw new Error('fixture');
+
+    expect(() =>
+      parseBoardFile({
+        meta: broken.meta,
+        content: { ...broken.content, elements: [{ ...stroke, color: 'rgb(0,0,0)' }] },
+      }),
+    ).toThrow('Stroke color');
+  });
+
   it('rejects a nib it does not know', () => {
     const broken = clone();
     const [stroke] = broken.content.elements;
