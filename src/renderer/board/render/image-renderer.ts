@@ -1,6 +1,5 @@
+import { imageCache } from '@/renderer/assets/image-cache';
 import type { ImageElement } from '@/types';
-
-export const imageCache = new Map<string, CanvasImageSource>();
 
 export function drawImage(ctx: CanvasRenderingContext2D, element: ImageElement): void {
   const source = imageCache.get(element.assetId);

@@ -1,4 +1,5 @@
 import { isAppendOnly } from '@/core/scene/scene-patch';
+import { imageCache } from '@/renderer/assets/image-cache';
 import type { GestureRouter } from '@/renderer/board/input/gesture-router';
 import type { GridLayer } from '@/renderer/board/layers/grid-layer';
 import type { OverlayLayer } from '@/renderer/board/layers/overlay-layer';
@@ -27,6 +28,7 @@ export class LayerSync {
       watchStore(useBoardStore, (state) => state.selection, this.onSelectionChange),
       watchStore(useThemeStore, (state) => state.theme, this.onThemeChange),
       watchStore(useToolStore, (state) => state.tool, this.onToolChange),
+      imageCache.subscribe(this.onImageLoaded),
     );
   }
 
@@ -65,6 +67,11 @@ export class LayerSync {
 
   private readonly onSelectionChange = (): void => {
     this.scheduler.markDirty('overlay');
+  };
+
+  private readonly onImageLoaded = (): void => {
+    this.layers.scene.invalidate();
+    this.scheduler.markDirty('scene');
   };
 
   private readonly onToolChange = (): void => {

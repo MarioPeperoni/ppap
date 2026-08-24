@@ -1,5 +1,6 @@
 import { THUMBNAIL_HEIGHT, THUMBNAIL_PADDING, THUMBNAIL_WIDTH } from '@/constants/export.constants';
 import { boundsOfElements } from '@/core/element/element-bounds';
+import { imageCache } from '@/renderer/assets/image-cache';
 import { canvasToPng, renderElements } from '@/renderer/export/scene-image';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import type { Bounds } from '@/types';
@@ -19,9 +20,11 @@ function fitScale(bounds: Bounds): number {
   );
 }
 
-export function renderThumbnail(): Promise<Uint8Array> {
+export async function renderThumbnail(): Promise<Uint8Array> {
   const elements = [...useBoardStore.getState().elements.values()];
   const bounds = boundsOfElements(elements) ?? EMPTY_BOUNDS;
+
+  await imageCache.ready(elements);
 
   return canvasToPng(renderElements(elements, bounds, SIZE, fitScale(bounds)));
 }

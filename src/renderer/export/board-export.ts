@@ -1,6 +1,7 @@
 import { EXPORT_MAX_PIXELS, EXPORT_PADDING, EXPORT_SCALE } from '@/constants/export.constants';
 import { boundsOfElements } from '@/core/element/element-bounds';
 import { expandBounds } from '@/core/geometry/bounds';
+import { imageCache } from '@/renderer/assets/image-cache';
 import { selectedElements } from '@/renderer/board/selection/selection-query';
 import { canvasToPng, renderElements } from '@/renderer/export/scene-image';
 import { useBoardStore } from '@/renderer/stores/board.store';
@@ -12,6 +13,8 @@ async function renderRegion(
 ): Promise<Uint8Array | null> {
   const content = boundsOfElements(elements);
   if (content === null) return null;
+
+  await imageCache.ready(elements);
 
   const bounds = expandBounds(content, padding);
   const width = bounds.maxX - bounds.minX;

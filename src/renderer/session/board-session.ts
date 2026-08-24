@@ -1,3 +1,5 @@
+import { imageCache } from '@/renderer/assets/image-cache';
+import { clearAssets } from '@/renderer/assets/pending-assets';
 import { autosave } from '@/renderer/persistence/autosave';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
@@ -8,9 +10,12 @@ async function enter(id: string): Promise<void> {
   const file = await window.ppap.library.load(id);
 
   autosave.stop();
+  clearAssets();
+  imageCache.open(id);
   useBoardStore.getState().open(file);
   useHistoryStore.getState().reset();
   useUiStore.getState().showBoard();
+  imageCache.prime(file.content.elements);
   autosave.start(id);
 }
 
@@ -29,6 +34,8 @@ export async function leaveBoard(): Promise<void> {
   await autosave.close();
   useUiStore.getState().showLibrary();
   useBoardStore.getState().close();
+  imageCache.close();
+  clearAssets();
   await useLibraryStore.getState().refresh();
 }
 
