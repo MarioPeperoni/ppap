@@ -20,6 +20,7 @@ export const IPC_CHANNELS = {
   settingsGet: 'settings:get',
   settingsPatch: 'settings:patch',
   clipboardWriteImage: 'clipboard:write-image',
+  clipboardReadImage: 'clipboard:read-image',
   appVersion: 'app:version',
 } as const;
 
