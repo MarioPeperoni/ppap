@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import { DEFAULT_CAMERA } from '@/constants/camera.constants';
-import { defaultBoardName } from '@/core/board/board-name';
 import { applyPatch } from '@/core/scene/scene-patch';
 import { retainExisting } from '@/core/scene/scene-selection';
-import type { CameraState, Element, Scene, ScenePatch } from '@/types';
+import type { BoardFile, CameraState, Element, Scene, ScenePatch } from '@/types';
 
-interface BoardStore {
+interface BoardState {
   id: string;
   name: string;
   elements: Scene;
@@ -13,6 +12,11 @@ interface BoardStore {
   selection: ReadonlySet<string>;
   gridVisible: boolean;
   lastPatch: ScenePatch | null;
+}
+
+interface BoardStore extends BoardState {
+  open: (file: BoardFile) => void;
+  close: () => void;
   applyScenePatch: (patch: ScenePatch) => ScenePatch;
   setCamera: (camera: CameraState) => void;
   setName: (name: string) => void;
@@ -20,14 +24,35 @@ interface BoardStore {
   setSelection: (ids: Iterable<string>) => void;
 }
 
+function emptyBoard(): BoardState {
+  return {
+    id: '',
+    name: '',
+    elements: new Map<string, Element>(),
+    camera: DEFAULT_CAMERA,
+    selection: new Set<string>(),
+    gridVisible: true,
+    lastPatch: null,
+  };
+}
+
 export const useBoardStore = create<BoardStore>()((set, get) => ({
-  id: crypto.randomUUID(),
-  name: defaultBoardName(new Date()),
-  elements: new Map<string, Element>(),
-  camera: DEFAULT_CAMERA,
-  selection: new Set<string>(),
-  gridVisible: true,
-  lastPatch: null,
+  ...emptyBoard(),
+
+  open: (file) => {
+    set({
+      ...emptyBoard(),
+      id: file.meta.id,
+      name: file.meta.name,
+      elements: new Map(file.content.elements.map((element) => [element.id, element])),
+      camera: file.content.camera,
+      gridVisible: file.content.gridVisible,
+    });
+  },
+
+  close: () => {
+    set(emptyBoard());
+  },
 
   applyScenePatch: (patch) => {
     const { scene, inverse } = applyPatch(get().elements, patch);

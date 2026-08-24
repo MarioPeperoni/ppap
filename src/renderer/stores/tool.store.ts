@@ -8,7 +8,7 @@ import {
   TOOL_COLORS,
   TOOL_SIZES,
 } from '@/constants/tool.constants';
-import type { ColorToken, SizeToken, ToolId } from '@/types';
+import type { ColorToken, Settings, SizeToken, ToolId } from '@/types';
 
 function stepped<T>(values: readonly T[], current: T, direction: number, fallback: T): T {
   const index = values.indexOf(current);
@@ -29,6 +29,7 @@ interface ToolStore {
   color: ColorToken;
   penSize: SizeToken;
   eraserRadius: number;
+  adopt: (settings: Settings) => void;
   setTool: (tool: ToolId) => void;
   setColor: (color: ColorToken) => void;
   cycleColor: (direction: number) => void;
@@ -42,6 +43,10 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
   color: DEFAULT_COLOR,
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
+
+  adopt: ({ tool, color, penSize, eraserRadius }) => {
+    set({ tool, color, penSize, eraserRadius });
+  },
 
   setTool: (tool) => {
     set({ tool });
