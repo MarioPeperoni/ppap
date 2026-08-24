@@ -11,6 +11,7 @@ Every release of Pure Pen & Paper, in plain language.
 - An app icon!
 - A What's new window that opens once after every update and lists what changed.
 - A Show button in Settings that brings the What's new window back any time.
+- Your own colours beside the four built-in ones, picked in the pen popover.
 
 ### Changed
 

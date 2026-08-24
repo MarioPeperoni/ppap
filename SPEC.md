@@ -174,6 +174,8 @@ board  = screen / camera.zoom + camera.xy
 
 ```ts
 type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+type HexColor = `#${string}`; // lowercase #rrggbb, a colour the user picked
+type StrokeColor = ColorToken | HexColor;
 type SizeToken = 's' | 'm' | 'l';
 type NibToken = 'pen' | 'pencil';
 
@@ -208,7 +210,7 @@ interface ElementBase {
 interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
-  color: ColorToken;
+  color: StrokeColor; // a token follows the theme, a hex is the ink the user picked
   size: SizeToken; // s=4, m=8, l=16 board units
   nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
@@ -269,6 +271,13 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
   overlay.
 - Four colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
   cycle color, `[` and `]` step width. Choices persist per tool in settings.
+- Up to `MAX_CUSTOM_COLORS` own colors sit in a second row under the four, ending in a plus that
+  opens an HSV panel with a hex field and previews the colour in its own swatch. They are stored in
+  settings, while a stroke keeps the hex it was drawn with, so removing a swatch leaves the ink
+  alone and a board carries its colors wherever it travels.
+- A custom color is drawn as picked unless it would sink into the canvas under it. Below
+  `MIN_INK_CONTRAST` in OKLCh lightness it is pushed away from the canvas, hue intact, which is
+  what keeps it readable in both themes and in a PNG export.
 
 ### 6.2 Eraser — `E` / `3`
 
@@ -358,7 +367,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen color and width, sort order
+  settings.json        theme, active tool, pen color and width, custom colors, sort order
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
@@ -453,7 +462,7 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`,
+colors, custom colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`,
 outside click, and selection. The zoom percentage sits in the bottom-right corner between a `−`
 and a `+` button; clicking it sets 100 %, and the step buttons grey out at the zoom limits.
 
