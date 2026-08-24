@@ -1,7 +1,7 @@
 import { DEFAULT_SETTINGS, SORT_ORDERS } from '@/constants/settings.constants';
 import { ERASER_RADII, TOOL_COLORS, TOOL_IDS, TOOL_SIZES } from '@/constants/tool.constants';
 import type { Settings, SettingsPatch } from '@/types';
-import { expectOneOf, expectRecord } from '@/validation/primitive.validator';
+import { expectOneOf, expectRecord, expectString } from '@/validation/primitive.validator';
 import { parseTheme } from '@/validation/theme.validator';
 
 export function parseSettingsPatch(value: unknown): SettingsPatch {
@@ -19,6 +19,9 @@ export function parseSettingsPatch(value: unknown): SettingsPatch {
   }
   if (source.sortOrder !== undefined) {
     patch.sortOrder = expectOneOf(source.sortOrder, SORT_ORDERS, 'Sort order');
+  }
+  if (source.lastSeenVersion !== undefined) {
+    patch.lastSeenVersion = expectString(source.lastSeenVersion, 'Last seen version');
   }
 
   return patch;

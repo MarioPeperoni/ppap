@@ -15,4 +15,5 @@ export const DEFAULT_SETTINGS: Settings = {
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
   sortOrder: 'modified',
+  lastSeenVersion: '',
 };

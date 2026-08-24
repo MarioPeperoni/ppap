@@ -10,6 +10,7 @@ export interface Settings {
   penSize: SizeToken;
   eraserRadius: number;
   sortOrder: SortOrder;
+  lastSeenVersion: string;
 }
 
 export type SettingsPatch = Partial<Settings>;

@@ -11,6 +11,11 @@ describe('settings validation', () => {
     expect(parseSettingsPatch({ sortOrder: 'name' })).toEqual({ sortOrder: 'name' });
   });
 
+  it('keeps the last seen version as written', () => {
+    expect(parseSettingsPatch({ lastSeenVersion: '1.2.0' })).toEqual({ lastSeenVersion: '1.2.0' });
+    expect(() => parseSettings({ lastSeenVersion: 3 })).toThrow('Last seen version');
+  });
+
   it('rejects a value outside its set', () => {
     expect(() => parseSettings({ penSize: 'xl' })).toThrow('Pen size');
     expect(() => parseSettings({ eraserRadius: 999 })).toThrow('Eraser radius');
