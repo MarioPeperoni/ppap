@@ -1,0 +1,11 @@
+export const HANDLE_SIZE_PX = 9;
+export const HANDLE_HIT_PX = 11;
+export const SELECTION_PADDING_PX = 6;
+export const SELECTION_LINE_PX = 1.5;
+export const SELECTION_FILL_ALPHA = 0.08;
+export const REGION_DASH_PX = [5, 4];
+export const LASSO_MIN_STEP_PX = 3;
+export const MIN_SELECTION_SCALE = 0.05;
+export const DUPLICATE_OFFSET = 24;
+export const PICK_SLOP_PX = 6;
+export const CLICK_SLOP_PX = 4;

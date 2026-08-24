@@ -1,7 +1,7 @@
 import { toBoard } from '@/core/camera/camera-transform';
 import { getTool } from '@/renderer/board/tools/tool-registry';
 import { useToolStore } from '@/renderer/stores/tool.store';
-import type { PointerSample, Tool, ToolContext, ViewState } from '@/types';
+import type { Point, PointerSample, Tool, ToolContext, ViewState } from '@/types';
 
 const MIDDLE_BUTTON = 1;
 const FALLBACK_PRESSURE = 0.5;
@@ -11,6 +11,8 @@ export class GestureRouter {
   private gestureTool: Tool | null = null;
   private activePointer: number | null = null;
   private panOverride = false;
+  private toolCursor: string | null = null;
+  private lastBoard: Point | null = null;
 
   constructor(
     private readonly host: HTMLElement,
@@ -46,6 +48,15 @@ export class GestureRouter {
     this.applyCursor();
   }
 
+  setToolCursor(cursor: string | null): void {
+    this.toolCursor = cursor;
+    this.applyCursor();
+  }
+
+  pointerBoard(): Point | null {
+    return this.lastBoard;
+  }
+
   measure(): void {
     this.rect = this.host.getBoundingClientRect();
   }
@@ -56,16 +67,20 @@ export class GestureRouter {
       return;
     }
 
-    this.host.style.cursor = this.panOverride
-      ? 'grab'
-      : getTool(useToolStore.getState().tool).cursor;
+    if (this.panOverride) {
+      this.host.style.cursor = 'grab';
+      return;
+    }
+
+    this.host.style.cursor = this.toolCursor ?? getTool(useToolStore.getState().tool).cursor;
   }
 
   private sampleOf(event: PointerEvent): PointerSample {
     const screen = { x: event.clientX - this.rect.left, y: event.clientY - this.rect.top };
+    this.lastBoard = toBoard(this.view.camera, screen);
 
     return {
-      board: toBoard(this.view.camera, screen),
+      board: this.lastBoard,
       screen,
       pressure: event.pressure === 0 ? FALLBACK_PRESSURE : event.pressure,
       pointerType: event.pointerType,
@@ -125,6 +140,7 @@ export class GestureRouter {
   private readonly onPointerLeave = (): void => {
     if (this.activePointer !== null) return;
 
+    this.lastBoard = null;
     this.activeTool().onCancel(this.context);
   };
 

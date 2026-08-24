@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { Eraser, Hand, PenLine, type LucideIcon } from 'lucide-react';
+import { Eraser, Hand, Lasso, PenLine, SquareDashed, type LucideIcon } from 'lucide-react';
 import { getTool } from '@/renderer/board/tools/tool-registry';
 import { hasOptions, ToolOptions } from '@/renderer/components/Toolbar/ToolOptions';
 import { useToolStore } from '@/renderer/stores/tool.store';
@@ -11,6 +11,8 @@ import type { ToolId } from '@/types';
 const ICONS: Record<ToolId, LucideIcon> = {
   pen: PenLine,
   eraser: Eraser,
+  marquee: SquareDashed,
+  lasso: Lasso,
   hand: Hand,
 };
 

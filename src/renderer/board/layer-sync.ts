@@ -24,6 +24,7 @@ export class LayerSync {
       watchStore(useBoardStore, (state) => state.camera, this.onCameraChange),
       watchStore(useBoardStore, (state) => state.elements, this.onElementsChange),
       watchStore(useBoardStore, (state) => state.gridVisible, this.onGridChange),
+      watchStore(useBoardStore, (state) => state.selection, this.onSelectionChange),
       watchStore(useThemeStore, (state) => state.theme, this.onThemeChange),
       watchStore(useToolStore, (state) => state.tool, this.onToolChange),
     );
@@ -49,6 +50,7 @@ export class LayerSync {
     }
 
     this.scheduler.markDirty('scene');
+    this.scheduler.markDirty('overlay');
   };
 
   private readonly onGridChange = (): void => {
@@ -61,8 +63,12 @@ export class LayerSync {
     this.scheduler.markAllDirty();
   };
 
+  private readonly onSelectionChange = (): void => {
+    this.scheduler.markDirty('overlay');
+  };
+
   private readonly onToolChange = (): void => {
-    this.gestures.applyCursor();
+    this.gestures.setToolCursor(null);
     this.scheduler.markDirty('overlay');
   };
 }

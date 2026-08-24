@@ -8,7 +8,7 @@ interface ToolOptionsProps {
 }
 
 export function hasOptions(tool: ToolId): boolean {
-  return tool !== 'hand';
+  return tool === 'pen' || tool === 'eraser';
 }
 
 export function ToolOptions({ tool }: ToolOptionsProps): ReactElement | null {
@@ -17,6 +17,8 @@ export function ToolOptions({ tool }: ToolOptionsProps): ReactElement | null {
       return <PenOptions />;
     case 'eraser':
       return <EraserOptions />;
+    case 'marquee':
+    case 'lasso':
     case 'hand':
       return null;
   }
