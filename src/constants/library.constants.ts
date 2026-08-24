@@ -1,4 +1,4 @@
-export const LIBRARY_DIRECTORY = 'ppap';
+export const LIBRARY_DIRECTORY = 'library';
 export const BOARDS_DIRECTORY = 'boards';
 export const INDEX_FILE = 'index.json';
 export const SETTINGS_FILE = 'settings.json';
