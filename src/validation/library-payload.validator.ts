@@ -1,5 +1,6 @@
 import { MAX_IMAGE_BYTES, MAX_THUMBNAIL_BYTES } from '@/constants/library.constants';
 import type { BoardRequest, ImageRequest, RenameRequest, SaveRequest } from '@/types';
+import { parseNewAssets } from '@/validation/asset.validator';
 import { parseBoardContent } from '@/validation/board-file.validator';
 import { parseBoardId, parseBoardName } from '@/validation/board-id.validator';
 import { expectBytes, expectRecord } from '@/validation/primitive.validator';
@@ -20,6 +21,7 @@ export function parseSaveRequest(value: unknown): SaveRequest {
   return {
     id: parseBoardId(source.id),
     content: parseBoardContent(source.content),
+    assets: parseNewAssets(source.assets),
     thumbnail:
       source.thumbnail === null
         ? null

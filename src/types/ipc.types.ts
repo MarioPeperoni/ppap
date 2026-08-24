@@ -1,4 +1,6 @@
+import type { NewAsset } from './asset.types';
 import type { BoardContent, BoardFile, BoardMeta } from './board.types';
+import type { Bytes } from './bytes.types';
 import type { Platform } from './platform.types';
 import type { Settings, SettingsPatch } from './settings.types';
 import type { Theme } from './theme.types';
@@ -12,6 +14,7 @@ export interface BoardRequest {
 export interface SaveRequest {
   id: string;
   content: BoardContent;
+  assets: NewAsset[];
   thumbnail: Uint8Array | null;
 }
 
@@ -42,7 +45,12 @@ export interface LibraryApi {
   list: () => Promise<BoardMeta[]>;
   create: () => Promise<BoardMeta>;
   load: (id: string) => Promise<BoardFile>;
-  save: (id: string, content: BoardContent, thumbnail: Uint8Array | null) => Promise<void>;
+  save: (
+    id: string,
+    content: BoardContent,
+    assets: readonly NewAsset[],
+    thumbnail: Uint8Array | null,
+  ) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
   thumbnail: (id: string) => Promise<Uint8Array | null>;
@@ -59,6 +67,7 @@ export interface SettingsApi {
 
 export interface ClipboardApi {
   writeImage: (png: Uint8Array) => Promise<void>;
+  readImage: () => Promise<Bytes | null>;
 }
 
 export interface AppApi {

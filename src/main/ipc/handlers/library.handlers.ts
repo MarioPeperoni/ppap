@@ -24,9 +24,9 @@ export const libraryInvokeHandlers: IpcInvokeTable = {
     boardRepository.load(parseBoardRequest(payload).id),
 
   [IPC_CHANNELS.librarySave]: (_window, payload) => {
-    const { id, content, thumbnail } = parseSaveRequest(payload);
+    const { id, content, assets, thumbnail } = parseSaveRequest(payload);
 
-    return boardRepository.save(id, content, thumbnail);
+    return boardRepository.save(id, content, assets, thumbnail);
   },
 
   [IPC_CHANNELS.libraryRename]: (_window, payload) => {

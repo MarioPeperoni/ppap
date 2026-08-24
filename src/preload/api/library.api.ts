@@ -25,8 +25,8 @@ export const libraryApi: LibraryApi = {
 
   load: async (id) => parseBoardFile(await ipcRenderer.invoke(IPC_CHANNELS.libraryLoad, { id })),
 
-  save: async (id, content, thumbnail) => {
-    await ipcRenderer.invoke(IPC_CHANNELS.librarySave, { id, content, thumbnail });
+  save: async (id, content, assets, thumbnail) => {
+    await ipcRenderer.invoke(IPC_CHANNELS.librarySave, { id, content, assets, thumbnail });
   },
 
   rename: async (id, name) => {

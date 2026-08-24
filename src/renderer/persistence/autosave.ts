@@ -3,6 +3,8 @@ import {
   ELEMENT_SAVE_DELAY,
   THUMBNAIL_INTERVAL,
 } from '@/constants/autosave.constants';
+import { MAX_ASSETS_PER_SAVE } from '@/constants/image.constants';
+import { restoreAssets, takeAssets } from '@/renderer/assets/pending-assets';
 import { renderThumbnail } from '@/renderer/export/board-thumbnail';
 import { readBoardContent } from '@/renderer/persistence/board-content';
 import { useBoardStore } from '@/renderer/stores/board.store';
@@ -83,6 +85,7 @@ class Autosave {
     this.clearTimer();
     this.contentDirty = false;
     const content = readBoardContent();
+    const assets = takeAssets(content.elements, MAX_ASSETS_PER_SAVE);
     const thumbnail = withThumbnail ? await renderThumbnail() : null;
 
     if (thumbnail !== null) {
@@ -90,7 +93,14 @@ class Autosave {
       this.thumbnailAt = Date.now();
     }
 
-    await window.ppap.library.save(id, content, thumbnail);
+    try {
+      await window.ppap.library.save(id, content, assets, thumbnail);
+      if (assets.length === MAX_ASSETS_PER_SAVE) this.onContentChange();
+    } catch (error) {
+      restoreAssets(assets);
+      this.contentDirty = true;
+      console.error('Failed to save the board', error);
+    }
   }
 }
 

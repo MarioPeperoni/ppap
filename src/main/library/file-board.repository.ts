@@ -3,12 +3,25 @@ import { readFile, rm } from 'node:fs/promises';
 import { DEFAULT_CAMERA } from '@/constants/camera.constants';
 import { BOARD_FORMAT, BOARD_VERSION } from '@/constants/library.constants';
 import { defaultBoardName } from '@/core/board/board-name';
-import { decodeArchive, decodeThumbnail, encodeArchive } from '@/main/archive/archive.codec';
+import {
+  decodeArchive,
+  decodeAssets,
+  decodeThumbnail,
+  encodeArchive,
+} from '@/main/archive/archive.codec';
+import { assetStore } from '@/main/assets/asset.store';
 import { writeAtomic } from '@/main/library/atomic-write';
 import { boardPath, ensureLibrary } from '@/main/library/library-paths';
 import { libraryIndex } from '@/main/library/library.index';
 import { saveQueue } from '@/main/library/save-queue';
-import type { BoardArchive, BoardContent, BoardFile, BoardMeta, BoardRepository } from '@/types';
+import type {
+  BoardArchive,
+  BoardContent,
+  BoardFile,
+  BoardMeta,
+  BoardRepository,
+  NewAsset,
+} from '@/types';
 
 class FileBoardRepository implements BoardRepository {
   private open: { id: string; thumbnail: Uint8Array | null } | null = null;
@@ -35,7 +48,7 @@ class FileBoardRepository implements BoardRepository {
     const content: BoardContent = { gridVisible: true, camera: DEFAULT_CAMERA, elements: [] };
 
     await libraryIndex.upsert(meta);
-    await this.write({ meta, content, thumbnail: null });
+    await this.write({ meta, content, thumbnail: null, assets: new Map() });
 
     return meta;
   }
@@ -44,21 +57,35 @@ class FileBoardRepository implements BoardRepository {
     const archive = decodeArchive(await this.read(id));
 
     this.open = { id, thumbnail: archive.thumbnail };
+    assetStore.open(id, archive.assets);
     await libraryIndex.upsert(archive.meta);
 
     return { meta: archive.meta, content: archive.content };
   }
 
-  async save(id: string, content: BoardContent, thumbnail: Uint8Array | null): Promise<void> {
+  async save(
+    id: string,
+    content: BoardContent,
+    assets: readonly NewAsset[],
+    thumbnail: Uint8Array | null,
+  ): Promise<void> {
     const meta: BoardMeta = {
       ...(await libraryIndex.require(id)),
       modifiedAt: new Date().toISOString(),
     };
     const kept = thumbnail ?? this.heldThumbnail(id);
 
+    await this.openAssets(id);
+    assetStore.adopt(id, assets);
+
     this.open = { id, thumbnail: kept };
     await libraryIndex.upsert(meta);
-    await this.write({ meta, content, thumbnail: kept });
+    await this.write({
+      meta,
+      content,
+      thumbnail: kept,
+      assets: assetStore.referenced(id, content.elements),
+    });
   }
 
   async rename(id: string, name: string): Promise<void> {
@@ -72,6 +99,7 @@ class FileBoardRepository implements BoardRepository {
   async remove(id: string): Promise<void> {
     await rm(boardPath(id), { force: true });
     await libraryIndex.remove(id);
+    assetStore.close(id);
 
     if (this.open?.id === id) this.open = null;
   }
@@ -103,6 +131,12 @@ class FileBoardRepository implements BoardRepository {
     await this.write({ ...decoded, meta });
 
     return meta;
+  }
+
+  private async openAssets(id: string): Promise<void> {
+    if (assetStore.holds(id)) return;
+
+    assetStore.open(id, decodeAssets(await this.read(id)));
   }
 
   private heldThumbnail(id: string): Uint8Array | null {

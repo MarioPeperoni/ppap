@@ -2,11 +2,15 @@ import { strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import {
   decodeArchive,
+  decodeAssets,
   decodeMeta,
   decodeThumbnail,
   encodeArchive,
 } from '@/main/archive/archive.codec';
 import type { BoardArchive } from '@/types';
+
+const ASSET_ID = 'a'.repeat(64);
+const ASSET_BYTES = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
 
 const ARCHIVE: BoardArchive = {
   meta: {
@@ -37,6 +41,7 @@ const ARCHIVE: BoardArchive = {
     ],
   },
   thumbnail: new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]),
+  assets: new Map([[ASSET_ID, ASSET_BYTES]]),
 };
 
 describe('archive codec', () => {
@@ -45,7 +50,7 @@ describe('archive codec', () => {
   });
 
   it('omits the thumbnail entry when there is none', () => {
-    const bytes = encodeArchive({ ...ARCHIVE, thumbnail: null });
+    const bytes = encodeArchive({ ...ARCHIVE, thumbnail: null, assets: new Map() });
 
     expect(Object.keys(unzipSync(bytes))).toEqual(['meta.json', 'board.json']);
     expect(decodeThumbnail(bytes)).toBeNull();
@@ -57,6 +62,23 @@ describe('archive codec', () => {
 
   it('reads the thumbnail without unpacking the elements', () => {
     expect(decodeThumbnail(encodeArchive(ARCHIVE))).toEqual(ARCHIVE.thumbnail);
+  });
+
+  it('stores the assets under their own id', () => {
+    const entries = unzipSync(encodeArchive(ARCHIVE));
+
+    expect(entries[`assets/${ASSET_ID}`]).toEqual(ASSET_BYTES);
+    expect(decodeAssets(encodeArchive(ARCHIVE))).toEqual(ARCHIVE.assets);
+  });
+
+  it('ignores an asset entry whose name is not a digest', () => {
+    const bytes = zipSync({
+      'meta.json': strToU8(JSON.stringify(ARCHIVE.meta)),
+      'board.json': strToU8(JSON.stringify(ARCHIVE.content)),
+      'assets/../escape.png': new Uint8Array([1, 2, 3]),
+    });
+
+    expect(decodeArchive(bytes).assets.size).toBe(0);
   });
 
   it('rejects an archive without a metadata entry', () => {
