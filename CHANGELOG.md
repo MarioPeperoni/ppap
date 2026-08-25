@@ -12,9 +12,11 @@ Every release of Pure Pen & Paper, in plain language.
 - A What's new window that opens once after every update and lists what changed.
 - A Show button in Settings that brings the What's new window back any time.
 - Your own colours beside the four built-in ones, picked in the pen popover.
+- A Scroll wheel setting that swaps zooming and panning.
 
 ### Changed
 
+- The wheel zooms at the cursor; hold Ctrl to pan.
 - Thicker pen and pencil sizes; the unusable hairline is gone.
 - The pen draws at the width you picked instead of below it.
 

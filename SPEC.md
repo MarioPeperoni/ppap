@@ -144,8 +144,10 @@ board  = screen / camera.zoom + camera.xy
 ```
 
 - Zoom clamps to `0.1 … 8`.
-- Wheel pans vertically, `Shift`+wheel horizontally. `Ctrl`+wheel and trackpad pinch zoom
-  **anchored at the cursor**, factor `1.1` per notch.
+- A bare wheel zooms **anchored at the cursor**, factor `1.1` per notch. `Ctrl` or `Cmd`+wheel
+  pans instead, vertically or, with `Shift`, horizontally.
+- The `wheelAction` setting says what the bare wheel does; the modifier always does the other one,
+  so both stay within reach whichever way it is set.
 - `Ctrl` `+` / `-` zoom by ×1.25 anchored at the viewport centre. `Ctrl+0` sets 100 %.
 - `Ctrl+1` fits the bbox of all elements with 64 units of padding, capped at 100 %.
 - The camera is stored in the board file and restored on open.
@@ -326,7 +328,8 @@ Drags the camera.
 | `Space` held, middle-drag                             | Temporary pan                                  |
 | `C`, `Shift+C`                                        | Cycle color                                    |
 | `[`, `]`                                              | Step stroke or eraser width                    |
-| `Ctrl`+wheel, pinch                                   | Zoom at cursor                                 |
+| Wheel                                                 | Zoom at cursor, or pan when set that way       |
+| `Ctrl`+wheel                                          | Whatever the bare wheel does not do            |
 | `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit                    |
 | `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                                     |
 | `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                           |
@@ -367,7 +370,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen color and width, custom colors, sort order
+  settings.json        theme, active tool, pen color and width, custom colors, wheel, sort order
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
