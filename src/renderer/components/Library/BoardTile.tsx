@@ -1,10 +1,13 @@
 import { useState, type ReactElement } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { modifiedLabel } from '@/core/board/board-date';
 import { NameInput } from '@/renderer/components/NameInput/NameInput';
 import { useBoardThumbnail } from '@/renderer/hooks/use-board-thumbnail';
 import { openBoard, renameBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
+
+const ACTION_CLASS =
+  'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm';
 
 interface BoardTileProps {
   board: BoardMeta;
@@ -34,16 +37,28 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
             <img src={thumbnail} alt="" className="h-full w-full object-cover" />
           )}
         </button>
-        <button
-          type="button"
-          aria-label={`Delete ${board.name}`}
-          onClick={() => {
-            onDelete(board);
-          }}
-          className="absolute top-2 right-2 hidden h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm group-hover:flex hover:text-red"
-        >
-          <Trash2 size={14} strokeWidth={1.75} />
-        </button>
+        <div className="absolute top-2 right-2 hidden gap-1 group-hover:flex">
+          <button
+            type="button"
+            aria-label={`Rename ${board.name}`}
+            onClick={() => {
+              setEditing(true);
+            }}
+            className={`${ACTION_CLASS} hover:text-ink`}
+          >
+            <Pencil size={14} strokeWidth={1.75} />
+          </button>
+          <button
+            type="button"
+            aria-label={`Delete ${board.name}`}
+            onClick={() => {
+              onDelete(board);
+            }}
+            className={`${ACTION_CLASS} hover:text-red`}
+          >
+            <Trash2 size={14} strokeWidth={1.75} />
+          </button>
+        </div>
       </div>
 
       {editing ? (
@@ -61,9 +76,6 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
       ) : (
         <button
           type="button"
-          onDoubleClick={() => {
-            setEditing(true);
-          }}
           onClick={() => {
             void openBoard(board.id);
           }}
