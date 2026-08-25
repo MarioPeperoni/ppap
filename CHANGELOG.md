@@ -1,42 +1,43 @@
 # Changelog
 
-Every release of Pure Pen & Paper, in plain language.
+Just what changed.
 
 ## 1.1.0 — 2026-08-24
 
 ### Added
 
-- A pencil tool with fixed width.
-- Zoom in and out buttons next to the zoom percentage.
-- An app icon!
-- A What's new window that opens once after every update and lists what changed.
-- A Show button in Settings that brings the What's new window back any time.
-- Your own colours beside the four built-in ones, picked in the pen popover.
-- A Scroll wheel setting that swaps zooming and panning.
-- A rename button on every board tile in the library.
+- A pencil with one steady width.
+- Zoom buttons next to the percentage.
+- An app icon, yey!
+- A What's new window after every update.
+- A Show button in Settings that reopens it.
+- Custom colours in the pen popover.
+- A wheel setting that switches between zoom and pan.
+- Rename a board from its tile.
 
 ### Changed
 
-- The wheel zooms at the cursor; hold Ctrl to pan.
-- Thicker pen and pencil sizes; the unusable hairline is gone.
-- The pen draws at the width you picked instead of below it.
+- The wheel zooms where you point, and Ctrl pans.
+- Thicker strokes with no unusable hairline.
+- The pen draws the width you picked.
 
 ## 1.0.1 — 2026-08-24
 
 ### Fixed
 
-- Automatic updates now look at the right release feed.
+- Updates check the right feed.
 
 ## 1.0.0 — 2026-08-24
 
 ### Added
 
-- An endless canvas with a dot grid that stays crisp at every zoom level.
-- A pen with three sizes and a palette, and an eraser that cuts away exactly what it covers.
-- Marquee and lasso selection: move, scale, copy, paste, duplicate and delete what you picked.
-- A board library with thumbnails, renaming and sorting by date or name.
-- Autosave, so a board is on disk the moment you stop drawing.
-- Images by paste or drag and drop, straight onto the canvas.
-- Export a board as a `.ppap` file or as a PNG, and import `.ppap` files back.
+- An endless canvas that stays crisp at any zoom.
+- A pen with three sizes and a palette.
+- An eraser that takes exactly what it touches.
+- Marquee and lasso selection with move, scale, copy and delete.
+- A board library with thumbnails, renaming and sorting.
+- Autosave the moment you stop drawing.
+- Images by paste or drag and drop.
+- Export to .ppap or PNG, and import .ppap back.
 - Light, dark and system themes.
-- Automatic updates in the background.
+- Updates in the background.
