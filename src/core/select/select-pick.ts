@@ -6,7 +6,7 @@ import { strokeWidth } from '@/core/stroke/stroke-width';
 import type { Element, Point, StrokeElement } from '@/types';
 
 function touchesStroke(stroke: StrokeElement, point: Point, slop: number): boolean {
-  const reach = strokeWidth(stroke.size, stroke.scale) / 2 + slop;
+  const reach = strokeWidth(stroke.size, stroke.scale, stroke.nib) / 2 + slop;
   const only = stroke.points[0];
   if (only === undefined) return false;
 

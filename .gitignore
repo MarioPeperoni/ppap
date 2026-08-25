@@ -90,3 +90,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# Affinity source files
+.affinity/

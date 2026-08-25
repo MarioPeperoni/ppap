@@ -1,3 +1,4 @@
+import { strokeColor } from '@/core/color/stroke-color';
 import { strokeOutline } from '@/core/stroke/stroke-outline';
 import type { Palette, StrokeElement, StrokeOutline } from '@/types';
 
@@ -30,6 +31,6 @@ export function drawStroke(
   stroke: StrokeElement,
   colors: Palette,
 ): void {
-  ctx.fillStyle = colors[stroke.color];
+  ctx.fillStyle = strokeColor(stroke.color, colors);
   ctx.fill(strokePath(stroke));
 }

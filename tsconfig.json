@@ -25,7 +25,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "~/*": ["./*"]
     }
   },
   "include": ["src", "forge.env.d.ts", "forge.config.ts", "*.config.mts"]

@@ -24,6 +24,9 @@ export function Board(): ReactElement {
         onReset={() => {
           host?.camera.resetZoom();
         }}
+        onStep={(direction) => {
+          host?.camera.zoomStep(direction);
+        }}
       />
     </main>
   );

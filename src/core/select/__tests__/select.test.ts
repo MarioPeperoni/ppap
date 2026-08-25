@@ -191,8 +191,8 @@ describe('selection transform', () => {
     const stroke = createStroke(line(0, 100, 0), 'ink', 'm');
     const scaled = scaleElement(stroke, { x: 0, y: 0 }, 3) as StrokeElement;
 
-    expect(strokeWidth(scaled.size, scaled.scale)).toBeCloseTo(
-      strokeWidth(stroke.size, stroke.scale) * 3,
+    expect(strokeWidth(scaled.size, scaled.scale, scaled.nib)).toBeCloseTo(
+      strokeWidth(stroke.size, stroke.scale, stroke.nib) * 3,
       6,
     );
   });

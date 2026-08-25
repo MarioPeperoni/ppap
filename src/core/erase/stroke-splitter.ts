@@ -8,7 +8,7 @@ import type { Point, StrokeElement, StrokePoint } from '@/types';
 
 /** How far the eraser reaches from its centre, so it clears exactly the ink its circle covers. */
 export function eraserReach(stroke: StrokeElement, radius: number): number {
-  return radius + strokeWidth(stroke.size, stroke.scale) / 2;
+  return radius + strokeWidth(stroke.size, stroke.scale, stroke.nib) / 2;
 }
 
 function keptRuns(

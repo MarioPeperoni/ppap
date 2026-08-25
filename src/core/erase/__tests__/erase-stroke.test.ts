@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_STROKE_FRAGMENTS } from '@/constants/fragment.constants';
+import { DEFAULT_NIB, DEFAULT_STROKE_SCALE } from '@/constants/stroke.constants';
 import { createImage, createStroke } from '@/core/element/element.factory';
 import { eraseSegment } from '@/core/erase/erase-stroke';
-import type { EraseHit, StrokeElement, StrokePoint } from '@/types';
+import { strokeWidth } from '@/core/stroke/stroke-width';
+import type { EraseHit, SizeToken, StrokeElement, StrokePoint } from '@/types';
 
 function line(from: number, to: number, step = 1, y = 0): StrokePoint[] {
   const points: StrokePoint[] = [];
@@ -19,14 +21,19 @@ function spanOf(fragment: StrokeElement | undefined): [number, number] {
   return [fragment?.points[0]?.[0] ?? NaN, fragment?.points.at(-1)?.[0] ?? NaN];
 }
 
+/** How far the eraser clears: its radius plus half the ink it cuts. */
+function reach(size: SizeToken, radius: number): number {
+  return radius + strokeWidth(size, DEFAULT_STROKE_SCALE, DEFAULT_NIB) / 2;
+}
+
 describe('erase stroke', () => {
   it('cuts exactly the ink the eraser covers, no more', () => {
     const stroke = createStroke(line(0, 100), 'ink', 'm');
     const fragments = fragmentsOf(eraseSegment([stroke], { x: 50, y: 0 }, { x: 50, y: 0 }, 5)[0]);
 
     expect(fragments).toHaveLength(2);
-    expect(spanOf(fragments[0])[1]).toBeCloseTo(43, 6);
-    expect(spanOf(fragments[1])[0]).toBeCloseTo(57, 6);
+    expect(spanOf(fragments[0])[1]).toBeCloseTo(50 - reach('m', 5), 6);
+    expect(spanOf(fragments[1])[0]).toBeCloseTo(50 + reach('m', 5), 6);
   });
 
   it('cuts a sparsely sampled stroke at the same place as a dense one', () => {
@@ -41,8 +48,8 @@ describe('erase stroke', () => {
     const fragments = fragmentsOf(eraseSegment([sparse], { x: 50, y: 0 }, { x: 50, y: 0 }, 5)[0]);
 
     expect(fragments).toHaveLength(2);
-    expect(spanOf(fragments[0])[1]).toBeCloseTo(43, 6);
-    expect(spanOf(fragments[1])[0]).toBeCloseTo(57, 6);
+    expect(spanOf(fragments[0])[1]).toBeCloseTo(50 - reach('m', 5), 6);
+    expect(spanOf(fragments[1])[0]).toBeCloseTo(50 + reach('m', 5), 6);
   });
 
   it('widens the cut by half the stroke width so the circle clears its own area', () => {
@@ -50,8 +57,14 @@ describe('erase stroke', () => {
     const thick = createStroke(line(0, 100), 'ink', 'l');
     const at = { x: 50, y: 0 };
 
-    expect(spanOf(fragmentsOf(eraseSegment([thin], at, at, 5)[0])[0])[1]).toBeCloseTo(44, 6);
-    expect(spanOf(fragmentsOf(eraseSegment([thick], at, at, 5)[0])[0])[1]).toBeCloseTo(41, 6);
+    expect(spanOf(fragmentsOf(eraseSegment([thin], at, at, 5)[0])[0])[1]).toBeCloseTo(
+      50 - reach('s', 5),
+      6,
+    );
+    expect(spanOf(fragmentsOf(eraseSegment([thick], at, at, 5)[0])[0])[1]).toBeCloseTo(
+      50 - reach('l', 5),
+      6,
+    );
   });
 
   it('follows the swept path between two pointer samples', () => {
@@ -59,8 +72,8 @@ describe('erase stroke', () => {
     const fragments = fragmentsOf(eraseSegment([stroke], { x: 30, y: 0 }, { x: 70, y: 0 }, 5)[0]);
 
     expect(fragments).toHaveLength(2);
-    expect(spanOf(fragments[0])[1]).toBeCloseTo(23, 6);
-    expect(spanOf(fragments[1])[0]).toBeCloseTo(77, 6);
+    expect(spanOf(fragments[0])[1]).toBeCloseTo(30 - reach('m', 5), 6);
+    expect(spanOf(fragments[1])[0]).toBeCloseTo(70 + reach('m', 5), 6);
   });
 
   it('trims a stroke touched at one end', () => {
@@ -68,15 +81,15 @@ describe('erase stroke', () => {
     const fragments = fragmentsOf(eraseSegment([stroke], { x: 0, y: 0 }, { x: 0, y: 0 }, 10)[0]);
 
     expect(fragments).toHaveLength(1);
-    expect(spanOf(fragments[0])).toEqual([expect.closeTo(12, 6), 100]);
+    expect(spanOf(fragments[0])).toEqual([expect.closeTo(reach('m', 10), 6), 100]);
   });
 
   it('keeps the ink outside a long erase drag', () => {
-    const stroke = createStroke(line(0, 30, 10), 'ink', 'm');
+    const stroke = createStroke(line(0, 30, 10), 'ink', 's');
     const fragments = fragmentsOf(eraseSegment([stroke], { x: 10, y: 0 }, { x: 30, y: 0 }, 4)[0]);
 
     expect(fragments).toHaveLength(1);
-    expect(spanOf(fragments[0])).toEqual([0, expect.closeTo(4, 6)]);
+    expect(spanOf(fragments[0])).toEqual([0, expect.closeTo(10 - reach('s', 4), 6)]);
   });
 
   it('drops a surviving sliver shorter than a board unit', () => {
@@ -88,12 +101,13 @@ describe('erase stroke', () => {
       'ink',
       's',
     );
+    const sliver = reach('s', 0.5) + 0.9;
     const fragments = fragmentsOf(
-      eraseSegment([stroke], { x: 2.4, y: 0 }, { x: 2.4, y: 0 }, 0.5)[0],
+      eraseSegment([stroke], { x: sliver, y: 0 }, { x: sliver, y: 0 }, 0.5)[0],
     );
 
     expect(fragments).toHaveLength(1);
-    expect(spanOf(fragments[0])[0]).toBeCloseTo(3.9, 6);
+    expect(spanOf(fragments[0])[0]).toBeCloseTo(sliver + reach('s', 0.5), 6);
   });
 
   it('removes a stroke covered end to end', () => {

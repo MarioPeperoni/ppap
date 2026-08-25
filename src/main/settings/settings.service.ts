@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { app } from 'electron';
 import { DEFAULT_SETTINGS } from '@/constants/settings.constants';
 import { writeAtomic } from '@/main/library/atomic-write';
 import { ensureLibrary, settingsPath } from '@/main/library/library-paths';
@@ -34,8 +35,16 @@ class SettingsService {
 
       return parseSettings(parsed);
     } catch {
-      return DEFAULT_SETTINGS;
+      return this.freshInstall();
     }
+  }
+
+  private freshInstall(): Settings {
+    const settings: Settings = { ...DEFAULT_SETTINGS, lastSeenVersion: app.getVersion() };
+
+    this.persist(settings);
+
+    return settings;
   }
 
   private persist(settings: Settings): void {
