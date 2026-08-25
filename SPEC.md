@@ -473,7 +473,8 @@ and a `+` button; clicking it sets 100 %, and the step buttons grey out at the z
 
 - Tiles of thumbnail, name, and relative modified date, in a responsive grid.
 - The `+` tile comes first and opens the new board immediately.
-- Default name is the creation date (`23 Aug 2026`); `F2` or double-click renames.
+- Default name is the creation date (`23 Aug 2026`). A pencil beside the trash on hover renames,
+  as does `F2` on a focused tile.
 - Sorted by modified date descending, with name and creation date available.
 - `Delete` opens a Radix confirmation dialog, then removes the archive.
 - Empty state: one line of text and the `+` tile.

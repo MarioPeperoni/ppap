@@ -13,6 +13,7 @@ Every release of Pure Pen & Paper, in plain language.
 - A Show button in Settings that brings the What's new window back any time.
 - Your own colours beside the four built-in ones, picked in the pen popover.
 - A Scroll wheel setting that swaps zooming and panning.
+- A rename button on every board tile in the library.
 
 ### Changed
 
