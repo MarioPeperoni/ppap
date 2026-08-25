@@ -1,17 +1,21 @@
 import type { ReactElement } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { WHEEL_ACTIONS } from '@/constants/camera.constants';
 import { SORT_ORDERS } from '@/constants/settings.constants';
 import { THEMES } from '@/constants/theme.constants';
 import { BrandMark } from '@/renderer/components/Brand/BrandMark';
 import { Choices } from '@/renderer/components/Settings/Choices';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
 import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
+import { useInputStore } from '@/renderer/stores/input.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
 import { useThemeStore } from '@/renderer/stores/theme.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
-import type { SortOrder, Theme } from '@/types';
+import type { SortOrder, Theme, WheelAction } from '@/types';
 
 const THEME_LABELS: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
+
+const WHEEL_LABELS: Record<WheelAction, string> = { zoom: 'Zoom', pan: 'Pan' };
 
 const SORT_LABELS: Record<SortOrder, string> = {
   modified: 'Modified',
@@ -27,6 +31,8 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): ReactElement {
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const wheelAction = useInputStore((state) => state.wheelAction);
+  const setWheelAction = useInputStore((state) => state.setWheelAction);
   const sortOrder = useLibraryStore((state) => state.sortOrder);
   const setSortOrder = useLibraryStore((state) => state.setSortOrder);
   const version = useAppVersion();
@@ -40,7 +46,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
         <Dialog.Content className="fixed top-1/2 left-1/2 w-96 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl">
           <Dialog.Title className="text-[13px] font-medium text-ink">Settings</Dialog.Title>
           <Dialog.Description className="sr-only">
-            Theme, board order and version
+            Theme, scroll wheel, board order and version
           </Dialog.Description>
 
           <div className="mt-5 flex flex-col gap-4">
@@ -50,6 +56,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
               labels={THEME_LABELS}
               active={theme}
               onSelect={setTheme}
+            />
+            <Choices
+              label="Scroll wheel"
+              values={WHEEL_ACTIONS}
+              labels={WHEEL_LABELS}
+              active={wheelAction}
+              onSelect={setWheelAction}
             />
             <Choices
               label="Sort boards by"
