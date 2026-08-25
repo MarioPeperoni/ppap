@@ -1,3 +1,4 @@
+import { DEFAULT_WHEEL_ACTION } from '@/constants/camera.constants';
 import {
   DEFAULT_COLOR,
   DEFAULT_ERASER_RADIUS,
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
   customColors: [],
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
+  wheelAction: DEFAULT_WHEEL_ACTION,
   sortOrder: 'modified',
   lastSeenVersion: '',
 };

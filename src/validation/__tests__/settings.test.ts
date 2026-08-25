@@ -37,6 +37,7 @@ describe('settings validation', () => {
 
   it('rejects a value outside its set', () => {
     expect(() => parseSettings({ penSize: 'xl' })).toThrow('Pen size');
+    expect(() => parseSettings({ wheelAction: 'scroll' })).toThrow('Wheel action');
     expect(() => parseSettings({ eraserRadius: 999 })).toThrow('Eraser radius');
   });
 });

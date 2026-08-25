@@ -3,6 +3,7 @@ import { MAX_ZOOM, MIN_ZOOM } from '@/constants/camera.constants';
 import { panByScreen, toBoard, toScreen } from '@/core/camera/camera-transform';
 import { visibleBounds } from '@/core/camera/camera-viewport';
 import { clampZoom, zoomBy, zoomToFit } from '@/core/camera/camera-zoom';
+import { wheelAction } from '@/core/camera/wheel-action';
 
 const camera = { x: -120, y: 340, zoom: 1.75 };
 
@@ -68,5 +69,17 @@ describe('camera viewport', () => {
     expect(bounds.minX).toBe(camera.x);
     expect(bounds.maxX).toBeCloseTo(camera.x + 800 / camera.zoom, 10);
     expect(bounds.maxY).toBeCloseTo(camera.y + 600 / camera.zoom, 10);
+  });
+});
+
+describe('wheel action', () => {
+  it('gives a bare wheel the action that was set', () => {
+    expect(wheelAction('zoom', false)).toBe('zoom');
+    expect(wheelAction('pan', false)).toBe('pan');
+  });
+
+  it('gives the modifier the other action', () => {
+    expect(wheelAction('zoom', true)).toBe('pan');
+    expect(wheelAction('pan', true)).toBe('zoom');
   });
 });

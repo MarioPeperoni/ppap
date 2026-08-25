@@ -1,3 +1,4 @@
+import { useInputStore } from '@/renderer/stores/input.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { watchStore } from '@/renderer/stores/watch-store';
@@ -11,6 +12,7 @@ export async function hydrateSettings(): Promise<void> {
   const settings = await window.ppap.settings.get();
 
   useToolStore.getState().adopt(settings);
+  useInputStore.getState().adopt(settings);
   useLibraryStore.getState().setSortOrder(settings.sortOrder);
 }
 
@@ -49,6 +51,13 @@ export function watchSettings(): Unsubscribe {
       (state) => state.eraserRadius,
       (eraserRadius) => {
         patch({ eraserRadius });
+      },
+    ),
+    watchStore(
+      useInputStore,
+      (state) => state.wheelAction,
+      (wheelAction) => {
+        patch({ wheelAction });
       },
     ),
     watchStore(

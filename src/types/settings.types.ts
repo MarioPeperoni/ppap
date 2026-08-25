@@ -1,3 +1,4 @@
+import type { WheelAction } from './camera.types';
 import type { HexColor, StrokeColor } from './color.types';
 import type { SizeToken } from './element.types';
 import type { SortOrder } from './library.types';
@@ -11,6 +12,7 @@ export interface Settings {
   customColors: HexColor[];
   penSize: SizeToken;
   eraserRadius: number;
+  wheelAction: WheelAction;
   sortOrder: SortOrder;
   lastSeenVersion: string;
 }
