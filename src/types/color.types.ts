@@ -1,3 +1,5 @@
+import type { Point } from './geometry.types';
+
 export type ColorToken = 'ink' | 'blue' | 'red' | 'green';
 
 export type HexColor = `#${string}`;
@@ -23,4 +25,17 @@ export interface Hsv {
   h: number;
   s: number;
   v: number;
+}
+
+/** The active ink and the one it swaps with. */
+export interface ColorPair {
+  color: StrokeColor;
+  swapColor: StrokeColor | null;
+}
+
+/** A colour cue shown beside the cursor; the id replays it when the colour repeats. */
+export interface ColorCue {
+  id: number;
+  at: Point;
+  color: StrokeColor;
 }

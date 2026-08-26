@@ -2,7 +2,9 @@ import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Eraser, Hand, Lasso, Pencil, PenLine, SquareDashed, type LucideIcon } from 'lucide-react';
+import { INK_TOOLS } from '@/constants/tool.constants';
 import { getTool } from '@/renderer/board/tools/tool-registry';
+import { ToolColorBar } from '@/renderer/components/Toolbar/ToolColorBar';
 import { hasOptions, ToolOptions } from '@/renderer/components/Toolbar/ToolOptions';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
@@ -31,6 +33,7 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
   const tool = getTool(id);
   const Icon = ICONS[id];
   const active = activeTool === id;
+  const inked = active && INK_TOOLS.includes(id);
 
   return (
     <Popover.Root
@@ -54,11 +57,12 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
                 setTool(id);
                 setPopover(null);
               }}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                 active ? 'bg-raised text-ink' : 'text-muted hover:bg-raised/60 hover:text-ink'
               }`}
             >
-              <Icon size={18} strokeWidth={1.75} />
+              <Icon size={18} strokeWidth={1.75} className={inked ? '-translate-y-px' : ''} />
+              {inked ? <ToolColorBar /> : null}
             </button>
           </Popover.Trigger>
         </Tooltip.Trigger>

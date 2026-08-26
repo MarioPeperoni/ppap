@@ -85,6 +85,11 @@ export class KeyboardRouter {
       return;
     }
 
+    if (key === 'x') {
+      useToolStore.getState().swapColors();
+      return;
+    }
+
     this.selectTool(key);
   }
 

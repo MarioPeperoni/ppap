@@ -4,6 +4,11 @@ Just what changed.
 
 ## 1.2.0 — 2026-08-26
 
+### Added
+
+- Two pen colours held at once, swapped with X.
+- A colour bar under the selected pen.
+
 ### Changed
 
 - Softer grid dots in dark mode.

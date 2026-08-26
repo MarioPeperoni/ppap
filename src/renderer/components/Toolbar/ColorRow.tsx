@@ -11,7 +11,9 @@ import type { HexColor } from '@/types';
 export function ColorRow(): ReactElement {
   const color = useToolStore((state) => state.color);
   const customColors = useToolStore((state) => state.customColors);
+  const swapColor = useToolStore((state) => state.swapColor);
   const setColor = useToolStore((state) => state.setColor);
+  const pairColor = useToolStore((state) => state.pairColor);
   const addCustomColor = useToolStore((state) => state.addCustomColor);
   const removeCustomColor = useToolStore((state) => state.removeCustomColor);
   const [draft, setDraft] = useState<HexColor | null>(null);
@@ -20,7 +22,14 @@ export function ColorRow(): ReactElement {
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         {TOOL_COLORS.map((token) => (
-          <ColorSwatch key={token} color={token} selected={token === color} onSelect={setColor} />
+          <ColorSwatch
+            key={token}
+            color={token}
+            selected={token === color}
+            paired={token === swapColor}
+            onSelect={setColor}
+            onPair={pairColor}
+          />
         ))}
       </div>
       <div className="flex items-center gap-2">
@@ -29,7 +38,9 @@ export function ColorRow(): ReactElement {
             key={custom}
             color={custom}
             selected={custom === color}
+            paired={custom === swapColor}
             onSelect={setColor}
+            onPair={pairColor}
             onRemove={removeCustomColor}
           />
         ))}

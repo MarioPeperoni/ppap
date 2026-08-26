@@ -10,6 +10,27 @@
   --color-raised: #f4f4f5;
   --color-line: #e4e4e7;
   --color-muted: #71717a;
+
+  --animate-color-flash: color-flash 460ms ease-out forwards;
+
+  @keyframes color-flash {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {

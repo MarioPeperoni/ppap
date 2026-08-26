@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   tool: DEFAULT_TOOL,
   color: DEFAULT_COLOR,
+  swapColor: null,
   customColors: [],
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,

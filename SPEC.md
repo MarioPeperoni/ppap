@@ -124,7 +124,7 @@ board rect.
 | -------------- | --------------------------------------------------------------------------------------- |
 | `libraryStore` | Board metadata, sort order, loading state                                               |
 | `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>` |
-| `toolStore`    | Active tool, pen color, pen width, eraser width; persisted to settings                  |
+| `toolStore`    | Active tool, pen colour pair, pen width, eraser width; persisted to settings            |
 | `historyStore` | Undo and redo command stacks, capped at 200 commands per board                          |
 
 Canvas layers subscribe to the vanilla store directly, so a pointer move never rerenders a React
@@ -273,6 +273,12 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
   overlay.
 - Four colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
   cycle color, `[` and `]` step width. Choices persist per tool in settings.
+- Two colors are held at once: the active one and a pinned partner, and `X` swaps them. A click in
+  the popover sets the active color, `Shift`-click pins the partner, and a second `Shift`-click
+  unpins it. Picking the pinned color is the swap, so the pair never collapses into one color.
+  Both colors survive a restart; removing a custom swatch that is pinned leaves no partner.
+- A change of color away from the popover flashes a dot in the new color beside the cursor and
+  fades it out, so the swap is legible without looking down at the toolbar.
 - Up to `MAX_CUSTOM_COLORS` own colors sit in a second row under the four, ending in a plus that
   opens an HSV panel with a hex field and previews the colour in its own swatch. They are stored in
   settings, while a stroke keeps the hex it was drawn with, so removing a swatch leaves the ink
@@ -327,6 +333,7 @@ Drags the camera.
 | `P` `1` `N` `2` `E` `3` `V` `4` `L` `5` `H` `6`       | Pen / pencil / eraser / marquee / lasso / hand |
 | `Space` held, middle-drag                             | Temporary pan                                  |
 | `C`, `Shift+C`                                        | Cycle color                                    |
+| `X`                                                   | Swap the active color with the pinned one      |
 | `[`, `]`                                              | Step stroke or eraser width                    |
 | Wheel                                                 | Zoom at cursor, or pan when set that way       |
 | `Ctrl`+wheel                                          | Whatever the bare wheel does not do            |
@@ -370,7 +377,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen color and width, custom colors, wheel, sort order
+  settings.json        theme, active tool, pen colour pair and width, custom colors, wheel, sort order
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
@@ -465,7 +472,9 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, custom colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`,
+colors, custom colors and widths for the pen and pencil, radius for the eraser. The active pen or
+pencil carries a rounded color bar under its icon: the active color alone, or split 65 / 35 with
+the pinned partner. The popover closes on `Escape`,
 outside click, and selection. The zoom percentage sits in the bottom-right corner between a `−`
 and a `+` button; clicking it sets 100 %, and the step buttons grey out at the zoom limits.
 

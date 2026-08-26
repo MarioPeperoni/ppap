@@ -6,19 +6,29 @@ import type { HexColor, StrokeColor } from '@/types';
 interface CustomSwatchProps {
   color: HexColor;
   selected: boolean;
+  paired: boolean;
   onSelect: (color: StrokeColor) => void;
+  onPair: (color: StrokeColor) => void;
   onRemove: (color: HexColor) => void;
 }
 
 export function CustomSwatch({
   color,
   selected,
+  paired,
   onSelect,
+  onPair,
   onRemove,
 }: CustomSwatchProps): ReactElement {
   return (
     <span className="group relative flex">
-      <ColorSwatch color={color} selected={selected} onSelect={onSelect} />
+      <ColorSwatch
+        color={color}
+        selected={selected}
+        paired={paired}
+        onSelect={onSelect}
+        onPair={onPair}
+      />
       <button
         type="button"
         aria-label={`remove ${color}`}

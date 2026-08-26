@@ -2,7 +2,7 @@ import { WHEEL_ACTIONS } from '@/constants/camera.constants';
 import { DEFAULT_SETTINGS, SORT_ORDERS } from '@/constants/settings.constants';
 import { ERASER_RADII, TOOL_IDS, TOOL_SIZES } from '@/constants/tool.constants';
 import type { Settings, SettingsPatch } from '@/types';
-import { parseCustomColors, parseStrokeColor } from '@/validation/color.validator';
+import { parseCustomColors, parseStrokeColor, parseSwapColor } from '@/validation/color.validator';
 import { expectOneOf, expectRecord, expectString } from '@/validation/primitive.validator';
 import { parseTheme } from '@/validation/theme.validator';
 
@@ -13,6 +13,9 @@ export function parseSettingsPatch(value: unknown): SettingsPatch {
   if (source.theme !== undefined) patch.theme = parseTheme(source.theme);
   if (source.tool !== undefined) patch.tool = expectOneOf(source.tool, TOOL_IDS, 'Tool');
   if (source.color !== undefined) patch.color = parseStrokeColor(source.color, 'Color');
+  if (source.swapColor !== undefined) {
+    patch.swapColor = parseSwapColor(source.swapColor, 'Swap color');
+  }
   if (source.customColors !== undefined) {
     patch.customColors = parseCustomColors(source.customColors, 'Custom colors');
   }

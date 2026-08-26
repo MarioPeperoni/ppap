@@ -34,6 +34,13 @@ export function watchSettings(): Unsubscribe {
     ),
     watchStore(
       useToolStore,
+      (state) => state.swapColor,
+      (swapColor) => {
+        patch({ swapColor });
+      },
+    ),
+    watchStore(
+      useToolStore,
       (state) => state.customColors,
       (customColors) => {
         patch({ customColors });

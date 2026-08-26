@@ -9,6 +9,7 @@ export interface Settings {
   theme: Theme;
   tool: ToolId;
   color: StrokeColor;
+  swapColor: StrokeColor | null;
   customColors: HexColor[];
   penSize: SizeToken;
   eraserRadius: number;

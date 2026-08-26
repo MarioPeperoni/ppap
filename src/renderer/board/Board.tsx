@@ -1,4 +1,5 @@
 import { useRef, type ReactElement } from 'react';
+import { ColorFlash } from '@/renderer/components/ColorFlash/ColorFlash';
 import { Toolbar } from '@/renderer/components/Toolbar/Toolbar';
 import { ZoomIndicator } from '@/renderer/components/ZoomIndicator/ZoomIndicator';
 import { useBoardHost } from '@/renderer/hooks/use-board-host';
@@ -20,6 +21,7 @@ export function Board(): ReactElement {
         <canvas ref={overlayRef} className={LAYER_CLASS} />
       </div>
       <Toolbar />
+      <ColorFlash />
       <ZoomIndicator
         onReset={() => {
           host?.camera.resetZoom();

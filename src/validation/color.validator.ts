@@ -14,6 +14,10 @@ export function parseStrokeColor(value: unknown, label: string): StrokeColor {
   return isHexColor(value) ? value : expectOneOf(value, TOOL_COLORS, label);
 }
 
+export function parseSwapColor(value: unknown, label: string): StrokeColor | null {
+  return value === null ? null : parseStrokeColor(value, label);
+}
+
 export function parseCustomColors(value: unknown, label: string): HexColor[] {
   const colors = expectArray(value, label);
   if (colors.length > MAX_CUSTOM_COLORS)

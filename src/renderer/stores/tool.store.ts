@@ -9,7 +9,7 @@ import {
   TOOL_COLORS,
   TOOL_SIZES,
 } from '@/constants/tool.constants';
-import type { HexColor, Settings, SizeToken, StrokeColor, ToolId } from '@/types';
+import type { ColorPair, HexColor, Settings, SizeToken, StrokeColor, ToolId } from '@/types';
 
 function stepped<T>(values: readonly T[], current: T, direction: number, fallback: T): T {
   const index = values.indexOf(current);
@@ -25,15 +25,23 @@ function cycled<T>(values: readonly T[], current: T, direction: number, fallback
   return values[(index + direction + values.length) % values.length] ?? fallback;
 }
 
-interface ToolStore {
+/** Picking the pinned colour swaps the pair, so the two never collapse into one. */
+function picked(pair: ColorPair, next: StrokeColor): ColorPair {
+  if (next === pair.swapColor) return { color: next, swapColor: pair.color };
+
+  return { color: next, swapColor: pair.swapColor };
+}
+
+interface ToolStore extends ColorPair {
   tool: ToolId;
-  color: StrokeColor;
   customColors: HexColor[];
   penSize: SizeToken;
   eraserRadius: number;
   adopt: (settings: Settings) => void;
   setTool: (tool: ToolId) => void;
   setColor: (color: StrokeColor) => void;
+  pairColor: (color: StrokeColor) => void;
+  swapColors: () => void;
   cycleColor: (direction: number) => void;
   addCustomColor: (color: HexColor) => void;
   removeCustomColor: (color: HexColor) => void;
@@ -45,12 +53,13 @@ interface ToolStore {
 export const useToolStore = create<ToolStore>()((set, get) => ({
   tool: DEFAULT_TOOL,
   color: DEFAULT_COLOR,
+  swapColor: null,
   customColors: [],
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
 
-  adopt: ({ tool, color, customColors, penSize, eraserRadius }) => {
-    set({ tool, color, customColors, penSize, eraserRadius });
+  adopt: ({ tool, color, swapColor, customColors, penSize, eraserRadius }) => {
+    set({ tool, color, swapColor, customColors, penSize, eraserRadius });
   },
 
   setTool: (tool) => {
@@ -58,24 +67,42 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
   },
 
   setColor: (color) => {
-    set({ color });
+    set(picked(get(), color));
+  },
+
+  pairColor: (color) => {
+    const state = get();
+    if (color === state.color) return;
+
+    set({ swapColor: state.swapColor === color ? null : color });
+  },
+
+  swapColors: () => {
+    const { color, swapColor } = get();
+    if (swapColor === null) return;
+
+    set({ color: swapColor, swapColor: color });
   },
 
   cycleColor: (direction) => {
     const state = get();
+    const next = cycled(
+      [...TOOL_COLORS, ...state.customColors],
+      state.color,
+      direction,
+      DEFAULT_COLOR,
+    );
 
-    set({
-      color: cycled([...TOOL_COLORS, ...state.customColors], state.color, direction, DEFAULT_COLOR),
-    });
+    set(picked(state, next));
   },
 
   addCustomColor: (color) => {
-    const { customColors } = get();
-    const kept = customColors.includes(color)
-      ? customColors
-      : [...customColors, color].slice(-MAX_CUSTOM_COLORS);
+    const state = get();
+    const kept = state.customColors.includes(color)
+      ? state.customColors
+      : [...state.customColors, color].slice(-MAX_CUSTOM_COLORS);
 
-    set({ customColors: kept, color });
+    set({ customColors: kept, ...picked(state, color) });
   },
 
   removeCustomColor: (color) => {
@@ -84,6 +111,7 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
     set({
       customColors: state.customColors.filter((kept) => kept !== color),
       color: state.color === color ? DEFAULT_COLOR : state.color,
+      swapColor: state.swapColor === color ? null : state.swapColor,
     });
   },
 
