@@ -123,6 +123,7 @@ board rect.
 | Store          | Holds                                                                                   |
 | -------------- | --------------------------------------------------------------------------------------- |
 | `libraryStore` | Board metadata, sort order, loading state                                               |
+| `keymapStore`  | One key binding per rebindable action; persisted to settings                            |
 | `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>` |
 | `toolStore`    | Active tool, pen colour pair, pen width, eraser width; persisted to settings            |
 | `historyStore` | Undo and redo command stacks, capped at 200 commands per board                          |
@@ -260,7 +261,7 @@ pan and restore it on release. All pointer types drive the active tool identical
 
 The canvas host sets `touch-action: none` and calls `setPointerCapture` on pointerdown.
 
-### 6.1 Pen and pencil — pen `P` / `1`, pencil `N` / `2`
+### 6.1 Pen and pencil — pen `P`, pencil `N`
 
 - One `StrokeTool` drives both; the nib it carries is stored on every stroke it commits.
 - `perfect-freehand` with `{ size, thinning, smoothing: 0.5, streamline: 0.5, simulatePressure }`,
@@ -287,7 +288,7 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
   `MIN_INK_CONTRAST` in OKLCh lightness it is pushed away from the canvas, hue intact, which is
   what keeps it readable in both themes and in a PNG export.
 
-### 6.2 Eraser — `E` / `3`
+### 6.2 Eraser — `E`
 
 Splits strokes. For each pointer segment, with eraser radius `r`:
 
@@ -301,7 +302,7 @@ A whole `pointerdown … pointerup` gesture is one command holding `{ removed, a
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
 a circle outline on the overlay. `[` and `]` step its radius.
 
-### 6.3 Selection — marquee `V` / `4`, lasso `L` / `5`
+### 6.3 Selection — marquee `V`, lasso `L`
 
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
 - **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
@@ -310,10 +311,10 @@ A non-empty selection shows a bounding box with four corner handles:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
   widths scale with the selection.
-- `Delete` and `Backspace` delete. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
+- `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all. `Escape` clears.
 
-### 6.4 Hand — `H` / `6`
+### 6.4 Hand — `H`
 
 Drags the camera.
 
@@ -328,25 +329,36 @@ Drags the camera.
 
 ### 6.6 Keyboard reference
 
-| Keys                                                  | Action                                         |
-| ----------------------------------------------------- | ---------------------------------------------- |
-| `P` `1` `N` `2` `E` `3` `V` `4` `L` `5` `H` `6`       | Pen / pencil / eraser / marquee / lasso / hand |
-| `Space` held, middle-drag                             | Temporary pan                                  |
-| `C`, `Shift+C`                                        | Cycle color                                    |
-| `X`                                                   | Swap the active color with the pinned one      |
-| `[`, `]`                                              | Step stroke or eraser width                    |
-| Wheel                                                 | Zoom at cursor, or pan when set that way       |
-| `Ctrl`+wheel                                          | Whatever the bare wheel does not do            |
-| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit                    |
-| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                                     |
-| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                           |
-| `Ctrl+Shift+C`                                        | Copy selection to the clipboard as PNG         |
-| `Ctrl+G`                                              | Toggle grid                                    |
-| `Ctrl+S`                                              | Flush pending save                             |
-| `Ctrl+N`                                              | New board                                      |
-| `F2`                                                  | Rename board                                   |
-| `Alt+←`                                               | Back to the library                            |
-| `Escape`                                              | Cancel gesture, clear selection                |
+Rebindable in Settings, one stroke per action, modifiers allowed:
+
+| Default                 | Action                                         |
+| ----------------------- | ---------------------------------------------- |
+| `P` `N` `E` `V` `L` `H` | Pen / pencil / eraser / marquee / lasso / hand |
+| `C`, `Shift+C`          | Next and previous color                        |
+| `X`                     | Swap the active color with the pinned one      |
+| `[`, `]`                | Step stroke or eraser width                    |
+| `Backspace`             | Delete the selection                           |
+
+Fixed:
+
+| Keys                                         | Action                                   |
+| -------------------------------------------- | ---------------------------------------- |
+| `Space` held, middle-drag                    | Temporary pan                            |
+| `Escape`                                     | Cancel gesture, clear selection          |
+| Wheel                                        | Zoom at cursor, or pan when set that way |
+| `Ctrl`+wheel                                 | Whatever the bare wheel does not do      |
+| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`          | Zoom in / out / 100 % / fit              |
+| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`           | Undo, redo                               |
+| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` | Selection operations                     |
+| `Ctrl+Shift+C`                               | Copy selection to the clipboard as PNG   |
+| `Ctrl+G`                                     | Toggle grid                              |
+| `Ctrl+S`                                     | Flush pending save                       |
+| `Ctrl+N`                                     | New board                                |
+| `F2`                                         | Rename board                             |
+| `Alt+←`                                      | Back to the library                      |
+
+`Space` and `Escape` are refused as bindings. Every other fixed stroke can be taken by a
+rebindable action, which the Settings row calls out as an override.
 
 ---
 
@@ -377,7 +389,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen colour pair and width, custom colors, wheel, sort order
+  settings.json        theme, active tool, pen colour pair and width, custom colors, wheel, sort order, key bindings
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
@@ -491,8 +503,14 @@ and a `+` button; clicking it sets 100 %, and the step buttons grey out at the z
 ### 8.4 Settings
 
 The gear in the library title bar opens a Radix dialog holding the theme control
-(`System | Light | Dark`), the default sort order, and the application version. `Escape` closes
-it. The board screen has no settings surface.
+(`System | Light | Dark`), the wheel action, the default sort order, and the application version.
+`Escape` closes it. The board screen has no settings surface.
+
+**Shortcuts** swaps the dialog body for the keymap panel, grouped as tools, color, stroke and
+selection. A row shows its binding, clears it, and resets it; the footer resets them all. Clicking
+the binding arms it and the next keystroke lands, with the modifiers held. Taking a key from
+another action leaves that one unbound and says so; taking one from a fixed shortcut says what it
+overrides; `Space` and `Escape` are refused. `Escape` while armed cancels the capture.
 
 ---
 

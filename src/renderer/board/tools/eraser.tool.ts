@@ -19,7 +19,6 @@ const CURSOR_ALPHA = 0.6;
 export class EraserTool implements Tool {
   readonly id = 'eraser';
   readonly label = 'Eraser';
-  readonly keys = ['e', '3'];
   readonly cursor = 'none';
 
   private hover: Point | null = null;

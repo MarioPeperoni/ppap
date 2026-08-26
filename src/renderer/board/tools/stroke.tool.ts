@@ -33,7 +33,6 @@ export class StrokeTool implements Tool {
   constructor(
     readonly id: ToolId,
     readonly label: string,
-    readonly keys: readonly string[],
     private readonly nib: NibToken,
   ) {}
 

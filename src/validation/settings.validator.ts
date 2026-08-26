@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, SORT_ORDERS } from '@/constants/settings.constants';
 import { ERASER_RADII, TOOL_IDS, TOOL_SIZES } from '@/constants/tool.constants';
 import type { Settings, SettingsPatch } from '@/types';
 import { parseCustomColors, parseStrokeColor, parseSwapColor } from '@/validation/color.validator';
+import { parseKeymap } from '@/validation/keymap.validator';
 import { expectOneOf, expectRecord, expectString } from '@/validation/primitive.validator';
 import { parseTheme } from '@/validation/theme.validator';
 
@@ -28,6 +29,7 @@ export function parseSettingsPatch(value: unknown): SettingsPatch {
   if (source.wheelAction !== undefined) {
     patch.wheelAction = expectOneOf(source.wheelAction, WHEEL_ACTIONS, 'Wheel action');
   }
+  if (source.keymap !== undefined) patch.keymap = parseKeymap(source.keymap, 'Keymap');
   if (source.sortOrder !== undefined) {
     patch.sortOrder = expectOneOf(source.sortOrder, SORT_ORDERS, 'Sort order');
   }

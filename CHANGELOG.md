@@ -8,10 +8,12 @@ Just what changed.
 
 - Two pen colours held at once, swapped with X.
 - A colour bar under the selected pen.
+- Rebindable keys for tools, colours, width and delete, under Settings.
 
 ### Changed
 
 - Softer grid dots in dark mode.
+- One key per tool, so the number shortcuts are gone.
 
 ## 1.1.0 — 2026-08-24
 
