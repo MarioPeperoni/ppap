@@ -23,7 +23,7 @@ export function BoardTitle(): ReactElement {
         onClick={() => {
           void leaveBoard();
         }}
-        className="app-no-drag flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink"
+        className="app-no-drag flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink"
       >
         <ChevronLeft size={16} strokeWidth={1.75} />
       </button>
@@ -44,7 +44,7 @@ export function BoardTitle(): ReactElement {
         <button
           type="button"
           onClick={startEditing}
-          className="app-no-drag rounded px-2 py-0.5 text-[12px] text-ink/80 hover:bg-raised"
+          className="app-no-drag rounded px-2 py-0.5 text-[12px] text-ink/80 transition-colors hover:bg-raised hover:text-ink"
         >
           {name}
         </button>

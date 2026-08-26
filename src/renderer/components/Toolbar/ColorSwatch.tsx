@@ -26,8 +26,8 @@ export function ColorSwatch({ color, selected, onSelect }: ColorSwatchProps): Re
         onSelect(color);
       }}
       style={custom ? { backgroundColor: color } : undefined}
-      className={`h-6 w-6 rounded-full ${custom ? '' : TOKEN_CLASS[color]} ${
-        selected ? 'ring-2 ring-ink/60' : 'ring-1 ring-line'
+      className={`h-6 w-6 rounded-full transition-shadow ${custom ? '' : TOKEN_CLASS[color]} ${
+        selected ? 'ring-2 ring-ink/60' : 'ring-1 ring-line hover:ring-muted'
       }`}
     />
   );

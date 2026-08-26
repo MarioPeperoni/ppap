@@ -4,7 +4,7 @@ import { SettingsDialog } from '@/renderer/components/Settings/SettingsDialog';
 import { importBoard } from '@/renderer/session/board-session';
 
 const BUTTON_CLASS =
-  'flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink';
+  'flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink';
 
 export function LibraryActions(): ReactElement {
   const [settingsOpen, setSettingsOpen] = useState(false);

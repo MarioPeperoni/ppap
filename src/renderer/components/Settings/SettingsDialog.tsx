@@ -80,7 +80,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
                     onOpenChange(false);
                     setWhatsNew(true);
                   }}
-                  className="rounded-lg bg-raised px-2.5 py-1.5 text-[12px] text-muted hover:text-ink"
+                  className="rounded-lg bg-raised px-2.5 py-1.5 text-[12px] text-muted transition-colors hover:bg-line hover:text-ink"
                 >
                   Show
                 </button>

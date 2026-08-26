@@ -16,8 +16,8 @@ export function EraserOptions(): ReactElement {
           onClick={() => {
             setEraserRadius(radius);
           }}
-          className={`flex h-8 w-8 items-center justify-center rounded-full ${
-            radius === eraserRadius ? 'ring-2 ring-ink/60' : 'ring-1 ring-line'
+          className={`flex h-8 w-8 items-center justify-center rounded-full transition-shadow ${
+            radius === eraserRadius ? 'ring-2 ring-ink/60' : 'ring-1 ring-line hover:ring-muted'
           }`}
         >
           <span

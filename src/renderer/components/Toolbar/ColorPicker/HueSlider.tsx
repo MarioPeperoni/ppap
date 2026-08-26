@@ -17,7 +17,7 @@ export function HueSlider({ hue, onChange }: HueSliderProps): ReactElement {
   return (
     <div
       aria-label="hue"
-      className="relative h-3 w-full touch-none rounded-full"
+      className="relative h-3 w-full cursor-crosshair touch-none rounded-full"
       style={{ backgroundImage: HUE_GRADIENT }}
       {...drag}
     >

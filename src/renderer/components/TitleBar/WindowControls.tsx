@@ -1,7 +1,8 @@
 import type { ReactElement } from 'react';
 import { Minus, Square, X } from 'lucide-react';
 
-const BUTTON_CLASS = 'flex h-9 w-11 items-center justify-center text-muted hover:bg-raised';
+const BUTTON_CLASS =
+  'flex h-9 w-11 items-center justify-center text-muted transition-colors hover:bg-raised';
 
 export function WindowControls(): ReactElement {
   return (

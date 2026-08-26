@@ -26,8 +26,8 @@ export function PenOptions(): ReactElement {
             onClick={() => {
               setPenSize(token);
             }}
-            className={`flex h-6 w-6 items-center justify-center rounded-full ${
-              token === penSize ? 'ring-2 ring-ink/60' : 'ring-1 ring-line'
+            className={`flex h-6 w-6 items-center justify-center rounded-full transition-shadow ${
+              token === penSize ? 'ring-2 ring-ink/60' : 'ring-1 ring-line hover:ring-muted'
             }`}
           >
             <span className={`rounded-full bg-ink ${DOT_CLASS[token]}`} />

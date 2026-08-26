@@ -55,7 +55,7 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
                 setPopover(null);
               }}
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-                active ? 'bg-raised text-ink' : 'text-muted hover:text-ink'
+                active ? 'bg-raised text-ink' : 'text-muted hover:bg-raised/60 hover:text-ink'
               }`}
             >
               <Icon size={18} strokeWidth={1.75} />

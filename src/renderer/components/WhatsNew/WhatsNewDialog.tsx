@@ -36,7 +36,7 @@ export function WhatsNewDialog(): ReactElement | null {
           </div>
 
           <div className="mt-5 flex justify-end">
-            <Dialog.Close className="rounded-lg bg-raised px-3 py-1.5 text-[12px] text-ink hover:bg-line">
+            <Dialog.Close className="rounded-lg bg-raised px-3 py-1.5 text-[12px] text-ink transition-colors hover:bg-line">
               Got it
             </Dialog.Close>
           </div>

@@ -5,7 +5,7 @@ import { exportBoardImage } from '@/renderer/export/board-export';
 import { exportBoard } from '@/renderer/session/board-session';
 
 const ITEM_CLASS =
-  'w-full rounded-lg px-2.5 py-1.5 text-left text-[12px] text-ink/80 hover:bg-raised hover:text-ink';
+  'w-full rounded-lg px-2.5 py-1.5 text-left text-[12px] text-ink/80 transition-colors hover:bg-raised hover:text-ink';
 
 export function BoardActions(): ReactElement {
   return (
@@ -14,7 +14,7 @@ export function BoardActions(): ReactElement {
         <button
           type="button"
           aria-label="Board actions"
-          className="app-no-drag flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink"
+          className="app-no-drag flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink"
         >
           <MoreHorizontal size={16} strokeWidth={1.75} />
         </button>

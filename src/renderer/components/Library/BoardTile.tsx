@@ -7,7 +7,7 @@ import { openBoard, renameBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
 
 const ACTION_CLASS =
-  'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm';
+  'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm transition-colors';
 
 interface BoardTileProps {
   board: BoardMeta;
@@ -79,7 +79,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
           onClick={() => {
             void openBoard(board.id);
           }}
-          className="truncate px-1.5 text-left text-[12px] text-ink"
+          className="truncate rounded px-1.5 text-left text-[12px] text-ink transition-colors hover:bg-raised"
         >
           {board.name}
         </button>

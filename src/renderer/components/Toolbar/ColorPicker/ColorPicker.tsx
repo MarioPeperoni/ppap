@@ -58,7 +58,7 @@ export function ColorPicker({ onChange, onPick }: ColorPickerProps): ReactElemen
           onClick={() => {
             onPick(hex);
           }}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-raised text-ink hover:bg-line"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-raised text-ink transition-colors hover:bg-line"
         >
           <Check size={13} strokeWidth={2} />
         </button>
