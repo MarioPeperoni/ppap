@@ -1,4 +1,6 @@
+import { paletteOf } from '@/core/color/palettes';
 import { deleteSelection } from '@/renderer/board/selection/selection-actions';
+import { usePaletteStore } from '@/renderer/stores/palette.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
 import type { ActionId, ToolId } from '@/types';
@@ -20,7 +22,10 @@ function selectTool(id: ToolId): () => void {
 
 function cycleColor(direction: number): () => void {
   return () => {
-    useToolStore.getState().cycleColor(direction);
+    const { palettes } = usePaletteStore.getState();
+    const carried = paletteOf(palettes, useToolStore.getState().activePaletteId);
+
+    useToolStore.getState().cycleColor(direction, carried?.colors ?? []);
   };
 }
 

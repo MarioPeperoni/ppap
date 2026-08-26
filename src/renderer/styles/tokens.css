@@ -3,6 +3,8 @@
   --color-blue: #2563eb;
   --color-red: #dc2626;
   --color-green: #16a34a;
+  --color-violet: #7c3aed;
+  --color-orange: #ea580c;
 
   --color-canvas: #ffffff;
   --color-dots: #d4d4d4;
@@ -39,6 +41,8 @@
     --color-blue: #5b8def;
     --color-red: #f0616b;
     --color-green: #4ade80;
+    --color-violet: #a78bfa;
+    --color-orange: #fb923c;
 
     --color-canvas: #191919;
     --color-dots: #2f2f2f;
@@ -54,6 +58,8 @@
   --color-blue: #5b8def;
   --color-red: #f0616b;
   --color-green: #4ade80;
+  --color-violet: #a78bfa;
+  --color-orange: #fb923c;
 
   --color-canvas: #191919;
   --color-dots: #2f2f2f;

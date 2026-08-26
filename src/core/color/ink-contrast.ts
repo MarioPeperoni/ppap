@@ -1,4 +1,5 @@
-import { MIN_INK_CONTRAST } from '@/constants/color.constants';
+import { MIN_INK_CONTRAST, READABLE_LIGHTNESS } from '@/constants/color.constants';
+import { LIGHT_PALETTE } from '@/constants/palette.constants';
 import { fitToGamut, rgbToOklch } from '@/core/color/oklch';
 import { hexToRgb, rgbToHex } from '@/core/color/srgb';
 import type { HexColor } from '@/types';
@@ -12,6 +13,13 @@ function legibleLightness(ink: number, ground: number): number {
   if (lighter > 1) return darker;
 
   return ink >= ground ? lighter : darker;
+}
+
+/** The mark a colour can carry on top of itself and still be read. */
+export function readableOn(color: HexColor): HexColor {
+  const { l } = rgbToOklch(hexToRgb(color));
+
+  return l > READABLE_LIGHTNESS ? LIGHT_PALETTE.ink : LIGHT_PALETTE.canvas;
 }
 
 /** Keeps a custom ink's hue but never lets it sink into the canvas it is drawn on. */

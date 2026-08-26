@@ -1,10 +1,17 @@
 import type { Point } from './geometry.types';
 
-export type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+export type ColorToken = 'ink' | 'blue' | 'red' | 'green' | 'violet' | 'orange';
 
 export type HexColor = `#${string}`;
 
 export type StrokeColor = ColorToken | HexColor;
+
+/** A named set of custom colours the bar adopts in one go. */
+export interface SavedPalette {
+  id: string;
+  name: string;
+  colors: HexColor[];
+}
 
 /** sRGB channels, 0..1. */
 export interface Rgb {

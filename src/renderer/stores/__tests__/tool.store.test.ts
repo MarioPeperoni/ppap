@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { useToolStore } from '@/renderer/stores/tool.store';
 
 beforeEach(() => {
-  useToolStore.setState({ color: 'ink', swapColor: null, customColors: [] });
+  useToolStore.setState({ color: 'ink', swapColor: null, activePaletteId: null });
 });
 
 describe('the colour pair', () => {
@@ -49,17 +49,40 @@ describe('the colour pair', () => {
 
   it('never lets a cycle land on the pinned colour', () => {
     useToolStore.getState().pairColor('blue');
-    useToolStore.getState().cycleColor(1);
+    useToolStore.getState().cycleColor(1, []);
 
     expect(useToolStore.getState()).toMatchObject({ color: 'blue', swapColor: 'ink' });
   });
 
-  it('drops the pin with the custom colour behind it', () => {
-    useToolStore.getState().addCustomColor('#7c3aed');
-    useToolStore.getState().setColor('ink');
-    useToolStore.getState().pairColor('#7c3aed');
-    useToolStore.getState().removeCustomColor('#7c3aed');
+  it('keeps the pair when the pen picks up another palette', () => {
+    useToolStore.getState().setColor('#7c3aed');
+    useToolStore.getState().pairColor('ink');
+    useToolStore.getState().carryPalette('other');
 
-    expect(useToolStore.getState()).toMatchObject({ color: 'ink', swapColor: null });
+    expect(useToolStore.getState()).toMatchObject({ color: '#7c3aed', swapColor: 'ink' });
+  });
+});
+
+describe('the palette in hand', () => {
+  it('carries a palette by its id, and none at all', () => {
+    useToolStore.getState().carryPalette('sketch');
+    expect(useToolStore.getState().activePaletteId).toBe('sketch');
+
+    useToolStore.getState().carryPalette(null);
+    expect(useToolStore.getState().activePaletteId).toBeNull();
+  });
+
+  it('cycles the tokens and the colours it is handed', () => {
+    useToolStore.getState().setColor('#7c3aed');
+    useToolStore.getState().cycleColor(1, ['#7c3aed']);
+
+    expect(useToolStore.getState().color).toBe('ink');
+  });
+
+  it('falls back to ink when the colour in hand is off the palette', () => {
+    useToolStore.getState().setColor('#7c3aed');
+    useToolStore.getState().cycleColor(1, []);
+
+    expect(useToolStore.getState().color).toBe('ink');
   });
 });

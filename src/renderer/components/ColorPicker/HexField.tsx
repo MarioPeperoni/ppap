@@ -15,7 +15,7 @@ export function HexField({ value, onChange }: HexFieldProps): ReactElement {
       onChange={(event) => {
         onChange(event.target.value.trim().toLowerCase());
       }}
-      className="min-w-0 flex-1 rounded-md bg-raised px-2 py-1 font-mono text-[11px] text-ink outline-none focus:ring-1 focus:ring-line"
+      className="w-24 shrink-0 rounded-md bg-raised px-2 py-1.5 font-mono text-[11px] text-ink outline-none focus:ring-1 focus:ring-line"
     />
   );
 }

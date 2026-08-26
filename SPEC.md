@@ -120,13 +120,14 @@ board rect.
 
 ### 2.6 State
 
-| Store          | Holds                                                                                   |
-| -------------- | --------------------------------------------------------------------------------------- |
-| `libraryStore` | Board metadata, sort order, loading state                                               |
-| `keymapStore`  | One key binding per rebindable action; persisted to settings                            |
-| `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>` |
-| `toolStore`    | Active tool, pen colour pair, pen width, eraser width; persisted to settings            |
-| `historyStore` | Undo and redo command stacks, capped at 200 commands per board                          |
+| Store          | Holds                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| `libraryStore` | Board metadata, sort order, loading state                                                                  |
+| `keymapStore`  | One key binding per rebindable action; persisted to settings                                               |
+| `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>`                    |
+| `toolStore`    | Active tool, pen colour pair, the id of the active palette, pen width, eraser width; persisted to settings |
+| `paletteStore` | The saved palettes; persisted to settings                                                                  |
+| `historyStore` | Undo and redo command stacks, capped at 200 commands per board                                             |
 
 Canvas layers subscribe to the vanilla store directly, so a pointer move never rerenders a React
 component. React components use narrow selectors with `useShallow`. Element mutations go through
@@ -176,10 +177,16 @@ board  = screen / camera.zoom + camera.xy
 `src/shared/types.ts` is the single source of truth.
 
 ```ts
-type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+type ColorToken = 'ink' | 'blue' | 'red' | 'green' | 'violet' | 'orange';
 type HexColor = `#${string}`; // lowercase #rrggbb, a colour the user picked
 type StrokeColor = ColorToken | HexColor;
 type SizeToken = 's' | 'm' | 'l';
+
+interface SavedPalette {
+  id: string; // uuid v4
+  name: string;
+  colors: HexColor[]; // at most MAX_CUSTOM_COLORS
+}
 type NibToken = 'pen' | 'pencil';
 
 interface BoardMeta {
@@ -242,6 +249,8 @@ mutation, and never written to disk.
 | `blue`     | `#2563EB` | `#5B8DEF` |
 | `red`      | `#DC2626` | `#F0616B` |
 | `green`    | `#16A34A` | `#4ADE80` |
+| `violet`   | `#7C3AED` | `#A78BFA` |
+| `orange`   | `#EA580C` | `#FB923C` |
 | background | `#FFFFFF` | `#191919` |
 | dots       | `#D4D4D4` | `#333333` |
 
@@ -272,17 +281,21 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
 - `event.getCoalescedEvents()` supplies the full input sample rate; every sample is appended.
 - The live stroke draws on `OverlayLayer`; `pointerup` commits it as one command and clears the
   overlay.
-- Four colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
-  cycle color, `[` and `]` step width. Choices persist per tool in settings.
+- Six colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
+  cycle the six and whatever the active palette holds, `[` and `]` step width. Choices persist in
+  settings.
 - Two colors are held at once: the active one and a pinned partner, and `X` swaps them. A click in
   the popover sets the active color, `Shift`-click pins the partner, and a second `Shift`-click
-  unpins it. Picking the pinned color is the swap, so the pair never collapses into one color.
-  Both colors survive a restart; removing a custom swatch that is pinned leaves no partner.
+  unpins it. The active color carries a tick inside the swatch, dark or light by the lightness under
+  it, and the partner a dashed ring standing off the swatch, so two swatches side by side never
+  collide. Every other selected control in the popover wears that standing ring, solid. Picking the pinned color is the swap, so the pair never collapses into one color.
+  Both colors survive a restart, and a colour keeps its pin after its palette leaves the bar.
 - A change of color away from the popover flashes a dot in the new color beside the cursor and
   fades it out, so the swap is legible without looking down at the toolbar.
-- Up to `MAX_CUSTOM_COLORS` own colors sit in a second row under the four, ending in a plus that
-  opens an HSV panel with a hex field and previews the colour in its own swatch. They are stored in
-  settings, while a stroke keeps the hex it was drawn with, so removing a swatch leaves the ink
+- Under the six sits the active palette: its `MAX_CUSTOM_COLORS` colors and, after them, a
+  swatch-sized button that opens the library, the two filling one row of six. The pen holds the
+  palette's id, never a copy of its colors, so editing the palette changes the row and deleting it
+  leaves the button alone. A stroke keeps the hex it was drawn with, so a palette going inactive leaves the ink
   alone and a board carries its colors wherever it travels.
 - A custom color is drawn as picked unless it would sink into the canvas under it. Below
   `MIN_INK_CONTRAST` in OKLCh lightness it is pushed away from the canvas, hue intact, which is
@@ -389,7 +402,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen colour pair and width, custom colors, wheel, sort order, key bindings
+  settings.json        theme, active tool, pen colour pair and width, saved palettes and the id of the active one, wheel, sort order, key bindings
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
@@ -484,11 +497,11 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, custom colors and widths for the pen and pencil, radius for the eraser. The active pen or
-pencil carries a rounded color bar under its icon: the active color alone, or split 65 / 35 with
-the pinned partner. The popover closes on `Escape`,
-outside click, and selection. The zoom percentage sits in the bottom-right corner between a `−`
-and a `+` button; clicking it sets 100 %, and the step buttons grey out at the zoom limits.
+colors, the active palette and widths for the pen and pencil, radius for the eraser.
+The active pen or pencil carries a rounded color bar under its icon: the active color alone, or
+split 65 / 35 with the pinned partner. The popover closes on `Escape`, outside click, and
+selection. The zoom percentage sits in the bottom-right corner between a `−` and a `+` button;
+clicking it sets 100 %, and the step buttons grey out at the zoom limits.
 
 ### 8.3 Library grid
 
@@ -511,6 +524,22 @@ selection. A row shows its binding, clears it, and resets it; the footer resets 
 the binding arms it and the next keystroke lands, with the modifiers held. Taking a key from
 another action leaves that one unbound and says so; taking one from a fixed shortcut says what it
 overrides; `Space` and `Escape` are refused. `Escape` while armed cancels the capture.
+
+### 8.5 Palettes
+
+The palette button in the pen popover closes it and opens a Radix dialog of its own, so the popover
+never grows to hold a collection. The dialog is two panes: a scrolling list of up to
+`MAX_SAVED_PALETTES` palettes on the left, each a name over a strip of its dots, the active one
+tagged `Active` in green, and a button under them that makes a new one; the palette picked there
+opens in the editor on the right.
+
+The editor renames the palette in place, cut to `MAX_PALETTE_NAME`, shows its colors as swatches
+that drop on a click of their corner, and fills the rest of the pane with an HSV panel over a hex
+field and an `Add colour` button wearing the colour it would add, lettered dark or light against
+it. A palette takes a colour once and stops at `MAX_CUSTOM_COLORS`.
+`Activate palette` hands the pen its id and closes the dialog, and reads `Active` for the palette
+already carried; the bin deletes the palette, leaving the pen with none when it was the active one.
+A palette with no colors is kept but cannot be activated.
 
 ---
 

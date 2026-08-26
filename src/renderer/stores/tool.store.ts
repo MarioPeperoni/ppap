@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { MAX_CUSTOM_COLORS } from '@/constants/color.constants';
 import {
   DEFAULT_COLOR,
   DEFAULT_ERASER_RADIUS,
@@ -34,7 +33,7 @@ function picked(pair: ColorPair, next: StrokeColor): ColorPair {
 
 interface ToolStore extends ColorPair {
   tool: ToolId;
-  customColors: HexColor[];
+  activePaletteId: string | null;
   penSize: SizeToken;
   eraserRadius: number;
   adopt: (settings: Settings) => void;
@@ -42,9 +41,8 @@ interface ToolStore extends ColorPair {
   setColor: (color: StrokeColor) => void;
   pairColor: (color: StrokeColor) => void;
   swapColors: () => void;
-  cycleColor: (direction: number) => void;
-  addCustomColor: (color: HexColor) => void;
-  removeCustomColor: (color: HexColor) => void;
+  cycleColor: (direction: number, colors: readonly HexColor[]) => void;
+  carryPalette: (id: string | null) => void;
   setPenSize: (size: SizeToken) => void;
   setEraserRadius: (radius: number) => void;
   stepWidth: (direction: number) => void;
@@ -54,12 +52,12 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
   tool: DEFAULT_TOOL,
   color: DEFAULT_COLOR,
   swapColor: null,
-  customColors: [],
+  activePaletteId: null,
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
 
-  adopt: ({ tool, color, swapColor, customColors, penSize, eraserRadius }) => {
-    set({ tool, color, swapColor, customColors, penSize, eraserRadius });
+  adopt: ({ tool, color, swapColor, activePaletteId, penSize, eraserRadius }) => {
+    set({ tool, color, swapColor, activePaletteId, penSize, eraserRadius });
   },
 
   setTool: (tool) => {
@@ -84,35 +82,15 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
     set({ color: swapColor, swapColor: color });
   },
 
-  cycleColor: (direction) => {
+  cycleColor: (direction, colors) => {
     const state = get();
-    const next = cycled(
-      [...TOOL_COLORS, ...state.customColors],
-      state.color,
-      direction,
-      DEFAULT_COLOR,
-    );
+    const next = cycled([...TOOL_COLORS, ...colors], state.color, direction, DEFAULT_COLOR);
 
     set(picked(state, next));
   },
 
-  addCustomColor: (color) => {
-    const state = get();
-    const kept = state.customColors.includes(color)
-      ? state.customColors
-      : [...state.customColors, color].slice(-MAX_CUSTOM_COLORS);
-
-    set({ customColors: kept, ...picked(state, color) });
-  },
-
-  removeCustomColor: (color) => {
-    const state = get();
-
-    set({
-      customColors: state.customColors.filter((kept) => kept !== color),
-      color: state.color === color ? DEFAULT_COLOR : state.color,
-      swapColor: state.swapColor === color ? null : state.swapColor,
-    });
+  carryPalette: (activePaletteId) => {
+    set({ activePaletteId });
   },
 
   setPenSize: (penSize) => {

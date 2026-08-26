@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_CUSTOM_COLORS } from '@/constants/color.constants';
+import {
+  CARRIED_PALETTE_ID,
+  MAX_CUSTOM_COLORS,
+  MAX_PALETTE_NAME,
+  MAX_SAVED_PALETTES,
+} from '@/constants/color.constants';
 import { DEFAULT_KEYMAP } from '@/constants/keymap.constants';
 import { DEFAULT_SETTINGS } from '@/constants/settings.constants';
 import { parseSettings, parseSettingsPatch } from '@/validation/settings.validator';
@@ -18,11 +23,24 @@ describe('settings validation', () => {
     expect(() => parseSettings({ lastSeenVersion: 3 })).toThrow('Last seen version');
   });
 
-  it('takes a custom colour list and a hex as the active colour', () => {
-    expect(parseSettingsPatch({ color: '#7c3aed', customColors: ['#7c3aed', '#0ea5e9'] })).toEqual({
+  it('takes a hex as the active colour and an id as the palette in hand', () => {
+    expect(parseSettingsPatch({ color: '#7c3aed', activePaletteId: 'sketch' })).toEqual({
       color: '#7c3aed',
-      customColors: ['#7c3aed', '#0ea5e9'],
+      activePaletteId: 'sketch',
     });
+  });
+
+  it('reads loose colours as the palette the pen carries', () => {
+    const settings = parseSettings({ customColors: ['#7c3aed', '#0ea5e9'] });
+
+    expect(settings.savedPalettes).toEqual([
+      { id: CARRIED_PALETTE_ID, name: 'Mine', colors: ['#7c3aed', '#0ea5e9'] },
+    ]);
+    expect(settings.activePaletteId).toBe(CARRIED_PALETTE_ID);
+  });
+
+  it('carries no palette when the id names none', () => {
+    expect(parseSettings({ activePaletteId: 'ghost' }).activePaletteId).toBeNull();
   });
 
   it('rejects a custom colour that is not a hex', () => {
@@ -34,6 +52,35 @@ describe('settings validation', () => {
     const many = Array.from({ length: MAX_CUSTOM_COLORS + 1 }, () => '#7c3aed');
 
     expect(() => parseSettings({ customColors: many })).toThrow('Custom colors');
+  });
+
+  it('keeps a saved palette as written', () => {
+    const palette = { id: 'a', name: 'Sketch', colors: ['#7c3aed', '#0ea5e9'] };
+
+    expect(parseSettingsPatch({ savedPalettes: [palette] })).toEqual({ savedPalettes: [palette] });
+  });
+
+  it('rejects a palette that is malformed or outgrows its limits', () => {
+    const many = Array.from({ length: MAX_SAVED_PALETTES + 1 }, () => ({
+      id: 'a',
+      name: 'Sketch',
+      colors: [],
+    }));
+    const wide = { id: 'a', name: 'Sketch', colors: Array(MAX_CUSTOM_COLORS + 1).fill('#7c3aed') };
+
+    expect(() => parseSettings({ savedPalettes: many })).toThrow('Saved palettes');
+    expect(() => parseSettings({ savedPalettes: [wide] })).toThrow('Saved palettes');
+    expect(() => parseSettings({ savedPalettes: ['#7c3aed'] })).toThrow('Saved palettes');
+    expect(() => parseSettings({ savedPalettes: [{ id: 'a', colors: [] }] })).toThrow(
+      'Saved palettes',
+    );
+  });
+
+  it('cuts a palette name to the limit it keeps', () => {
+    const palette = { id: 'a', name: 'x'.repeat(MAX_PALETTE_NAME + 10), colors: [] };
+    const [saved] = parseSettings({ savedPalettes: [palette] }).savedPalettes;
+
+    expect(saved?.name).toHaveLength(MAX_PALETTE_NAME);
   });
 
   it('keeps a stored binding and defaults the rest of the keymap', () => {

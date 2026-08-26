@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { TOOL_SIZES } from '@/constants/tool.constants';
-import { ColorRow } from '@/renderer/components/Toolbar/ColorRow';
+import { ColorPanel } from '@/renderer/components/Toolbar/ColorPanel';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import type { SizeToken } from '@/types';
 
@@ -15,8 +15,8 @@ export function PenOptions(): ReactElement {
   const setPenSize = useToolStore((state) => state.setPenSize);
 
   return (
-    <div className="flex w-30 flex-col gap-3">
-      <ColorRow />
+    <div className="flex w-46 flex-col gap-3">
+      <ColorPanel />
       <div className="flex items-center gap-2">
         {TOOL_SIZES.map((token) => (
           <button
@@ -27,7 +27,9 @@ export function PenOptions(): ReactElement {
               setPenSize(token);
             }}
             className={`flex h-6 w-6 items-center justify-center rounded-full transition-shadow ${
-              token === penSize ? 'ring-2 ring-ink/60' : 'ring-1 ring-line hover:ring-muted'
+              token === penSize
+                ? 'ring-1 ring-line outline-2 outline-offset-2 outline-ink/70'
+                : 'ring-1 ring-line hover:ring-muted'
             }`}
           >
             <span className={`rounded-full bg-ink ${DOT_CLASS[token]}`} />

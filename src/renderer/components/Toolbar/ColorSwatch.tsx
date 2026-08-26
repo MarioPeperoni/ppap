@@ -1,9 +1,10 @@
 import type { ReactElement } from 'react';
-import { colorFill } from '@/renderer/theme/color-fill';
+import { Check } from 'lucide-react';
+import { colorFill, markFill } from '@/renderer/theme/color-fill';
 import type { StrokeColor } from '@/types';
 
 const IDLE_RING = 'ring-1 ring-line hover:ring-muted';
-const ACTIVE_RING = 'ring-2 ring-ink/60';
+const ACTIVE_RING = 'ring-1 ring-line';
 const PAIRED_RING = 'ring-1 ring-line outline-2 outline-offset-2 outline-dashed outline-ink/45';
 
 interface ColorSwatchProps {
@@ -33,7 +34,9 @@ export function ColorSwatch({
         else onSelect(color);
       }}
       style={{ backgroundColor: colorFill(color) }}
-      className={`h-6 w-6 rounded-full transition-shadow ${ring}`}
-    />
+      className={`flex h-6 w-6 items-center justify-center rounded-full transition-shadow ${ring}`}
+    >
+      {selected ? <Check size={13} strokeWidth={3} style={{ color: markFill(color) }} /> : null}
+    </button>
   );
 }

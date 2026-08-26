@@ -1,5 +1,5 @@
 import type { WheelAction } from './camera.types';
-import type { HexColor, StrokeColor } from './color.types';
+import type { SavedPalette, StrokeColor } from './color.types';
 import type { SizeToken } from './element.types';
 import type { Keymap } from './keymap.types';
 import type { SortOrder } from './library.types';
@@ -11,7 +11,8 @@ export interface Settings {
   tool: ToolId;
   color: StrokeColor;
   swapColor: StrokeColor | null;
-  customColors: HexColor[];
+  savedPalettes: SavedPalette[];
+  activePaletteId: string | null;
   penSize: SizeToken;
   eraserRadius: number;
   wheelAction: WheelAction;

@@ -1,34 +1,31 @@
 import { useState, type ReactElement } from 'react';
-import { Check } from 'lucide-react';
 import { PICKER_START } from '@/constants/color.constants';
 import { hsvToRgb, rgbToHsv } from '@/core/color/hsv';
+import { readableOn } from '@/core/color/ink-contrast';
 import { hexToRgb, isHexColor, rgbToHex } from '@/core/color/srgb';
-import { HexField } from '@/renderer/components/Toolbar/ColorPicker/HexField';
-import { HueSlider } from '@/renderer/components/Toolbar/ColorPicker/HueSlider';
-import { SaturationField } from '@/renderer/components/Toolbar/ColorPicker/SaturationField';
+import { HexField } from '@/renderer/components/ColorPicker/HexField';
+import { HueSlider } from '@/renderer/components/ColorPicker/HueSlider';
+import { SaturationField } from '@/renderer/components/ColorPicker/SaturationField';
 import type { HexColor, Hsv } from '@/types';
 
 interface ColorPickerProps {
-  onChange: (color: HexColor) => void;
+  disabled: boolean;
   onPick: (color: HexColor) => void;
 }
 
-export function ColorPicker({ onChange, onPick }: ColorPickerProps): ReactElement {
+export function ColorPicker({ disabled, onPick }: ColorPickerProps): ReactElement {
   const [hsv, setHsv] = useState<Hsv>(rgbToHsv(hexToRgb(PICKER_START)));
   const [text, setText] = useState<string>(PICKER_START);
 
   const hex = rgbToHex(hsvToRgb(hsv));
 
   const pickHsv = (next: Hsv): void => {
-    const picked = rgbToHex(hsvToRgb(next));
-
     setHsv(next);
-    setText(picked);
-    onChange(picked);
+    setText(rgbToHex(hsvToRgb(next)));
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
       <SaturationField
         hsv={hsv}
         onChange={(s, v) => {
@@ -46,21 +43,20 @@ export function ColorPicker({ onChange, onPick }: ColorPickerProps): ReactElemen
           value={text}
           onChange={(next) => {
             setText(next);
-            if (!isHexColor(next)) return;
-
-            setHsv(rgbToHsv(hexToRgb(next)));
-            onChange(next);
+            if (isHexColor(next)) setHsv(rgbToHsv(hexToRgb(next)));
           }}
         />
         <button
           type="button"
           aria-label="keep the colour"
+          disabled={disabled}
           onClick={() => {
             onPick(hex);
           }}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-raised text-ink transition-colors hover:bg-line"
+          style={{ backgroundColor: hex, color: readableOn(hex) }}
+          className="flex-1 rounded-md py-1.5 text-[12px] font-medium ring-1 ring-line transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-30"
         >
-          <Check size={13} strokeWidth={2} />
+          Add colour
         </button>
       </div>
     </div>

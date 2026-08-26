@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MIN_INK_CONTRAST } from '@/constants/color.constants';
 import { LIGHT_PALETTE } from '@/constants/palette.constants';
 import { hsvToRgb, rgbToHsv } from '@/core/color/hsv';
-import { inkOn } from '@/core/color/ink-contrast';
+import { inkOn, readableOn } from '@/core/color/ink-contrast';
 import { fitToGamut, oklchToRgb, rgbToOklch } from '@/core/color/oklch';
 import { hexToRgb, isDisplayable, isHexColor, rgbToHex } from '@/core/color/srgb';
 import { strokeColor } from '@/core/color/stroke-color';
@@ -99,6 +99,13 @@ describe('stroke colour', () => {
   it('reads a token from the palette of the moment', () => {
     expect(strokeColor('ink', LIGHT_PALETTE)).toBe(LIGHT_PALETTE.ink);
     expect(strokeColor('ink', darkPalette)).toBe('#ededed');
+  });
+
+  it('marks a pale colour dark and a deep one light', () => {
+    expect(readableOn('#ffffff')).toBe(LIGHT_PALETTE.ink);
+    expect(readableOn('#facc15')).toBe(LIGHT_PALETTE.ink);
+    expect(readableOn('#000000')).toBe(LIGHT_PALETTE.canvas);
+    expect(readableOn('#2563eb')).toBe(LIGHT_PALETTE.canvas);
   });
 
   it('adapts custom ink to the canvas under it', () => {
