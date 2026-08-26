@@ -23,11 +23,10 @@
     "sourceMap": true,
     "noEmit": true,
 
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "~/*": ["./*"]
     }
   },
-  "include": ["src", "forge.env.d.ts", "forge.config.ts", "*.config.mts"]
+  "include": ["src", "*.mts", "forge.env.d.ts", "forge.config.ts"]
 }

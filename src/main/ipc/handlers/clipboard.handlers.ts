@@ -1,22 +1,28 @@
-import { clipboard, nativeImage } from 'electron';
+import { clipboard, ClipboardItem } from 'electron';
+import { PNG_MIME } from '@/constants/export.constants';
 import { IPC_CHANNELS } from '@/constants/ipc.constants';
 import { MAX_IMAGE_BYTES } from '@/constants/library.constants';
+import type { Bytes } from '@/types/bytes.types';
 import type { IpcInvokeTable } from '@/types/main-ipc.types';
 import { expectBytes } from '@/validation/primitive.validator';
 
-function readClipboardImage(): Uint8Array | null {
-  if (!clipboard.availableFormats().some((format) => format.startsWith('image/'))) return null;
+async function readClipboardImage(): Promise<Bytes | null> {
+  if (!(await clipboard.has(PNG_MIME))) return null;
 
-  const image = clipboard.readImage();
+  const item = (await clipboard.read()).find((entry) => entry.types.includes(PNG_MIME));
+  if (item === undefined) return null;
 
-  return image.isEmpty() ? null : image.toPNG();
+  const png = await item.getType(PNG_MIME);
+  if (!(png instanceof Blob)) return null;
+
+  return new Uint8Array(await png.arrayBuffer());
 }
 
 export const clipboardInvokeHandlers: IpcInvokeTable = {
-  [IPC_CHANNELS.clipboardWriteImage]: (_window, payload) => {
+  [IPC_CHANNELS.clipboardWriteImage]: async (_window, payload) => {
     const png = expectBytes(payload, 'Clipboard image', MAX_IMAGE_BYTES);
 
-    clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(png)));
+    await clipboard.write([new ClipboardItem({ [PNG_MIME]: new Blob([png], { type: PNG_MIME }) })]);
   },
 
   [IPC_CHANNELS.clipboardReadImage]: () => readClipboardImage(),
