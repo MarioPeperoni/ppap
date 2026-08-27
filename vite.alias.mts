@@ -1,7 +1,11 @@
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normalizePath } from 'vite';
 
-/** Mirrors the tsconfig paths; Vite resolves a trailing slash as a prefix, so `@tailwindcss` is safe. */
+const root = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
+
+/** Mirrors the tsconfig paths; Vite appends the separator when matching, so the entries carry none. */
 export const alias = {
-  '@/': fileURLToPath(new URL('./src/', import.meta.url)),
-  '~/': fileURLToPath(new URL('./', import.meta.url)),
+  '@': `${root}/src`,
+  '~': root,
 };
