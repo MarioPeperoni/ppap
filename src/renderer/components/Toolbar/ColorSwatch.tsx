@@ -30,7 +30,7 @@ export function ColorSwatch({
         else onSelect(color);
       }}
       style={{ backgroundColor: colorFill(color) }}
-      className={`h-6 w-6 rounded-full transition-shadow ${SELECTION_RING[state]}`}
+      className={`h-6 w-6 rounded-full transition duration-150 ease-swift ${SELECTION_RING[state]}`}
     />
   );
 }

@@ -8,6 +8,7 @@ import { Choices } from '@/renderer/components/Settings/Choices';
 import { KeymapPanel } from '@/renderer/components/Settings/Keymap/KeymapPanel';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
 import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
+import { DIALOG_PANEL, DIALOG_VEIL } from '@/renderer/motion/dialog-motion';
 import { useInputStore } from '@/renderer/stores/input.store';
 import { useThemeStore } from '@/renderer/stores/theme.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
@@ -48,9 +49,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+        <Dialog.Overlay className={`fixed inset-0 bg-black/40 ${DIALOG_VEIL}`} />
         <Dialog.Content
-          className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl ${
+          className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl transition-[width] duration-200 ease-swift ${DIALOG_PANEL} ${
             onKeymap ? 'w-108' : 'w-96'
           }`}
         >
@@ -75,62 +76,64 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
             Theme, scroll wheel, shortcuts and version
           </Dialog.Description>
 
-          {onKeymap ? (
-            <KeymapPanel />
-          ) : (
-            <>
-              <div className="mt-5 flex flex-col gap-4">
-                <Choices
-                  label="Theme"
-                  values={THEMES}
-                  labels={THEME_LABELS}
-                  active={theme}
-                  onSelect={setTheme}
-                />
-                <Choices
-                  label="Scroll wheel"
-                  values={WHEEL_ACTIONS}
-                  labels={WHEEL_LABELS}
-                  active={wheelAction}
-                  onSelect={setWheelAction}
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-muted">Shortcuts</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setView('keymap');
-                    }}
-                    className={LINK_CLASS}
-                  >
-                    Customise
-                  </button>
-                </div>
-                {release === null ? null : (
+          <div key={view} className="animate-view-in">
+            {onKeymap ? (
+              <KeymapPanel />
+            ) : (
+              <>
+                <div className="mt-5 flex flex-col gap-4">
+                  <Choices
+                    label="Theme"
+                    values={THEMES}
+                    labels={THEME_LABELS}
+                    active={theme}
+                    onSelect={setTheme}
+                  />
+                  <Choices
+                    label="Scroll wheel"
+                    values={WHEEL_ACTIONS}
+                    labels={WHEEL_LABELS}
+                    active={wheelAction}
+                    onSelect={setWheelAction}
+                  />
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] text-muted">What&apos;s new</span>
+                    <span className="text-[12px] text-muted">Shortcuts</span>
                     <button
                       type="button"
                       onClick={() => {
-                        onOpenChange(false);
-                        setWhatsNew(true);
+                        setView('keymap');
                       }}
                       className={LINK_CLASS}
                     >
-                      Show
+                      Customise
                     </button>
                   </div>
-                )}
-              </div>
+                  {release === null ? null : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-muted">What&apos;s new</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenChange(false);
+                          setWhatsNew(true);
+                        }}
+                        className={LINK_CLASS}
+                      >
+                        Show
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-              <footer className="mt-6 flex flex-col items-center gap-2 border-t border-line pt-5">
-                <BrandMark size={36} />
-                <span className="text-[11px] text-muted">
-                  ppap <span className="font-mono">{version}</span>
-                </span>
-              </footer>
-            </>
-          )}
+                <footer className="mt-6 flex flex-col items-center gap-2 border-t border-line pt-5">
+                  <BrandMark size={36} />
+                  <span className="text-[11px] text-muted">
+                    ppap <span className="font-mono">{version}</span>
+                  </span>
+                </footer>
+              </>
+            )}
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

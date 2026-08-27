@@ -21,7 +21,7 @@ export function PaletteSwatch({ color, onRemove }: PaletteSwatchProps): ReactEle
         onClick={() => {
           onRemove(color);
         }}
-        className="absolute -top-1 -right-1 hidden h-4 w-4 items-center justify-center rounded-full bg-raised text-muted ring-1 ring-line transition-colors group-hover:flex hover:text-ink"
+        className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-raised text-muted opacity-0 ring-1 ring-line transition group-hover:pointer-events-auto group-hover:opacity-100 hover:text-ink"
       >
         <X size={10} strokeWidth={2.5} />
       </button>

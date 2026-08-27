@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { DIALOG_PANEL, DIALOG_VEIL } from '@/renderer/motion/dialog-motion';
 import { deleteBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
 
@@ -17,8 +18,10 @@ export function DeleteBoardDialog({ board, onClose }: DeleteBoardDialogProps): R
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 w-80 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl">
+        <Dialog.Overlay className={`fixed inset-0 bg-black/40 ${DIALOG_VEIL}`} />
+        <Dialog.Content
+          className={`fixed top-1/2 left-1/2 w-80 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl ${DIALOG_PANEL}`}
+        >
           <Dialog.Title className="text-[13px] font-medium text-ink">Delete board</Dialog.Title>
           <Dialog.Description className="mt-2 text-[12px] text-muted">
             {board === null ? '' : `"${board.name}" and its drawing are removed for good.`}

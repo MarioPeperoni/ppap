@@ -8,6 +8,7 @@ import { DeleteFolderDialog } from '@/renderer/components/Library/DeleteFolderDi
 import { FolderTile } from '@/renderer/components/Library/FolderTile';
 import { LibraryHeader } from '@/renderer/components/Library/LibraryHeader';
 import { NewBoardTile } from '@/renderer/components/Library/NewBoardTile';
+import { TileEnter } from '@/renderer/components/Library/TileEnter';
 import { useFolderStore } from '@/renderer/stores/folder.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
 import type { BoardMeta, Folder } from '@/types';
@@ -35,7 +36,7 @@ export function LibraryScreen(): ReactElement {
   );
 
   return (
-    <main className="min-h-0 flex-1 overflow-y-auto bg-canvas px-8 py-7">
+    <main className="min-h-0 flex-1 animate-screen-in overflow-y-auto bg-canvas px-8 py-7">
       <LibraryHeader folder={open} />
 
       {!loading && sorted.length === 0 && tiles.length === 0 ? (
@@ -43,17 +44,22 @@ export function LibraryScreen(): ReactElement {
       ) : null}
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
-        <NewBoardTile />
-        {tiles.map((folder) => (
-          <FolderTile
-            key={folder.id}
-            folder={folder}
-            boards={grouped.get(folder.id) ?? []}
-            onDelete={setPendingFolder}
-          />
+        <TileEnter index={0}>
+          <NewBoardTile />
+        </TileEnter>
+        {tiles.map((folder, order) => (
+          <TileEnter key={folder.id} index={order + 1}>
+            <FolderTile
+              folder={folder}
+              boards={grouped.get(folder.id) ?? []}
+              onDelete={setPendingFolder}
+            />
+          </TileEnter>
         ))}
-        {sorted.map((board) => (
-          <BoardTile key={board.id} board={board} onDelete={setPendingBoard} />
+        {sorted.map((board, order) => (
+          <TileEnter key={board.id} index={tiles.length + order + 1}>
+            <BoardTile board={board} onDelete={setPendingBoard} />
+          </TileEnter>
         ))}
       </div>
 

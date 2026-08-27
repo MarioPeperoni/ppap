@@ -7,6 +7,9 @@ import { startBoardDrag } from '@/renderer/library/board-drag';
 import { openBoard, renameBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
 
+const HOVER_ACTIONS_CLASS =
+  'pointer-events-none absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100';
+
 const ACTION_CLASS =
   'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm transition-colors';
 
@@ -44,7 +47,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
             <img src={thumbnail} alt="" className="h-full w-full object-cover" />
           )}
         </button>
-        <div className="absolute top-2 right-2 hidden gap-1 group-hover:flex">
+        <div className={HOVER_ACTIONS_CLASS}>
           <button
             type="button"
             aria-label={`Rename ${board.name}`}

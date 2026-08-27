@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { ArrowUpDown, Check } from 'lucide-react';
 import { SORT_ORDERS } from '@/constants/settings.constants';
+import { POPOVER_SURFACE } from '@/renderer/motion/popover-motion';
 import { useLibraryStore } from '@/renderer/stores/library.store';
 import type { SortOrder } from '@/types';
 
@@ -35,7 +36,7 @@ export function SortMenu(): ReactElement {
           side="bottom"
           align="end"
           sideOffset={6}
-          className="w-44 rounded-xl border border-line bg-surface p-1 shadow-lg"
+          className={`w-44 rounded-xl border border-line bg-surface p-1 shadow-lg ${POPOVER_SURFACE}`}
         >
           {SORT_ORDERS.map((order) => (
             <Popover.Close asChild key={order}>

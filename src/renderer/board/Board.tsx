@@ -15,7 +15,7 @@ export function Board(): ReactElement {
   const host = useBoardHost(hostRef, gridRef, sceneRef, overlayRef);
 
   return (
-    <main className="relative min-h-0 flex-1 bg-canvas">
+    <main className="relative min-h-0 flex-1 animate-screen-in bg-canvas">
       <div ref={hostRef} className="absolute inset-0 touch-none">
         <canvas ref={gridRef} className={LAYER_CLASS} />
         <canvas ref={sceneRef} className={LAYER_CLASS} />

@@ -8,6 +8,7 @@ Just what changed.
 
 - A text tool with four default fonts.
 - Folders in the library view for arranging boards.
+- Smooth animations here and there, for a better feel.
 
 ### Changed
 

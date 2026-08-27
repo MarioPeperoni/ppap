@@ -601,6 +601,32 @@ it. A palette takes a colour once and stops at `MAX_CUSTOM_COLORS`.
 green dot for the palette already carried; the bin deletes the palette, leaving the pen with none
 when it was the active one. A palette with no colors is kept but cannot be activated.
 
+### 8.6 Motion
+
+`renderer/styles/motion.css` holds every keyframe and `renderer/motion` the class strings that bind
+them to a Radix state, so all surfaces of one kind move alike. `--ease-swift` carries the lot and
+nothing runs past 300 ms.
+
+| Surface      | Enter                                                     | Leave                   |
+| ------------ | --------------------------------------------------------- | ----------------------- |
+| Screen       | 200 ms fade                                               | —                       |
+| Dialog veil  | 180 ms fade                                               | 130 ms fade             |
+| Dialog panel | 200 ms fade, 0.96 scale, 8 px rise                        | 130 ms fade, 0.98 scale |
+| Popover      | 160 ms fade, 0.94 scale                                   | 110 ms fade, 0.97 scale |
+| Tooltip      | 130 ms fade, 0.92 scale                                   | 90 ms fade              |
+| Library tile | 280 ms fade and 10 px rise, 26 ms apart to the thirteenth | —                       |
+| Swapped view | 170 ms fade, 4 px rise                                    | —                       |
+| Tool bar     | 220 ms fade and 0.2 scaleX                                | —                       |
+
+Popovers and tooltips take their origin from `--radix-*-content-transform-origin`, so they grow out
+of the control that opened them. Settings carries its width across the shortcuts swap and fades the
+body between the two. The board screen fades without a transform: `ViewportTracker` measures through
+`getBoundingClientRect`, and a scaled host would size the canvases wrong. Tile actions and swatch
+removers fade in on hover instead of appearing, and the toolbar buttons take a 0.95 press. The
+colour bar under an ink tool grows in, its partner segment rides `flex-grow` from nothing rather
+than appearing, and the icon eases its 1 px lift. Swatch outlines stand transparent when idle, so
+the pick fades on. Under `prefers-reduced-motion: reduce` every duration drops to 1 ms.
+
 ---
 
 ## 9. Engineering standards

@@ -18,7 +18,7 @@ export function EraserOptions(): ReactElement {
           onClick={() => {
             setEraserRadius(radius);
           }}
-          className={`flex h-8 w-8 items-center justify-center rounded-full transition-shadow ${
+          className={`flex h-8 w-8 items-center justify-center rounded-full transition duration-150 ease-swift ${
             SELECTION_RING[radius === eraserRadius ? 'selected' : 'idle']
           }`}
         >

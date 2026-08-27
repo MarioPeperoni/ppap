@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { MoreHorizontal } from 'lucide-react';
 import { exportBoardImage } from '@/renderer/export/board-export';
+import { POPOVER_SURFACE } from '@/renderer/motion/popover-motion';
 import { exportBoard } from '@/renderer/session/board-session';
 
 const ITEM_CLASS =
@@ -24,7 +25,7 @@ export function BoardActions(): ReactElement {
           side="bottom"
           align="end"
           sideOffset={6}
-          className="w-44 rounded-xl border border-line bg-surface p-1 shadow-lg"
+          className={`w-44 rounded-xl border border-line bg-surface p-1 shadow-lg ${POPOVER_SURFACE}`}
         >
           <button
             type="button"
