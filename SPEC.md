@@ -200,6 +200,12 @@ interface BoardMeta {
   folderId: string | null;
 }
 
+interface Folder {
+  id: string; // uuid v4
+  name: string;
+  createdAt: string; // ISO 8601
+}
+
 interface BoardContent {
   gridVisible: boolean;
   camera: { x: number; y: number; zoom: number };
@@ -491,6 +497,12 @@ window.ppap = {
     exportFile(id: string):            Promise<boolean>;
     importFile():                      Promise<BoardMeta | null>;
   },
+  folders: {
+    list():                            Promise<Folder[]>;
+    create(name: string):              Promise<Folder>;
+    rename(id: string, name: string):  Promise<void>;
+    remove(id: string):                Promise<void>;
+  },
   window:    { minimize(); toggleMaximize(); close(); onMaximizeChange(cb) },
   theme:     { get(): Promise<Theme>; set(t: Theme); onChange(cb) },
   clipboard: { writeImage(png: Uint8Array): Promise<void> },
@@ -548,14 +560,22 @@ clicking it sets 100 %, and the step buttons grey out at the zoom limits.
   the row that edits.
 - Default name is the creation date (`23 Aug 2026`). A pencil beside the trash on hover renames
   too, as does `F2` anywhere on a focused tile.
-- Sorted by modified date descending, with name and creation date available.
+- A `Library` header sits over the grid with the sort control on its right: modified date
+  descending by default, with name and creation date available.
 - `Delete` opens a Radix confirmation dialog, then removes the archive.
 - Empty state: one line of text and the `+` tile.
+- Folder tiles sit between the `+` tile and the boards, each a mosaic of the four most recently
+  modified thumbnails it holds, its name and its board count. Clicking one opens it in place;
+  a breadcrumb takes the header's place and leads back, and the library holds no nesting.
+- The folder button in the library title bar makes a folder and starts its rename. A board tile
+  drags onto a folder tile to file it and onto `Library` in the breadcrumb to take it out. New and
+  imported boards land in the open folder.
+- Deleting a folder keeps its boards, which return to the library root.
 
 ### 8.4 Settings
 
 The gear in the library title bar opens a Radix dialog holding the theme control
-(`System | Light | Dark`), the wheel action, the default sort order, and the application version.
+(`System | Light | Dark`), the wheel action and the application version.
 `Escape` closes it. The board screen has no settings surface.
 
 **Shortcuts** widens the dialog and swaps its body for the keymap panel, grouped as tools, color,

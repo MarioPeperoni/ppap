@@ -1,6 +1,7 @@
 import type { NewAsset } from './asset.types';
 import type { BoardContent, BoardFile, BoardMeta } from './board.types';
 import type { Bytes } from './bytes.types';
+import type { Folder } from './folder.types';
 import type { Platform } from './platform.types';
 import type { Settings, SettingsPatch } from './settings.types';
 import type { Theme } from './theme.types';
@@ -16,6 +17,24 @@ export interface SaveRequest {
   content: BoardContent;
   assets: NewAsset[];
   thumbnail: Uint8Array | null;
+}
+
+export interface SetFolderRequest {
+  id: string;
+  folderId: string | null;
+}
+
+export interface FolderRequest {
+  id: string;
+}
+
+export interface FolderNameRequest {
+  name: string;
+}
+
+export interface FolderRenameRequest {
+  id: string;
+  name: string;
 }
 
 export interface RenameRequest {
@@ -53,11 +72,19 @@ export interface LibraryApi {
   ) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  setFolder: (id: string, folderId: string | null) => Promise<void>;
   thumbnail: (id: string) => Promise<Uint8Array | null>;
   exportFile: (id: string) => Promise<boolean>;
   exportImage: (name: string, png: Uint8Array) => Promise<boolean>;
   importFile: () => Promise<BoardMeta | null>;
   onOpenBoard: (callback: (meta: BoardMeta) => void) => Unsubscribe;
+}
+
+export interface FolderApi {
+  list: () => Promise<Folder[]>;
+  create: (name: string) => Promise<Folder>;
+  rename: (id: string, name: string) => Promise<void>;
+  remove: (id: string) => Promise<void>;
 }
 
 export interface SettingsApi {
@@ -80,6 +107,7 @@ export interface PpapApi {
   window: WindowApi;
   theme: ThemeApi;
   library: LibraryApi;
+  folders: FolderApi;
   settings: SettingsApi;
   clipboard: ClipboardApi;
 }

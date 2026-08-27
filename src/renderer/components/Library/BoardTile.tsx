@@ -3,6 +3,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { modifiedLabel } from '@/core/board/board-date';
 import { NameInput } from '@/renderer/components/NameInput/NameInput';
 import { useBoardThumbnail } from '@/renderer/hooks/use-board-thumbnail';
+import { startBoardDrag } from '@/renderer/library/board-drag';
 import { openBoard, renameBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
 
@@ -32,6 +33,10 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
           aria-label={`Open ${board.name}`}
           onClick={() => {
             void openBoard(board.id);
+          }}
+          draggable
+          onDragStart={(event) => {
+            startBoardDrag(event, board.id);
           }}
           className="block aspect-8/5 w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
         >

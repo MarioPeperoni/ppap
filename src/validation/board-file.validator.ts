@@ -2,24 +2,14 @@ import { BOARD_FORMAT, BOARD_VERSION } from '@/constants/library.constants';
 import type { BoardContent, BoardFile, BoardMeta, CameraState } from '@/types';
 import { parseBoardId, parseBoardName } from '@/validation/board-id.validator';
 import { parseElement } from '@/validation/element.validator';
+import { parseOptionalFolderId } from '@/validation/folder-id.validator';
 import {
   expectArray,
   expectBoolean,
   expectNumber,
   expectRecord,
-  expectString,
 } from '@/validation/primitive.validator';
-
-function parseTimestamp(value: unknown, label: string): string {
-  const text = expectString(value, label);
-  if (Number.isNaN(Date.parse(text))) throw new Error(`${label} is not an ISO date`);
-
-  return text;
-}
-
-function parseFolderId(value: unknown): string | null {
-  return value === null ? null : expectString(value, 'Folder id');
-}
+import { parseTimestamp } from '@/validation/timestamp.validator';
 
 function parseCamera(value: unknown): CameraState {
   const source = expectRecord(value, 'Camera');
@@ -46,7 +36,7 @@ export function parseBoardMeta(value: unknown): BoardMeta {
     name: parseBoardName(source.name),
     createdAt: parseTimestamp(source.createdAt, 'Board createdAt'),
     modifiedAt: parseTimestamp(source.modifiedAt, 'Board modifiedAt'),
-    folderId: parseFolderId(source.folderId),
+    folderId: parseOptionalFolderId(source.folderId),
   };
 }
 

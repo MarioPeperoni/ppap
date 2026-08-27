@@ -96,6 +96,14 @@ class FileBoardRepository implements BoardRepository {
     await this.write({ ...archive, meta });
   }
 
+  async setFolder(id: string, folderId: string | null): Promise<void> {
+    const archive = decodeArchive(await this.read(id));
+    const meta: BoardMeta = { ...archive.meta, folderId };
+
+    await libraryIndex.upsert(meta);
+    await this.write({ ...archive, meta });
+  }
+
   async remove(id: string): Promise<void> {
     await rm(boardPath(id), { force: true });
     await libraryIndex.remove(id);

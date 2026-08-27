@@ -7,6 +7,11 @@ Just what changed.
 ### Added
 
 - A text tool with four default fonts.
+- Folders in the library view for arranging boards.
+
+### Changed
+
+- Sort order picked in the library header, not in Settings.
 
 ## 1.2.0 — 2026-08-26
 

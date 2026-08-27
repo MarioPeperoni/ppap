@@ -1,40 +1,72 @@
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { sortBoards } from '@/core/board/board-sort';
+import { groupBoardsByFolder } from '@/core/folder/folder-grouping';
+import { sortFolders } from '@/core/folder/folder-sort';
 import { BoardTile } from '@/renderer/components/Library/BoardTile';
 import { DeleteBoardDialog } from '@/renderer/components/Library/DeleteBoardDialog';
+import { DeleteFolderDialog } from '@/renderer/components/Library/DeleteFolderDialog';
+import { FolderTile } from '@/renderer/components/Library/FolderTile';
+import { LibraryHeader } from '@/renderer/components/Library/LibraryHeader';
 import { NewBoardTile } from '@/renderer/components/Library/NewBoardTile';
+import { useFolderStore } from '@/renderer/stores/folder.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
-import type { BoardMeta } from '@/types';
+import type { BoardMeta, Folder } from '@/types';
 
 export function LibraryScreen(): ReactElement {
   const boards = useLibraryStore((state) => state.boards);
   const sortOrder = useLibraryStore((state) => state.sortOrder);
   const loading = useLibraryStore((state) => state.loading);
-  const [pendingDelete, setPendingDelete] = useState<BoardMeta | null>(null);
+  const folders = useFolderStore((state) => state.folders);
+  const currentId = useFolderStore((state) => state.currentId);
+  const [pendingBoard, setPendingBoard] = useState<BoardMeta | null>(null);
+  const [pendingFolder, setPendingFolder] = useState<Folder | null>(null);
 
   useEffect(() => {
     void useLibraryStore.getState().refresh();
+    void useFolderStore.getState().refresh();
   }, []);
 
-  const sorted = useMemo(() => sortBoards(boards, sortOrder), [boards, sortOrder]);
+  const open = folders.find((folder) => folder.id === currentId) ?? null;
+  const grouped = useMemo(() => groupBoardsByFolder(boards, folders), [boards, folders]);
+  const tiles = useMemo(() => (open === null ? sortFolders(folders) : []), [folders, open]);
+  const sorted = useMemo(
+    () => sortBoards(grouped.get(open?.id ?? null) ?? [], sortOrder),
+    [grouped, open, sortOrder],
+  );
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto bg-canvas px-8 py-7">
-      {!loading && sorted.length === 0 ? (
+      <LibraryHeader folder={open} />
+
+      {!loading && sorted.length === 0 && tiles.length === 0 ? (
         <p className="mb-5 text-[12px] text-muted">Nothing here yet. Start a board.</p>
       ) : null}
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
         <NewBoardTile />
+        {tiles.map((folder) => (
+          <FolderTile
+            key={folder.id}
+            folder={folder}
+            boards={grouped.get(folder.id) ?? []}
+            onDelete={setPendingFolder}
+          />
+        ))}
         {sorted.map((board) => (
-          <BoardTile key={board.id} board={board} onDelete={setPendingDelete} />
+          <BoardTile key={board.id} board={board} onDelete={setPendingBoard} />
         ))}
       </div>
 
       <DeleteBoardDialog
-        board={pendingDelete}
+        board={pendingBoard}
         onClose={() => {
-          setPendingDelete(null);
+          setPendingBoard(null);
+        }}
+      />
+      <DeleteFolderDialog
+        folder={pendingFolder}
+        onClose={() => {
+          setPendingFolder(null);
         }}
       />
     </main>

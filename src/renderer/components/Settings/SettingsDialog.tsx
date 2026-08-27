@@ -2,7 +2,6 @@ import { useState, type ReactElement } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ChevronLeft } from 'lucide-react';
 import { WHEEL_ACTIONS } from '@/constants/camera.constants';
-import { SORT_ORDERS } from '@/constants/settings.constants';
 import { THEMES } from '@/constants/theme.constants';
 import { BrandMark } from '@/renderer/components/Brand/BrandMark';
 import { Choices } from '@/renderer/components/Settings/Choices';
@@ -10,20 +9,13 @@ import { KeymapPanel } from '@/renderer/components/Settings/Keymap/KeymapPanel';
 import { useAppVersion } from '@/renderer/hooks/use-app-version';
 import { useReleaseNotes } from '@/renderer/hooks/use-release-notes';
 import { useInputStore } from '@/renderer/stores/input.store';
-import { useLibraryStore } from '@/renderer/stores/library.store';
 import { useThemeStore } from '@/renderer/stores/theme.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
-import type { SortOrder, Theme, WheelAction } from '@/types';
+import type { Theme, WheelAction } from '@/types';
 
 const THEME_LABELS: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 
 const WHEEL_LABELS: Record<WheelAction, string> = { zoom: 'Zoom', pan: 'Pan' };
-
-const SORT_LABELS: Record<SortOrder, string> = {
-  modified: 'Modified',
-  name: 'Name',
-  created: 'Created',
-};
 
 const LINK_CLASS =
   'rounded-lg bg-raised px-2.5 py-1.5 text-[12px] text-muted transition-colors hover:bg-line hover:text-ink';
@@ -40,8 +32,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
   const setTheme = useThemeStore((state) => state.setTheme);
   const wheelAction = useInputStore((state) => state.wheelAction);
   const setWheelAction = useInputStore((state) => state.setWheelAction);
-  const sortOrder = useLibraryStore((state) => state.sortOrder);
-  const setSortOrder = useLibraryStore((state) => state.setSortOrder);
   const version = useAppVersion();
   const release = useReleaseNotes();
   const setWhatsNew = useUiStore((state) => state.setWhatsNew);
@@ -82,7 +72,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
             </Dialog.Title>
           </div>
           <Dialog.Description className="sr-only">
-            Theme, scroll wheel, board order, shortcuts and version
+            Theme, scroll wheel, shortcuts and version
           </Dialog.Description>
 
           {onKeymap ? (
@@ -103,13 +93,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
                   labels={WHEEL_LABELS}
                   active={wheelAction}
                   onSelect={setWheelAction}
-                />
-                <Choices
-                  label="Sort boards by"
-                  values={SORT_ORDERS}
-                  labels={SORT_LABELS}
-                  active={sortOrder}
-                  onSelect={setSortOrder}
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-muted">Shortcuts</span>
