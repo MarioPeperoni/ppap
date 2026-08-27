@@ -4,6 +4,7 @@ import { boundsIntersect } from '@/core/geometry/bounds';
 import { CanvasLayer } from '@/renderer/board/layers/canvas-layer';
 import { drawElement } from '@/renderer/board/render/element-renderer';
 import { useBoardStore } from '@/renderer/stores/board.store';
+import { useTextStore } from '@/renderer/stores/text.store';
 import { cssPalette } from '@/renderer/theme/css-palette';
 import type { Element } from '@/types';
 
@@ -34,8 +35,10 @@ export class SceneLayer extends CanvasLayer {
       this.clear();
       this.useBoardSpace();
       const visible = visibleBounds(this.view.camera, this.view);
+      const editing = useTextStore.getState().draft?.id ?? null;
 
       for (const element of useBoardStore.getState().elements.values()) {
+        if (element.id === editing) continue;
         if (!boundsIntersect(elementBounds(element), visible)) continue;
         drawElement(this.ctx, element, colors);
       }

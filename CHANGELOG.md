@@ -2,6 +2,12 @@
 
 Just what changed.
 
+## 1.3.0 — 2026-08-27
+
+### Added
+
+- A text tool with four default fonts.
+
 ## 1.2.0 — 2026-08-26
 
 ### Added

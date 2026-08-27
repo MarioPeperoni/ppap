@@ -9,6 +9,7 @@ import { OverlayLayer } from '@/renderer/board/layers/overlay-layer';
 import { SceneLayer } from '@/renderer/board/layers/scene-layer';
 import { RenderScheduler } from '@/renderer/board/render-scheduler';
 import { SelectionSync } from '@/renderer/board/selection/selection-sync';
+import { TextSync } from '@/renderer/board/text/text-sync';
 import { ViewportTracker } from '@/renderer/board/viewport-tracker';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import type { BoardCanvases, ToolContext, ViewState } from '@/types';
@@ -28,6 +29,7 @@ export class BoardHost {
   private readonly viewport: ViewportTracker;
   private readonly layerSync: LayerSync;
   private readonly selectionSync = new SelectionSync();
+  private readonly textSync = new TextSync();
 
   constructor(canvases: BoardCanvases) {
     this.view = {
@@ -90,6 +92,7 @@ export class BoardHost {
 
   destroy(): void {
     this.viewport.destroy();
+    this.textSync.destroy();
     this.selectionSync.destroy();
     this.layerSync.destroy();
     this.keyboard.destroy();

@@ -36,7 +36,7 @@ export function pickElement(
   for (const element of elements) {
     if (!boundsContainPoint(expandBounds(elementBounds(element), slop), point)) continue;
 
-    if (element.type === 'image' || touchesStroke(element, point, slop)) picked = element.id;
+    if (element.type !== 'stroke' || touchesStroke(element, point, slop)) picked = element.id;
   }
 
   return picked;

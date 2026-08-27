@@ -22,5 +22,6 @@ export type * from './select.types';
 export type * from './settings.types';
 export type * from './store.types';
 export type * from './stroke.types';
+export type * from './text.types';
 export type * from './theme.types';
 export type * from './tool.types';

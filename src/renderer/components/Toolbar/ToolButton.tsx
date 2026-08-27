@@ -1,7 +1,16 @@
 import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { Eraser, Hand, Lasso, Pencil, PenLine, SquareDashed, type LucideIcon } from 'lucide-react';
+import {
+  Eraser,
+  Hand,
+  Lasso,
+  Pencil,
+  PenLine,
+  SquareDashed,
+  Type,
+  type LucideIcon,
+} from 'lucide-react';
 import { INK_TOOLS } from '@/constants/tool.constants';
 import { boundStrokes } from '@/core/keymap/key-binding';
 import { formatStroke } from '@/core/keymap/key-stroke';
@@ -16,6 +25,7 @@ import type { ToolId } from '@/types';
 const ICONS: Record<ToolId, LucideIcon> = {
   pen: PenLine,
   pencil: Pencil,
+  text: Type,
   eraser: Eraser,
   marquee: SquareDashed,
   lasso: Lasso,

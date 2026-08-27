@@ -19,6 +19,7 @@ export class GestureRouter {
     private readonly view: ViewState,
     private readonly context: ToolContext,
   ) {
+    this.host.addEventListener('mousedown', this.onMouseDown);
     this.host.addEventListener('pointerdown', this.onPointerDown);
     this.host.addEventListener('pointermove', this.onPointerMove);
     this.host.addEventListener('pointerup', this.onPointerUp);
@@ -28,6 +29,7 @@ export class GestureRouter {
   }
 
   destroy(): void {
+    this.host.removeEventListener('mousedown', this.onMouseDown);
     this.host.removeEventListener('pointerdown', this.onPointerDown);
     this.host.removeEventListener('pointermove', this.onPointerMove);
     this.host.removeEventListener('pointerup', this.onPointerUp);
@@ -88,6 +90,10 @@ export class GestureRouter {
       shiftKey: event.shiftKey,
     };
   }
+
+  private readonly onMouseDown = (event: MouseEvent): void => {
+    if (this.activeTool().keepsFocus) event.preventDefault();
+  };
 
   private readonly onPointerDown = (event: PointerEvent): void => {
     if (this.activePointer !== null) return;

@@ -1,14 +1,17 @@
 import { imageCache } from '@/renderer/assets/image-cache';
 import { clearAssets } from '@/renderer/assets/pending-assets';
+import { commitOpenText } from '@/renderer/board/text/text-draft';
 import { autosave } from '@/renderer/persistence/autosave';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
+import { useTextStore } from '@/renderer/stores/text.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
 
 async function enter(id: string): Promise<void> {
   const file = await window.ppap.library.load(id);
 
+  useTextStore.getState().close();
   autosave.stop();
   clearAssets();
   imageCache.open(id);
@@ -31,6 +34,7 @@ export async function createBoard(): Promise<void> {
 }
 
 export async function leaveBoard(): Promise<void> {
+  commitOpenText();
   await autosave.close();
   useUiStore.getState().showLibrary();
   useBoardStore.getState().close();

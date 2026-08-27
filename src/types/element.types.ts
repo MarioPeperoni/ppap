@@ -5,6 +5,8 @@ export type SizeToken = 's' | 'm' | 'l' | 'xl';
 
 export type NibToken = 'pen' | 'pencil';
 
+export type FontToken = 'sans' | 'serif' | 'mono' | 'hand';
+
 export type StrokePoint = [x: number, y: number, pressure: number];
 
 export interface ElementBase {
@@ -33,6 +35,19 @@ export interface ImageElement extends ElementBase {
   naturalHeight: number;
 }
 
-export type Element = StrokeElement | ImageElement;
+export interface TextElement extends ElementBase {
+  type: 'text';
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: StrokeColor;
+  size: SizeToken;
+  font: FontToken;
+  scale: number;
+}
+
+export type Element = StrokeElement | ImageElement | TextElement;
 
 export type ElementType = Element['type'];

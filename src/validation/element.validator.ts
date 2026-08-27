@@ -1,8 +1,9 @@
 import { ELEMENT_TYPES } from '@/constants/element.constants';
 import { IMAGE_MIMES } from '@/constants/image.constants';
 import { DEFAULT_NIB, NIB_TOKENS } from '@/constants/stroke.constants';
+import { FONT_TOKENS } from '@/constants/text.constants';
 import { TOOL_SIZES } from '@/constants/tool.constants';
-import type { Element, ImageElement, StrokeElement, StrokePoint } from '@/types';
+import type { Element, ImageElement, StrokeElement, StrokePoint, TextElement } from '@/types';
 import { parseAssetId } from '@/validation/asset.validator';
 import { parseStrokeColor } from '@/validation/color.validator';
 import {
@@ -52,6 +53,23 @@ function parseImage(source: Record<string, unknown>): ImageElement {
   };
 }
 
+function parseText(source: Record<string, unknown>): TextElement {
+  return {
+    id: expectString(source.id, 'Element id'),
+    createdAt: expectNumber(source.createdAt, 'Element createdAt'),
+    type: 'text',
+    text: expectString(source.text, 'Text body'),
+    x: expectNumber(source.x, 'Text x'),
+    y: expectNumber(source.y, 'Text y'),
+    width: expectNumber(source.width, 'Text width'),
+    height: expectNumber(source.height, 'Text height'),
+    color: parseStrokeColor(source.color, 'Text color'),
+    size: expectOneOf(source.size, TOOL_SIZES, 'Text size'),
+    font: expectOneOf(source.font, FONT_TOKENS, 'Text font'),
+    scale: expectNumber(source.scale, 'Text scale'),
+  };
+}
+
 export function parseElement(value: unknown): Element {
   const source = expectRecord(value, 'Element');
 
@@ -60,5 +78,7 @@ export function parseElement(value: unknown): Element {
       return parseStroke(source);
     case 'image':
       return parseImage(source);
+    case 'text':
+      return parseText(source);
   }
 }

@@ -1,6 +1,6 @@
 import type { WheelAction } from './camera.types';
 import type { SavedPalette, StrokeColor } from './color.types';
-import type { SizeToken } from './element.types';
+import type { FontToken, SizeToken } from './element.types';
 import type { Keymap } from './keymap.types';
 import type { SortOrder } from './library.types';
 import type { Theme } from './theme.types';
@@ -14,6 +14,8 @@ export interface Settings {
   savedPalettes: SavedPalette[];
   activePaletteId: string | null;
   penSize: SizeToken;
+  textSize: SizeToken;
+  textFont: FontToken;
   eraserRadius: number;
   wheelAction: WheelAction;
   keymap: Keymap;

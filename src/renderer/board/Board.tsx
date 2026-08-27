@@ -1,5 +1,6 @@
 import { useRef, type ReactElement } from 'react';
 import { ColorFlash } from '@/renderer/components/ColorFlash/ColorFlash';
+import { TextEditor } from '@/renderer/components/TextEditor/TextEditor';
 import { Toolbar } from '@/renderer/components/Toolbar/Toolbar';
 import { ZoomIndicator } from '@/renderer/components/ZoomIndicator/ZoomIndicator';
 import { useBoardHost } from '@/renderer/hooks/use-board-host';
@@ -20,6 +21,7 @@ export function Board(): ReactElement {
         <canvas ref={sceneRef} className={LAYER_CLASS} />
         <canvas ref={overlayRef} className={LAYER_CLASS} />
       </div>
+      <TextEditor />
       <Toolbar />
       <ColorFlash />
       <ZoomIndicator

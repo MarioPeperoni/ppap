@@ -32,7 +32,7 @@ export function selectInShape(elements: Iterable<Element>, shape: SelectionShape
     const bounds = elementBounds(element);
     if (!boundsIntersect(bounds, shape.bounds)) continue;
 
-    if (element.type === 'image') {
+    if (element.type !== 'stroke') {
       if (shape.contains(boundsCenter(bounds))) ids.push(element.id);
       continue;
     }

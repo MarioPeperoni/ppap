@@ -16,7 +16,7 @@ interface is a floating toolbar and a thin title bar.
 **Platform:** Windows first (Electron Forge + Vite + React 19 + TypeScript). macOS is one entry
 in the release matrix, not a design constraint.
 
-**Out of scope:** collaboration, cloud sync, shape and arrow tools, text elements, sticky notes,
+**Out of scope:** collaboration, cloud sync, shape and arrow tools, sticky notes, rich text,
 PDF and SVG export, element rotation, layers, grouping, freeform color picking, mobile and web
 builds, plugins.
 
@@ -188,6 +188,7 @@ interface SavedPalette {
   colors: HexColor[]; // at most MAX_CUSTOM_COLORS
 }
 type NibToken = 'pen' | 'pencil';
+type FontToken = 'sans' | 'serif' | 'mono' | 'hand';
 
 interface BoardMeta {
   format: 'ppap';
@@ -210,7 +211,7 @@ interface BoardFile {
   content: BoardContent;
 }
 
-type Element = StrokeElement | ImageElement;
+type Element = StrokeElement | ImageElement | TextElement;
 
 interface ElementBase {
   id: string;
@@ -235,6 +236,19 @@ interface ImageElement extends ElementBase {
   height: number;
   naturalWidth: number;
   naturalHeight: number;
+}
+
+interface TextElement extends ElementBase {
+  type: 'text';
+  text: string; // newlines break lines, nothing else is markup
+  x: number;
+  y: number;
+  width: number; // the measured box, so bounds stay pure and synchronous
+  height: number;
+  color: StrokeColor;
+  size: SizeToken; // s=16, m=24, l=36, xl=56 board units
+  font: FontToken;
+  scale: number; // what a resize left behind, multiplied into the face
 }
 ```
 
@@ -310,7 +324,7 @@ Splits strokes. For each pointer segment, with eraser radius `r`:
 2. Mark stroke points within `r` of the segment.
 3. Drop marked points; each surviving run becomes a stroke inheriting color, size and order. Runs
    under 2 points are discarded.
-4. Images are removed when the eraser centre enters their bbox.
+4. Images and text boxes are removed when the eraser centre enters their bbox.
 
 A whole `pointerdown … pointerup` gesture is one command holding `{ removed, added }`. A single
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
@@ -319,12 +333,13 @@ a circle outline on the overlay. `[` and `]` step its radius.
 ### 6.3 Selection — marquee `V`, lasso `L`
 
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
-- **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
+- **Lasso** selects strokes fully contained in the polygon, and images and text boxes whose bbox
+  centre is inside.
 
 A non-empty selection shows a bounding box with four corner handles:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
-  widths scale with the selection.
+  widths and text faces scale with the selection.
 - `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
   drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.
@@ -334,7 +349,22 @@ A non-empty selection shows a bounding box with four corner handles:
 
 Drags the camera.
 
-### 6.5 Images
+### 6.5 Text — `T`
+
+- Clicking bare canvas opens a caret there, its first line centred on the point. Clicking an
+  existing text box reopens that box with the caret at its end.
+- Typing runs in a transparent `<textarea>` laid over the canvas in the element's own font, size
+  and colour, so what is typed is already what the canvas will draw. The element it stands for is
+  held back from the scene layer until the box closes.
+- `Escape` and `Ctrl+Enter` close the box, as does reaching for another tool or clicking elsewhere.
+  `Enter` breaks a line. A box closed blank commits nothing, and blanking an existing one deletes
+  it.
+- Four faces, picked in the popover: sans, serif, mono and hand. `[` and `]` step the size through
+  the same four tokens the pen uses.
+- The box carries the measured width and height of its text, so selection, erasing and export treat
+  it as a placed rect the way an image is treated.
+
+### 6.6 Images
 
 - `Ctrl+V` with an image on the clipboard, and dropping image files on the canvas, insert an
   `ImageElement` centred at the cursor.
@@ -343,17 +373,17 @@ Drags the camera.
 - Initial size fits the natural size within 800 board units, preserving aspect ratio.
 - The renderer references `ppap-asset://<boardId>/<assetId>` and never holds the bytes.
 
-### 6.6 Keyboard reference
+### 6.7 Keyboard reference
 
 Rebindable in Settings, a primary and a secondary stroke per action, modifiers allowed:
 
-| Primary                 | Secondary               | Action                                         |
-| ----------------------- | ----------------------- | ---------------------------------------------- |
-| `P` `N` `E` `V` `L` `H` | `1` `2` `3` `4` `5` `6` | Pen / pencil / eraser / marquee / lasso / hand |
-| `C`, `Shift+C`          | —                       | Next and previous color                        |
-| `X`                     | —                       | Swap the active color with the pinned one      |
-| `[`, `]`                | —                       | Step stroke or eraser width                    |
-| `Backspace`             | `Delete`                | Delete the selection                           |
+| Primary                     | Secondary | Action                                                |
+| --------------------------- | --------- | ----------------------------------------------------- |
+| `P` `N` `T` `E` `V` `L` `H` | `1` … `7` | Pen / pencil / text / eraser / marquee / lasso / hand |
+| `C`, `Shift+C`              | —         | Next and previous color                               |
+| `X`                         | —         | Swap the active color with the pinned one             |
+| `[`, `]`                    | —         | Step stroke or eraser width                           |
+| `Backspace`                 | `Delete`  | Delete the selection                                  |
 
 Fixed:
 
@@ -501,10 +531,11 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, the active palette and width for the pen and pencil, radius for the eraser. The width sits
+colors, the active palette and width for the pen and pencil, colors, the four faces and size for
+text, radius for the eraser. The width sits
 on a slider spanning the popover, stepped through the four sizes and named above it; its track is a
 wedge thickening left to right, notched at the inner stops and capped at both ends.
-The active pen or pencil carries a rounded color bar under its icon: the active color alone, or
+The active pen, pencil or text tool carries a rounded color bar under its icon: the active color alone, or
 split 65 / 35 with the pinned partner. The popover closes on `Escape`, outside click, and
 selection. The zoom percentage sits in the bottom-right corner between a `−` and a `+` button;
 clicking it sets 100 %, and the step buttons grey out at the zoom limits.

@@ -94,7 +94,7 @@ describe('settings validation', () => {
   it('defaults the slot a binding leaves out', () => {
     const { keymap } = parseSettings({ keymap: { 'tool.lasso': { primary: 'k' } } });
 
-    expect(keymap['tool.lasso']).toEqual({ primary: 'k', secondary: '5' });
+    expect(keymap['tool.lasso']).toEqual({ primary: 'k', secondary: '6' });
   });
 
   it('keeps an unbound slot unbound', () => {

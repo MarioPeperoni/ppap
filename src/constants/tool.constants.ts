@@ -1,6 +1,14 @@
 import type { ColorToken, SizeToken, ToolId } from '@/types';
 
-export const TOOL_IDS: readonly ToolId[] = ['pen', 'pencil', 'eraser', 'marquee', 'lasso', 'hand'];
+export const TOOL_IDS: readonly ToolId[] = [
+  'pen',
+  'pencil',
+  'text',
+  'eraser',
+  'marquee',
+  'lasso',
+  'hand',
+];
 export const TOOL_COLORS: readonly ColorToken[] = [
   'ink',
   'blue',
@@ -19,7 +27,7 @@ export const SIZE_LABELS: Record<SizeToken, string> = {
 };
 
 export const SELECTION_TOOLS: readonly ToolId[] = ['marquee', 'lasso'];
-export const INK_TOOLS: readonly ToolId[] = ['pen', 'pencil'];
+export const INK_TOOLS: readonly ToolId[] = ['pen', 'pencil', 'text'];
 
 export const DEFAULT_TOOL: ToolId = 'pen';
 export const DEFAULT_COLOR: ColorToken = 'ink';

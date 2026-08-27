@@ -7,6 +7,7 @@ import type {
   StrokeColor,
   StrokeElement,
   StrokePoint,
+  TextElement,
 } from '@/types';
 
 export function createStroke(
@@ -32,6 +33,10 @@ export function createImage(source: Omit<ImageElement, 'id' | 'createdAt' | 'typ
   return { id: crypto.randomUUID(), createdAt: Date.now(), type: 'image', ...source };
 }
 
+export function createText(source: Omit<TextElement, 'id' | 'createdAt' | 'type'>): TextElement {
+  return { id: crypto.randomUUID(), createdAt: Date.now(), type: 'text', ...source };
+}
+
 export function cloneElement(element: Element): Element {
   switch (element.type) {
     case 'stroke':
@@ -52,6 +57,18 @@ export function cloneElement(element: Element): Element {
         height: element.height,
         naturalWidth: element.naturalWidth,
         naturalHeight: element.naturalHeight,
+      });
+    case 'text':
+      return createText({
+        text: element.text,
+        x: element.x,
+        y: element.y,
+        width: element.width,
+        height: element.height,
+        color: element.color,
+        size: element.size,
+        font: element.font,
+        scale: element.scale,
       });
   }
 }

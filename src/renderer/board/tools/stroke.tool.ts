@@ -25,6 +25,7 @@ import type {
 
 export class StrokeTool implements Tool {
   readonly cursor = 'crosshair';
+  readonly keepsFocus = false;
 
   private points: StrokePoint[] | null = null;
   private color: StrokeColor = DEFAULT_COLOR;

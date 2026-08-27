@@ -12,6 +12,7 @@ export function translateElement(element: Element, deltaX: number, deltaY: numbe
         ]),
       };
     case 'image':
+    case 'text':
       return { ...element, x: element.x + deltaX, y: element.y + deltaY };
   }
 }
@@ -35,6 +36,15 @@ export function scaleElement(element: Element, anchor: Point, factor: number): E
         y: anchor.y + (element.y - anchor.y) * factor,
         width: element.width * factor,
         height: element.height * factor,
+      };
+    case 'text':
+      return {
+        ...element,
+        x: anchor.x + (element.x - anchor.x) * factor,
+        y: anchor.y + (element.y - anchor.y) * factor,
+        width: element.width * factor,
+        height: element.height * factor,
+        scale: element.scale * factor,
       };
   }
 }
