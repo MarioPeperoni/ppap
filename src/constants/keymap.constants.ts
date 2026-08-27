@@ -61,7 +61,6 @@ export const SHORTCUT_LABELS: Record<KeyStroke, string> = {
   'ctrl+y': 'Redo',
   'ctrl+a': 'Select all',
   'ctrl+c': 'Copy',
-  'ctrl+shift+c': 'Copy as PNG',
   'ctrl+x': 'Cut',
   'ctrl+v': 'Paste',
   'ctrl+d': 'Duplicate',

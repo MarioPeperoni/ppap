@@ -10,3 +10,12 @@ export async function readSystemImage(): Promise<Bytes | null> {
     return null;
   }
 }
+
+/** Lays PNG bytes on the system clipboard, where every other application can reach them. */
+export async function writeSystemImage(png: Bytes): Promise<void> {
+  try {
+    await window.ppap.clipboard.writeImage(png);
+  } catch (error) {
+    console.error('Failed to write the system clipboard', error);
+  }
+}

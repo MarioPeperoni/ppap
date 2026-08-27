@@ -11,7 +11,6 @@ import {
   duplicateSelection,
   selectAll,
 } from '@/renderer/board/selection/selection-actions';
-import { copySelectionImage } from '@/renderer/export/board-export';
 import { autosave } from '@/renderer/persistence/autosave';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
@@ -96,14 +95,13 @@ export class KeyboardRouter {
         selectAll();
         break;
       case 'c':
-        if (event.shiftKey) void copySelectionImage();
-        else copySelection();
+        void copySelection();
         break;
       case 's':
         void autosave.flush();
         break;
       case 'x':
-        cutSelection();
+        void cutSelection();
         break;
       case 'v':
         void pasteAt(this.handlers.pointerBoard() ?? this.camera.boardCenter());

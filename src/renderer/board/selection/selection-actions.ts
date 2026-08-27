@@ -41,15 +41,15 @@ export function deleteSelection(): void {
   commitSelectionPatch('delete', removePatch(ids), []);
 }
 
-export function copySelection(): void {
+export async function copySelection(): Promise<void> {
   const selected = selectedElements();
   if (selected.length === 0) return;
 
-  writeClipboard(selected);
+  await writeClipboard(selected);
 }
 
-export function cutSelection(): void {
-  copySelection();
+export async function cutSelection(): Promise<void> {
+  await copySelection();
   deleteSelection();
 }
 

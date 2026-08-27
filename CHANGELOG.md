@@ -19,6 +19,7 @@ Just what changed.
 - Scrollbars that follow the theme.
 - One ring marks every pick, be it a colour, a width or a radius.
 - A click on a tile's name renames the board.
+- Copy and cut put the selection on the system clipboard, ready for any other application.
 
 ## 1.1.0 — 2026-08-24
 

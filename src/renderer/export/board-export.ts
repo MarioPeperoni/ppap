@@ -2,15 +2,11 @@ import { EXPORT_MAX_PIXELS, EXPORT_PADDING, EXPORT_SCALE } from '@/constants/exp
 import { boundsOfElements } from '@/core/element/element-bounds';
 import { expandBounds } from '@/core/geometry/bounds';
 import { imageCache } from '@/renderer/assets/image-cache';
-import { selectedElements } from '@/renderer/board/selection/selection-query';
 import { canvasToPng, renderElements } from '@/renderer/export/scene-image';
 import { useBoardStore } from '@/renderer/stores/board.store';
-import type { Element } from '@/types';
+import type { Bytes, Element } from '@/types';
 
-async function renderRegion(
-  elements: readonly Element[],
-  padding: number,
-): Promise<Uint8Array | null> {
+async function renderRegion(elements: readonly Element[], padding: number): Promise<Bytes | null> {
   const content = boundsOfElements(elements);
   if (content === null) return null;
 
@@ -34,9 +30,6 @@ export async function exportBoardImage(): Promise<void> {
   await window.ppap.library.exportImage(name, png);
 }
 
-export async function copySelectionImage(): Promise<void> {
-  const png = await renderRegion(selectedElements(), 0);
-  if (png === null) return;
-
-  await window.ppap.clipboard.writeImage(png);
+export function renderSelectionImage(elements: readonly Element[]): Promise<Bytes | null> {
+  return renderRegion(elements, 0);
 }

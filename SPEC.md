@@ -326,7 +326,9 @@ A non-empty selection shows a bounding box with four corner handles:
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
   widths scale with the selection.
 - `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
-  cursor. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all. `Escape` clears.
+  cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
+  drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.
+  `Escape` clears.
 
 ### 6.4 Hand — `H`
 
@@ -364,7 +366,6 @@ Fixed:
 | `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`          | Zoom in / out / 100 % / fit              |
 | `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`           | Undo, redo                               |
 | `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` | Selection operations                     |
-| `Ctrl+Shift+C`                               | Copy selection to the clipboard as PNG   |
 | `Ctrl+G`                                     | Toggle grid                              |
 | `Ctrl+S`                                     | Flush pending save                       |
 | `Ctrl+N`                                     | New board                                |
@@ -439,7 +440,9 @@ failing `/^[0-9a-f-]{36}$/` and `/^[0-9a-f]{64}$/` respectively.
 - **Export .ppap** copies the archive through a native save dialog.
 - **Import .ppap** validates the archive, assigns a new `id`, and adds it to the library.
 - **Export PNG** renders the content bbox plus 40 units of padding at 2×.
-- **`Ctrl+Shift+C`** renders the selection bbox to the clipboard as `image/png`.
+- **`Ctrl+C`** renders the selection bbox to the clipboard as `image/png` beside the elements it
+  holds in-app, and remembers that PNG's digest, so a paste back into ppap restores strokes rather
+  than a picture of them.
 - Squirrel registers the `.ppap` extension through `fileAssociations`; opening a file from the
   shell imports it and navigates to that board.
 
@@ -652,7 +655,7 @@ and scaling a multi-stroke selection keeps relative positions and stroke weights
 
 `ArchiveCodec`, `BoardRepository`, `LibraryIndex`, autosave with the camera and element split,
 atomic writes, thumbnails, library grid with rename, delete and sort, export and import, PNG
-export, `Ctrl+Shift+C`, settings.
+export, the selection on the system clipboard, settings.
 
 **Done when** a board reopens with identical content and camera, a deleted `index.json` rebuilds
 silently, and killing the app mid-stroke leaves a valid archive.
