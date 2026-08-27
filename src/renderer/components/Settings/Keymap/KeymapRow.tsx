@@ -1,11 +1,14 @@
 import type { ReactElement } from 'react';
-import { RotateCcw, X } from 'lucide-react';
-import { ACTION_LABELS, DEFAULT_KEYMAP } from '@/constants/keymap.constants';
+import { RotateCcw } from 'lucide-react';
+import {
+  ACTION_LABELS,
+  BIND_SLOTS,
+  DEFAULT_KEYMAP,
+  SLOT_LABELS,
+} from '@/constants/keymap.constants';
+import { sameBinding } from '@/core/keymap/key-binding';
 import { KeyCapture } from '@/renderer/components/Settings/Keymap/KeyCapture';
-import type { ActionId, BindVerdict, KeyStroke } from '@/types';
-
-const ICON_CLASS =
-  'flex h-6 w-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-raised hover:text-ink disabled:pointer-events-none disabled:opacity-30';
+import type { ActionId, BindSlot, BindVerdict, KeyBinding } from '@/types';
 
 function noteText(verdict: BindVerdict): string | null {
   switch (verdict.kind) {
@@ -22,17 +25,17 @@ function noteText(verdict: BindVerdict): string | null {
 
 interface KeymapRowProps {
   action: ActionId;
-  stroke: KeyStroke;
-  armed: boolean;
+  binding: KeyBinding;
+  armed: BindSlot | null;
   note: BindVerdict | null;
-  onArm: () => void;
-  onClear: () => void;
+  onArm: (slot: BindSlot) => void;
+  onClear: (slot: BindSlot) => void;
   onReset: () => void;
 }
 
 export function KeymapRow({
   action,
-  stroke,
+  binding,
   armed,
   note,
   onArm,
@@ -44,24 +47,30 @@ export function KeymapRow({
   return (
     <div className="flex flex-col gap-0.5 py-0.5">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[12px] text-ink">{ACTION_LABELS[action]}</span>
-        <div className="flex items-center gap-1">
-          <KeyCapture stroke={stroke} armed={armed} onArm={onArm} />
-          <button
-            type="button"
-            aria-label={`Clear ${ACTION_LABELS[action]}`}
-            disabled={stroke === ''}
-            onClick={onClear}
-            className={ICON_CLASS}
-          >
-            <X size={13} strokeWidth={2} />
-          </button>
+        <span className="min-w-0 flex-1 truncate text-[12px] text-ink">
+          {ACTION_LABELS[action]}
+        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          {BIND_SLOTS.map((slot) => (
+            <KeyCapture
+              key={slot}
+              name={`${ACTION_LABELS[action]} ${SLOT_LABELS[slot].toLowerCase()}`}
+              stroke={binding[slot]}
+              armed={armed === slot}
+              onArm={() => {
+                onArm(slot);
+              }}
+              onClear={() => {
+                onClear(slot);
+              }}
+            />
+          ))}
           <button
             type="button"
             aria-label={`Reset ${ACTION_LABELS[action]}`}
-            disabled={stroke === DEFAULT_KEYMAP[action]}
+            disabled={sameBinding(binding, DEFAULT_KEYMAP[action])}
             onClick={onReset}
-            className={ICON_CLASS}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-muted transition-colors hover:bg-raised hover:text-ink disabled:pointer-events-none disabled:opacity-30"
           >
             <RotateCcw size={13} strokeWidth={2} />
           </button>

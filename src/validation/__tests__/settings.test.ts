@@ -84,20 +84,31 @@ describe('settings validation', () => {
   });
 
   it('keeps a stored binding and defaults the rest of the keymap', () => {
-    const { keymap } = parseSettings({ keymap: { 'tool.pen': 'ctrl+1' } });
+    const binding = { primary: 'ctrl+1', secondary: '9' };
+    const { keymap } = parseSettings({ keymap: { 'tool.pen': binding } });
 
-    expect(keymap).toEqual({ ...DEFAULT_KEYMAP, 'tool.pen': 'ctrl+1' });
+    expect(keymap).toEqual({ ...DEFAULT_KEYMAP, 'tool.pen': binding });
   });
 
-  it('keeps an unbound action unbound', () => {
-    const { keymap } = parseSettings({ keymap: { 'tool.hand': '' } });
+  it('defaults the slot a binding leaves out', () => {
+    const { keymap } = parseSettings({ keymap: { 'tool.lasso': { primary: 'k' } } });
 
-    expect(keymap['tool.hand']).toBe('');
+    expect(keymap['tool.lasso']).toEqual({ primary: 'k', secondary: '5' });
   });
 
-  it('drops an unknown action and a malformed stroke', () => {
+  it('keeps an unbound slot unbound', () => {
+    const { keymap } = parseSettings({ keymap: { 'tool.hand': { secondary: '' } } });
+
+    expect(keymap['tool.hand']).toEqual({ primary: 'h', secondary: '' });
+  });
+
+  it('drops an unknown action, a malformed stroke and a stray shape', () => {
     const { keymap } = parseSettings({
-      keymap: { 'tool.brush': 'b', 'tool.pen': 'Ctrl+Z', 'tool.lasso': 7 },
+      keymap: {
+        'tool.brush': { primary: 'b' },
+        'tool.pen': { primary: 'Ctrl+Z', secondary: 7 },
+        'tool.lasso': 'l',
+      },
     });
 
     expect(keymap).toEqual(DEFAULT_KEYMAP);

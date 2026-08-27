@@ -10,12 +10,11 @@ Just what changed.
 - Your own palettes, up to five colours each, in a window of their own.
 - Two pen colours held at once, swapped with X.
 - A colour bar under the selected pen.
-- Rebindable keys for tools, colours, width and delete, under Settings.
+- Rebindable keys for tools, colours, width and delete, two per action, under Settings.
 
 ### Changed
 
 - Softer grid dots in dark mode.
-- One key per tool, so the number shortcuts are gone.
 - Scrollbars that follow the theme.
 - One ring marks every pick, be it a colour, a width or a radius.
 - A click on a tile's name renames the board.

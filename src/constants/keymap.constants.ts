@@ -1,5 +1,5 @@
 import { TOOL_IDS } from '@/constants/tool.constants';
-import type { ActionGroup, ActionId, Keymap, KeyStroke, ToolAction } from '@/types';
+import type { ActionGroup, ActionId, BindSlot, Keymap, KeyStroke, ToolAction } from '@/types';
 
 const TOOL_ACTIONS: readonly ToolAction[] = TOOL_IDS.map((id): ToolAction => `tool.${id}`);
 
@@ -13,19 +13,26 @@ export const ACTION_IDS: readonly ActionId[] = [
   'selection.delete',
 ];
 
+export const BIND_SLOTS: readonly BindSlot[] = ['primary', 'secondary'];
+
+export const SLOT_LABELS: Record<BindSlot, string> = {
+  primary: 'Primary',
+  secondary: 'Secondary',
+};
+
 export const DEFAULT_KEYMAP: Keymap = {
-  'tool.pen': 'p',
-  'tool.pencil': 'n',
-  'tool.eraser': 'e',
-  'tool.marquee': 'v',
-  'tool.lasso': 'l',
-  'tool.hand': 'h',
-  'color.next': 'c',
-  'color.previous': 'shift+c',
-  'color.swap': 'x',
-  'width.decrease': '[',
-  'width.increase': ']',
-  'selection.delete': 'backspace',
+  'tool.pen': { primary: 'p', secondary: '1' },
+  'tool.pencil': { primary: 'n', secondary: '2' },
+  'tool.eraser': { primary: 'e', secondary: '3' },
+  'tool.marquee': { primary: 'v', secondary: '4' },
+  'tool.lasso': { primary: 'l', secondary: '5' },
+  'tool.hand': { primary: 'h', secondary: '6' },
+  'color.next': { primary: 'c', secondary: '' },
+  'color.previous': { primary: 'shift+c', secondary: '' },
+  'color.swap': { primary: 'x', secondary: '' },
+  'width.decrease': { primary: '[', secondary: '' },
+  'width.increase': { primary: ']', secondary: '' },
+  'selection.delete': { primary: 'backspace', secondary: 'delete' },
 };
 
 export const ACTION_LABELS: Record<ActionId, string> = {

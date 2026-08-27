@@ -123,7 +123,7 @@ board rect.
 | Store          | Holds                                                                                                      |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
 | `libraryStore` | Board metadata, sort order, loading state                                                                  |
-| `keymapStore`  | One key binding per rebindable action; persisted to settings                                               |
+| `keymapStore`  | A primary and a secondary key per rebindable action; persisted to settings                                 |
 | `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>`                    |
 | `toolStore`    | Active tool, pen colour pair, the id of the active palette, pen width, eraser width; persisted to settings |
 | `paletteStore` | The saved palettes; persisted to settings                                                                  |
@@ -345,15 +345,15 @@ Drags the camera.
 
 ### 6.6 Keyboard reference
 
-Rebindable in Settings, one stroke per action, modifiers allowed:
+Rebindable in Settings, a primary and a secondary stroke per action, modifiers allowed:
 
-| Default                 | Action                                         |
-| ----------------------- | ---------------------------------------------- |
-| `P` `N` `E` `V` `L` `H` | Pen / pencil / eraser / marquee / lasso / hand |
-| `C`, `Shift+C`          | Next and previous color                        |
-| `X`                     | Swap the active color with the pinned one      |
-| `[`, `]`                | Step stroke or eraser width                    |
-| `Backspace`             | Delete the selection                           |
+| Primary                 | Secondary               | Action                                         |
+| ----------------------- | ----------------------- | ---------------------------------------------- |
+| `P` `N` `E` `V` `L` `H` | `1` `2` `3` `4` `5` `6` | Pen / pencil / eraser / marquee / lasso / hand |
+| `C`, `Shift+C`          | —                       | Next and previous color                        |
+| `X`                     | —                       | Swap the active color with the pinned one      |
+| `[`, `]`                | —                       | Step stroke or eraser width                    |
+| `Backspace`             | `Delete`                | Delete the selection                           |
 
 Fixed:
 
@@ -525,11 +525,12 @@ The gear in the library title bar opens a Radix dialog holding the theme control
 (`System | Light | Dark`), the wheel action, the default sort order, and the application version.
 `Escape` closes it. The board screen has no settings surface.
 
-**Shortcuts** swaps the dialog body for the keymap panel, grouped as tools, color, stroke and
-selection. A row shows its binding, clears it, and resets it; the footer resets them all. Clicking
-the binding arms it and the next keystroke lands, with the modifiers held. Taking a key from
-another action leaves that one unbound and says so; taking one from a fixed shortcut says what it
-overrides; `Space` and `Escape` are refused. `Escape` while armed cancels the capture.
+**Shortcuts** widens the dialog and swaps its body for the keymap panel, grouped as tools, color,
+stroke and selection. A row holds two boxes of one fixed width, primary and secondary, each
+clearing on its own `×` and cutting a long stroke to an ellipsis, and one button resetting the pair; the footer resets them all. Clicking a box arms it and the next
+keystroke lands, with the modifiers held. Taking a key from another action leaves that one unbound
+and says so; taking one from a fixed shortcut says what it overrides; `Space` and `Escape` are
+refused. `Escape` while armed cancels the capture.
 
 ### 8.5 Palettes
 

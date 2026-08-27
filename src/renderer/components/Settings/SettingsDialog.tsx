@@ -59,7 +59,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 w-96 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl">
+        <Dialog.Content
+          className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-xl ${
+            onKeymap ? 'w-[27rem]' : 'w-96'
+          }`}
+        >
           <div className="flex items-center gap-1.5">
             {onKeymap ? (
               <button

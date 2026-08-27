@@ -3,6 +3,7 @@ import * as Popover from '@radix-ui/react-popover';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Eraser, Hand, Lasso, Pencil, PenLine, SquareDashed, type LucideIcon } from 'lucide-react';
 import { INK_TOOLS } from '@/constants/tool.constants';
+import { boundStrokes } from '@/core/keymap/key-binding';
 import { formatStroke } from '@/core/keymap/key-stroke';
 import { getTool } from '@/renderer/board/tools/tool-registry';
 import { ToolColorBar } from '@/renderer/components/Toolbar/ToolColorBar';
@@ -31,8 +32,9 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
   const openPopover = useUiStore((state) => state.openPopover);
   const setPopover = useUiStore((state) => state.setPopover);
   const togglePopover = useUiStore((state) => state.togglePopover);
-  const stroke = useKeymapStore((state) => state.keymap[`tool.${id}`]);
+  const binding = useKeymapStore((state) => state.keymap[`tool.${id}`]);
 
+  const stroke = boundStrokes(binding)[0];
   const tool = getTool(id);
   const Icon = ICONS[id];
   const active = activeTool === id;
@@ -76,7 +78,7 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
             className="rounded-md bg-ink px-2 py-1 text-[11px] text-canvas"
           >
             {tool.label}
-            {stroke === '' ? null : (
+            {stroke === undefined ? null : (
               <span className="ml-1.5 opacity-60">
                 {formatStroke(stroke, window.ppap.platform)}
               </span>

@@ -3,10 +3,10 @@ import { ACTION_GROUPS } from '@/constants/keymap.constants';
 import { isModifierKey, strokeFromEvent } from '@/core/keymap/key-stroke';
 import { KeymapRow } from '@/renderer/components/Settings/Keymap/KeymapRow';
 import { useKeymapStore } from '@/renderer/stores/keymap.store';
-import type { ActionId, BindVerdict } from '@/types';
+import type { BindTarget, BindVerdict } from '@/types';
 
 interface Note {
-  action: ActionId;
+  target: BindTarget;
   verdict: BindVerdict;
 }
 
@@ -16,8 +16,13 @@ export function KeymapPanel(): ReactElement {
   const clear = useKeymapStore((state) => state.clear);
   const reset = useKeymapStore((state) => state.reset);
   const resetAll = useKeymapStore((state) => state.resetAll);
-  const [armed, setArmed] = useState<ActionId | null>(null);
+  const [armed, setArmed] = useState<BindTarget | null>(null);
   const [note, setNote] = useState<Note | null>(null);
+
+  const disarm = (): void => {
+    setArmed(null);
+    setNote(null);
+  };
 
   useEffect(() => {
     if (armed === null) return;
@@ -31,7 +36,7 @@ export function KeymapPanel(): ReactElement {
       setArmed(null);
       if (event.key === 'Escape') return;
 
-      setNote({ action: armed, verdict: bind(armed, strokeFromEvent(event)) });
+      setNote({ target: armed, verdict: bind(armed, strokeFromEvent(event)) });
     };
 
     window.addEventListener('keydown', onKeyDown, true);
@@ -51,17 +56,19 @@ export function KeymapPanel(): ReactElement {
               <KeymapRow
                 key={action}
                 action={action}
-                stroke={keymap[action]}
-                armed={armed === action}
-                note={note?.action === action ? note.verdict : null}
-                onArm={() => {
+                binding={keymap[action]}
+                armed={armed?.action === action ? armed.slot : null}
+                note={note?.target.action === action ? note.verdict : null}
+                onArm={(slot) => {
                   setNote(null);
-                  setArmed(action);
+                  setArmed({ action, slot });
                 }}
-                onClear={() => {
-                  clear(action);
+                onClear={(slot) => {
+                  disarm();
+                  clear({ action, slot });
                 }}
                 onReset={() => {
+                  disarm();
                   reset(action);
                 }}
               />
@@ -74,7 +81,7 @@ export function KeymapPanel(): ReactElement {
         <button
           type="button"
           onClick={() => {
-            setNote(null);
+            disarm();
             resetAll();
           }}
           className="rounded-lg bg-raised px-2.5 py-1.5 text-[12px] text-muted transition-colors hover:bg-line hover:text-ink"

@@ -1,18 +1,30 @@
-import { ACTION_IDS } from '@/constants/keymap.constants';
-import type { ActionId, Keymap, KeyStroke } from '@/types';
+import { ACTION_IDS, BIND_SLOTS } from '@/constants/keymap.constants';
+import type { ActionId, BindTarget, Keymap, KeyStroke } from '@/types';
 
-export function findAction(keymap: Keymap, stroke: KeyStroke): ActionId | undefined {
+export function findTarget(keymap: Keymap, stroke: KeyStroke): BindTarget | undefined {
   if (stroke === '') return undefined;
 
-  return ACTION_IDS.find((action) => keymap[action] === stroke);
+  for (const action of ACTION_IDS) {
+    const slot = BIND_SLOTS.find((candidate) => keymap[action][candidate] === stroke);
+    if (slot !== undefined) return { action, slot };
+  }
+
+  return undefined;
 }
 
-export function assignStroke(keymap: Keymap, action: ActionId, stroke: KeyStroke): Keymap {
-  const holder = findAction(keymap, stroke);
+export function findAction(keymap: Keymap, stroke: KeyStroke): ActionId | undefined {
+  return findTarget(keymap, stroke)?.action;
+}
+
+export function assignStroke(keymap: Keymap, target: BindTarget, stroke: KeyStroke): Keymap {
+  const holder = findTarget(keymap, stroke);
   const next: Keymap = { ...keymap };
 
-  next[action] = stroke;
-  if (holder !== undefined && holder !== action) next[holder] = '';
+  next[target.action] = { ...next[target.action], [target.slot]: stroke };
+
+  if (holder !== undefined && (holder.action !== target.action || holder.slot !== target.slot)) {
+    next[holder.action] = { ...next[holder.action], [holder.slot]: '' };
+  }
 
   return next;
 }

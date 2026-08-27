@@ -13,7 +13,16 @@ export type ActionId =
 
 export type KeyStroke = string;
 
-export type Keymap = Record<ActionId, KeyStroke>;
+export type BindSlot = 'primary' | 'secondary';
+
+export type KeyBinding = Record<BindSlot, KeyStroke>;
+
+export type Keymap = Record<ActionId, KeyBinding>;
+
+export interface BindTarget {
+  action: ActionId;
+  slot: BindSlot;
+}
 
 export type KeyModifier = 'ctrl' | 'alt' | 'shift';
 
