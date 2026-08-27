@@ -20,7 +20,7 @@ export function PaletteLibraryDialog(): ReactElement {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 flex h-[30rem] w-[38rem] -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-line bg-surface p-5 shadow-xl">
+        <Dialog.Content className="fixed top-1/2 left-1/2 flex h-120 w-152 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-line bg-surface p-5 shadow-xl">
           <Dialog.Title className="text-[13px] font-medium text-ink">Palettes</Dialog.Title>
           <Dialog.Description className="sr-only">
             Your own colour palettes, and the one the pen carries

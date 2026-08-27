@@ -9,12 +9,12 @@ export function ToolColorBar(): ReactElement {
   return (
     <span className="pointer-events-none absolute bottom-1 flex h-1 w-5 gap-px">
       <span
-        className="grow-[65] rounded-full transition-colors"
+        className="grow-65 rounded-full transition-colors"
         style={{ backgroundColor: colorFill(color) }}
       />
       {swapColor === null ? null : (
         <span
-          className="grow-[35] rounded-full transition-colors"
+          className="grow-35 rounded-full transition-colors"
           style={{ backgroundColor: colorFill(swapColor) }}
         />
       )}

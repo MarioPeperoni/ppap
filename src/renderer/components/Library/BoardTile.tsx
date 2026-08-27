@@ -33,7 +33,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
           onClick={() => {
             void openBoard(board.id);
           }}
-          className="block aspect-[8/5] w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
+          className="block aspect-8/5 w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
         >
           {thumbnail === null ? null : (
             <img src={thumbnail} alt="" className="h-full w-full object-cover" />
@@ -66,7 +66,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
       {editing ? (
         <NameInput
           value={board.name}
-          className="rounded bg-raised px-1.5 py-0.5 text-[12px] text-ink outline-none"
+          className="rounded-sm bg-raised px-1.5 py-0.5 text-[12px] text-ink outline-none"
           onCommit={(name) => {
             setEditing(false);
             void renameBoard(board.id, name);
@@ -82,7 +82,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
           onClick={() => {
             setEditing(true);
           }}
-          className="truncate rounded px-1.5 text-left text-[12px] text-ink transition-colors hover:bg-raised"
+          className="truncate rounded-sm px-1.5 text-left text-[12px] text-ink transition-colors hover:bg-raised"
         >
           {board.name}
         </button>

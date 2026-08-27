@@ -31,7 +31,7 @@ export function BoardTitle(): ReactElement {
       {editing ? (
         <NameInput
           value={name}
-          className="app-no-drag rounded bg-raised px-2 py-0.5 text-[12px] text-ink outline-none"
+          className="app-no-drag rounded-sm bg-raised px-2 py-0.5 text-[12px] text-ink outline-none"
           onCommit={(next) => {
             setEditing(false);
             void renameBoard(id, next);
@@ -44,7 +44,7 @@ export function BoardTitle(): ReactElement {
         <button
           type="button"
           onClick={startEditing}
-          className="app-no-drag rounded px-2 py-0.5 text-[12px] text-ink/80 transition-colors hover:bg-raised hover:text-ink"
+          className="app-no-drag rounded-sm px-2 py-0.5 text-[12px] text-ink/80 transition-colors hover:bg-raised hover:text-ink"
         >
           {name}
         </button>
