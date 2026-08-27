@@ -6,21 +6,19 @@ Just what changed.
 
 ### Added
 
-- Six colours on the pen bar, violet and orange among them.
-- Your own palettes, up to five colours each, in a window of their own.
-- Two pen colours held at once, swapped with X.
+- Six default colours.
+- Custom palletes, up to five colours each, endless combinations created in a new pop up.
+- Two active pen colours held at once, swapped with X.
 - A colour bar under the selected pen.
-- Rebindable keys for tools, colours, width and delete, two per action, under Settings.
-- A fourth stroke width, twice the old thickest.
+- Rebindable keys for tools, colours, width and delete, two per action.
 
 ### Changed
 
-- Pen and pencil widths on a tapered slider across the popover, four stops and the size named.
+- Width slider.
 - Softer grid dots in dark mode.
 - Scrollbars that follow the theme.
-- One ring marks every pick, be it a colour, a width or a radius.
-- A click on a tile's name renames the board.
-- Copy and cut put the selection on the system clipboard, ready for any other application.
+- Board title can be changed in the board view.
+- Copy and cut now in system clipboard, ready to paste as an image.
 
 ## 1.1.0 — 2026-08-24
 
