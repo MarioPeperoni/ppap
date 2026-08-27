@@ -19,17 +19,19 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
   const thumbnail = useBoardThumbnail(board.id, board.modifiedAt);
 
   return (
-    <div className="group flex flex-col gap-2">
+    <div
+      className="group flex flex-col gap-2"
+      onKeyDown={(event) => {
+        if (event.key === 'Delete' || event.key === 'Backspace') onDelete(board);
+        if (event.key === 'F2') setEditing(true);
+      }}
+    >
       <div className="relative">
         <button
           type="button"
-          aria-label={board.name}
+          aria-label={`Open ${board.name}`}
           onClick={() => {
             void openBoard(board.id);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Delete' || event.key === 'Backspace') onDelete(board);
-            if (event.key === 'F2') setEditing(true);
           }}
           className="block aspect-[8/5] w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
         >
@@ -76,8 +78,9 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
       ) : (
         <button
           type="button"
+          aria-label={`Rename ${board.name}`}
           onClick={() => {
-            void openBoard(board.id);
+            setEditing(true);
           }}
           className="truncate rounded px-1.5 text-left text-[12px] text-ink transition-colors hover:bg-raised"
         >

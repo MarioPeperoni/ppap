@@ -18,6 +18,7 @@ Just what changed.
 - One key per tool, so the number shortcuts are gone.
 - Scrollbars that follow the theme.
 - One ring marks every pick, be it a colour, a width or a radius.
+- A click on a tile's name renames the board.
 
 ## 1.1.0 — 2026-08-24
 
