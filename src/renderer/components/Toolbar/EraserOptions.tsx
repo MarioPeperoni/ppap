@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { ERASER_RADII } from '@/constants/tool.constants';
 import { useToolStore } from '@/renderer/stores/tool.store';
+import { SELECTION_RING } from '@/renderer/theme/selection-ring';
 
 export function EraserOptions(): ReactElement {
   const eraserRadius = useToolStore((state) => state.eraserRadius);
@@ -13,13 +14,12 @@ export function EraserOptions(): ReactElement {
           key={radius}
           type="button"
           aria-label={`radius ${radius}`}
+          aria-pressed={radius === eraserRadius}
           onClick={() => {
             setEraserRadius(radius);
           }}
           className={`flex h-8 w-8 items-center justify-center rounded-full transition-shadow ${
-            radius === eraserRadius
-              ? 'ring-1 ring-line outline-2 outline-offset-2 outline-ink/70'
-              : 'ring-1 ring-line hover:ring-muted'
+            SELECTION_RING[radius === eraserRadius ? 'selected' : 'idle']
           }`}
         >
           <span

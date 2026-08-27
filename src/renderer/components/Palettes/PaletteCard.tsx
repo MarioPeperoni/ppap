@@ -29,7 +29,7 @@ export function PaletteCard({
         <span className="truncate text-[12px]">{palette.name}</span>
         {carried ? (
           <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px] text-green">
-            <span className="h-2 w-2 rounded-full bg-green" />
+            <span className="h-2 w-2 rounded-full bg-current" />
             Active
           </span>
         ) : null}

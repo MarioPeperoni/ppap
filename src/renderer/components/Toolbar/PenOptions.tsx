@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { TOOL_SIZES } from '@/constants/tool.constants';
 import { ColorPanel } from '@/renderer/components/Toolbar/ColorPanel';
 import { useToolStore } from '@/renderer/stores/tool.store';
+import { SELECTION_RING } from '@/renderer/theme/selection-ring';
 import type { SizeToken } from '@/types';
 
 const DOT_CLASS: Record<SizeToken, string> = {
@@ -23,13 +24,12 @@ export function PenOptions(): ReactElement {
             key={token}
             type="button"
             aria-label={`width ${token}`}
+            aria-pressed={token === penSize}
             onClick={() => {
               setPenSize(token);
             }}
             className={`flex h-6 w-6 items-center justify-center rounded-full transition-shadow ${
-              token === penSize
-                ? 'ring-1 ring-line outline-2 outline-offset-2 outline-ink/70'
-                : 'ring-1 ring-line hover:ring-muted'
+              SELECTION_RING[token === penSize ? 'selected' : 'idle']
             }`}
           >
             <span className={`rounded-full bg-ink ${DOT_CLASS[token]}`} />

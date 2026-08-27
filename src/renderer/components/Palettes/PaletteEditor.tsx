@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Check, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { MAX_CUSTOM_COLORS } from '@/constants/color.constants';
 import { ColorPicker } from '@/renderer/components/ColorPicker/ColorPicker';
 import { PaletteSwatch } from '@/renderer/components/Palettes/PaletteSwatch';
@@ -70,8 +70,14 @@ export function PaletteEditor({ palette, onUsed, onDeleted }: PaletteEditorProps
           }}
           className="flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-[12px] font-medium text-canvas transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-30"
         >
-          <Check size={13} strokeWidth={2.5} />
-          {carried ? 'Active' : 'Activate palette'}
+          {carried ? (
+            <>
+              <span className="h-2 w-2 rounded-full bg-current" />
+              Active
+            </>
+          ) : (
+            'Activate palette'
+          )}
         </button>
         <span className="text-[11px] text-muted">
           {palette.colors.length} of {MAX_CUSTOM_COLORS}

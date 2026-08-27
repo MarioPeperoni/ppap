@@ -17,6 +17,7 @@ Just what changed.
 - Softer grid dots in dark mode.
 - One key per tool, so the number shortcuts are gone.
 - Scrollbars that follow the theme.
+- One ring marks every pick, be it a colour, a width or a radius.
 
 ## 1.1.0 — 2026-08-24
 

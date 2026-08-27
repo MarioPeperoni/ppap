@@ -286,9 +286,10 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
   settings.
 - Two colors are held at once: the active one and a pinned partner, and `X` swaps them. A click in
   the popover sets the active color, `Shift`-click pins the partner, and a second `Shift`-click
-  unpins it. The active color carries a tick inside the swatch, dark or light by the lightness under
-  it, and the partner a dashed ring standing off the swatch, so two swatches side by side never
-  collide. Every other selected control in the popover wears that standing ring, solid. Picking the pinned color is the swap, so the pair never collapses into one color.
+  unpins it. The active color wears a solid ring standing off the swatch and the partner a dashed
+  one, so the swatch shows its color whole and two swatches side by side never collide. Every
+  selected control in the popover wears that same standing ring, the mark of a choice everywhere in
+  the app. Picking the pinned color is the swap, so the pair never collapses into one color.
   Both colors survive a restart, and a colour keeps its pin after its palette leaves the bar.
 - A change of color away from the popover flashes a dot in the new color beside the cursor and
   fades it out, so the swap is legible without looking down at the toolbar.
@@ -537,9 +538,9 @@ The editor renames the palette in place, cut to `MAX_PALETTE_NAME`, shows its co
 that drop on a click of their corner, and fills the rest of the pane with an HSV panel over a hex
 field and an `Add colour` button wearing the colour it would add, lettered dark or light against
 it. A palette takes a colour once and stops at `MAX_CUSTOM_COLORS`.
-`Activate palette` hands the pen its id and closes the dialog, and reads `Active` for the palette
-already carried; the bin deletes the palette, leaving the pen with none when it was the active one.
-A palette with no colors is kept but cannot be activated.
+`Activate palette` hands the pen its id and closes the dialog, and reads `Active` behind that same
+green dot for the palette already carried; the bin deletes the palette, leaving the pen with none
+when it was the active one. A palette with no colors is kept but cannot be activated.
 
 ---
 
