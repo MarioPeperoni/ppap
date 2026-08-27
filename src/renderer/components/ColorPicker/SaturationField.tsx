@@ -18,12 +18,12 @@ export function SaturationField({ hsv, onChange }: SaturationFieldProps): ReactE
   return (
     <div
       aria-label="saturation and brightness"
-      className="relative h-24 w-full touch-none rounded-lg"
+      className="relative min-h-28 w-full flex-1 cursor-crosshair touch-none rounded-lg"
       style={{ backgroundColor: `hsl(${hsv.h} 100% 50%)`, backgroundImage: SHADING }}
       {...drag}
     >
       <span
-        className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
+        className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm"
         style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%` }}
       />
     </div>

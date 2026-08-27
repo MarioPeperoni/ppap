@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import { alias } from './vite.alias.mjs';
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: { alias },
   build: { rollupOptions: { output: { entryFileNames: 'main.js' } } },
 });

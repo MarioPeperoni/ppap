@@ -17,12 +17,12 @@ export function HueSlider({ hue, onChange }: HueSliderProps): ReactElement {
   return (
     <div
       aria-label="hue"
-      className="relative h-3 w-full touch-none rounded-full"
+      className="relative h-3 w-full cursor-crosshair touch-none rounded-full"
       style={{ backgroundImage: HUE_GRADIENT }}
       {...drag}
     >
       <span
-        className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
+        className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm"
         style={{ left: `${(hue / 360) * 100}%`, backgroundColor: `hsl(${hue} 100% 50%)` }}
       />
     </div>

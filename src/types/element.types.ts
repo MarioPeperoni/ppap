@@ -1,7 +1,7 @@
 import type { ImageMime } from './asset.types';
 import type { StrokeColor } from './color.types';
 
-export type SizeToken = 's' | 'm' | 'l';
+export type SizeToken = 's' | 'm' | 'l' | 'xl';
 
 export type NibToken = 'pen' | 'pencil';
 

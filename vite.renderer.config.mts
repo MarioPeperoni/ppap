@@ -1,8 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { PRODUCTION_CSP } from './src/constants/security.constants';
+import { alias } from './vite.alias.mjs';
 
 function contentSecurityPolicy(): Plugin {
   return {
@@ -22,5 +22,6 @@ function contentSecurityPolicy(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), tsconfigPaths(), contentSecurityPolicy()],
+  resolve: { alias },
+  plugins: [react(), tailwindcss(), contentSecurityPolicy()],
 });

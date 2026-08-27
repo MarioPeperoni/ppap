@@ -1,4 +1,5 @@
 import { DEFAULT_WHEEL_ACTION } from '@/constants/camera.constants';
+import { DEFAULT_KEYMAP } from '@/constants/keymap.constants';
 import {
   DEFAULT_COLOR,
   DEFAULT_ERASER_RADIUS,
@@ -13,10 +14,13 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   tool: DEFAULT_TOOL,
   color: DEFAULT_COLOR,
-  customColors: [],
+  swapColor: null,
+  savedPalettes: [],
+  activePaletteId: null,
   penSize: DEFAULT_SIZE,
   eraserRadius: DEFAULT_ERASER_RADIUS,
   wheelAction: DEFAULT_WHEEL_ACTION,
+  keymap: DEFAULT_KEYMAP,
   sortOrder: 'modified',
   lastSeenVersion: '',
 };

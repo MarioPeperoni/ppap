@@ -1,6 +1,6 @@
 import type { NibToken, SizeToken } from '@/types';
 
-export const STROKE_SIZE_UNITS: Record<SizeToken, number> = { s: 4, m: 8, l: 16 };
+export const STROKE_SIZE_UNITS: Record<SizeToken, number> = { s: 4, m: 8, l: 16, xl: 32 };
 
 export const DEFAULT_STROKE_SCALE = 1;
 

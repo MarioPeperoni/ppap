@@ -35,7 +35,6 @@ export class SelectionTool implements Tool {
   constructor(
     readonly id: ToolId,
     readonly label: string,
-    readonly keys: readonly string[],
     private readonly region: SelectionRegion,
   ) {}
 

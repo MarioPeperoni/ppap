@@ -1,19 +1,27 @@
 import { cloneElement } from '@/core/element/element.factory';
 import { digestAsset } from '@/renderer/assets/asset-digest';
-import { readSystemImage } from '@/renderer/board/images/system-image';
+import { readSystemImage, writeSystemImage } from '@/renderer/board/images/system-image';
+import { renderSelectionImage } from '@/renderer/export/board-export';
 import type { Element } from '@/types';
 
 let held: readonly Element[] = [];
 let systemImage: string | null = null;
 
+/** Digests what the clipboard hands back, not what went in, so a re-encode still matches. */
 async function rememberSystemImage(): Promise<void> {
   const png = await readSystemImage();
   systemImage = png === null ? null : await digestAsset(png);
 }
 
-export function writeClipboard(elements: readonly Element[]): void {
+/** Holds the elements for this app and lays the same fragment on the system clipboard as PNG. */
+export async function writeClipboard(elements: readonly Element[]): Promise<void> {
   held = elements.map(cloneElement);
-  void rememberSystemImage();
+  systemImage = null;
+
+  const png = await renderSelectionImage(held);
+  if (png !== null) await writeSystemImage(png);
+
+  await rememberSystemImage();
 }
 
 export function readClipboard(): readonly Element[] {

@@ -1,20 +1,20 @@
+import { strokeFromEvent } from '@/core/keymap/key-stroke';
+import { findAction } from '@/core/keymap/keymap-lookup';
 import type { CameraController } from '@/renderer/board/camera-controller';
 import { pasteAt } from '@/renderer/board/images/image-paste';
+import { BOARD_ACTIONS } from '@/renderer/board/input/board-actions';
 import { isTypingTarget } from '@/renderer/board/input/typing-target';
 import {
   clearSelection,
   copySelection,
   cutSelection,
-  deleteSelection,
   duplicateSelection,
   selectAll,
 } from '@/renderer/board/selection/selection-actions';
-import { findToolByKey } from '@/renderer/board/tools/tool-registry';
-import { copySelectionImage } from '@/renderer/export/board-export';
 import { autosave } from '@/renderer/persistence/autosave';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
-import { useToolStore } from '@/renderer/stores/tool.store';
+import { useKeymapStore } from '@/renderer/stores/keymap.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
 import type { BoardInputHandlers } from '@/types';
 
@@ -36,13 +36,10 @@ export class KeyboardRouter {
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (isTypingTarget(event.target)) return;
+    if (this.handleFixedKey(event)) return;
+    if (this.handleBoundKey(event)) return;
 
-    if (event.ctrlKey || event.metaKey) {
-      this.handleShortcut(event);
-      return;
-    }
-
-    this.handleKey(event);
+    if (event.ctrlKey || event.metaKey) this.handleShortcut(event);
   };
 
   private readonly onKeyUp = (event: KeyboardEvent): void => {
@@ -52,56 +49,35 @@ export class KeyboardRouter {
     this.handlers.setPanOverride(false);
   };
 
-  private handleKey(event: KeyboardEvent): void {
+  private handleFixedKey(event: KeyboardEvent): boolean {
     if (event.key === ' ') {
-      if (this.spaceHeld) return;
-      this.spaceHeld = true;
-      this.handlers.setPanOverride(true);
-      event.preventDefault();
-      return;
+      if (!this.spaceHeld) {
+        this.spaceHeld = true;
+        this.handlers.setPanOverride(true);
+        event.preventDefault();
+      }
+
+      return true;
     }
 
-    if (event.key === 'Escape') {
-      this.handlers.cancelGesture();
-      clearSelection();
-      useUiStore.getState().setPopover(null);
-      return;
-    }
+    if (event.key !== 'Escape') return false;
 
-    if (event.key === 'Delete' || event.key === 'Backspace') {
-      deleteSelection();
-      return;
-    }
+    this.handlers.cancelGesture();
+    clearSelection();
+    useUiStore.getState().setPopover(null);
 
-    if (event.key === '[' || event.key === ']') {
-      useToolStore.getState().stepWidth(event.key === ']' ? 1 : -1);
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-
-    if (key === 'c') {
-      useToolStore.getState().cycleColor(event.shiftKey ? -1 : 1);
-      return;
-    }
-
-    this.selectTool(key);
+    return true;
   }
 
-  private selectTool(key: string): void {
-    const match = findToolByKey(key);
-    if (match === undefined) return;
+  private handleBoundKey(event: KeyboardEvent): boolean {
+    const { keymap } = useKeymapStore.getState();
+    const action = findAction(keymap, strokeFromEvent(event));
+    if (action === undefined) return false;
 
-    const tools = useToolStore.getState();
-    const ui = useUiStore.getState();
+    BOARD_ACTIONS[action]();
+    event.preventDefault();
 
-    if (tools.tool === match) {
-      ui.togglePopover(match);
-      return;
-    }
-
-    tools.setTool(match);
-    ui.setPopover(null);
+    return true;
   }
 
   private handleShortcut(event: KeyboardEvent): void {
@@ -119,14 +95,13 @@ export class KeyboardRouter {
         selectAll();
         break;
       case 'c':
-        if (event.shiftKey) void copySelectionImage();
-        else copySelection();
+        void copySelection();
         break;
       case 's':
         void autosave.flush();
         break;
       case 'x':
-        cutSelection();
+        void cutSelection();
         break;
       case 'v':
         void pasteAt(this.handlers.pointerBoard() ?? this.camera.boardCenter());

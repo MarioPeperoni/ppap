@@ -1,34 +1,36 @@
 import type { ReactElement } from 'react';
-import { isHexColor } from '@/core/color/srgb';
-import type { ColorToken, StrokeColor } from '@/types';
-
-const TOKEN_CLASS: Record<ColorToken, string> = {
-  ink: 'bg-ink',
-  blue: 'bg-blue',
-  red: 'bg-red',
-  green: 'bg-green',
-};
+import { colorFill } from '@/renderer/theme/color-fill';
+import { SELECTION_RING } from '@/renderer/theme/selection-ring';
+import type { SelectionState, StrokeColor } from '@/types';
 
 interface ColorSwatchProps {
   color: StrokeColor;
   selected: boolean;
+  paired: boolean;
   onSelect: (color: StrokeColor) => void;
+  onPair: (color: StrokeColor) => void;
 }
 
-export function ColorSwatch({ color, selected, onSelect }: ColorSwatchProps): ReactElement {
-  const custom = isHexColor(color);
+export function ColorSwatch({
+  color,
+  selected,
+  paired,
+  onSelect,
+  onPair,
+}: ColorSwatchProps): ReactElement {
+  const state: SelectionState = selected ? 'selected' : paired ? 'paired' : 'idle';
 
   return (
     <button
       type="button"
       aria-label={color}
-      onClick={() => {
-        onSelect(color);
+      aria-pressed={selected}
+      onClick={(event) => {
+        if (event.shiftKey) onPair(color);
+        else onSelect(color);
       }}
-      style={custom ? { backgroundColor: color } : undefined}
-      className={`h-6 w-6 rounded-full ${custom ? '' : TOKEN_CLASS[color]} ${
-        selected ? 'ring-2 ring-ink/60' : 'ring-1 ring-line'
-      }`}
+      style={{ backgroundColor: colorFill(color) }}
+      className={`h-6 w-6 rounded-full transition-shadow ${SELECTION_RING[state]}`}
     />
   );
 }

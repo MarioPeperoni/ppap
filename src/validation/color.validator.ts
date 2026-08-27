@@ -14,10 +14,17 @@ export function parseStrokeColor(value: unknown, label: string): StrokeColor {
   return isHexColor(value) ? value : expectOneOf(value, TOOL_COLORS, label);
 }
 
-export function parseCustomColors(value: unknown, label: string): HexColor[] {
+export function parseSwapColor(value: unknown, label: string): StrokeColor | null {
+  return value === null ? null : parseStrokeColor(value, label);
+}
+
+function parseHexColors(value: unknown, label: string, limit: number): HexColor[] {
   const colors = expectArray(value, label);
-  if (colors.length > MAX_CUSTOM_COLORS)
-    throw new Error(`${label} holds more than ${MAX_CUSTOM_COLORS} colours`);
+  if (colors.length > limit) throw new Error(`${label} holds more than ${limit} colours`);
 
   return colors.map((color) => parseHexColor(color, label));
+}
+
+export function parseCustomColors(value: unknown, label: string): HexColor[] {
+  return parseHexColors(value, label, MAX_CUSTOM_COLORS);
 }

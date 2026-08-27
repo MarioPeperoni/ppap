@@ -28,7 +28,6 @@ export interface ToolContext {
 export interface Tool {
   readonly id: ToolId;
   readonly label: string;
-  readonly keys: readonly string[];
   readonly cursor: string;
   onPointerDown: (sample: PointerSample, context: ToolContext) => void;
   onPointerMove: (sample: PointerSample, context: ToolContext) => void;

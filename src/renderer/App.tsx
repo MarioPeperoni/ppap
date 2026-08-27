@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Board } from '@/renderer/board/Board';
 import { LibraryScreen } from '@/renderer/components/Library/LibraryScreen';
+import { PaletteLibraryDialog } from '@/renderer/components/Palettes/PaletteLibraryDialog';
 import { TitleBar } from '@/renderer/components/TitleBar/TitleBar';
 import { WhatsNewDialog } from '@/renderer/components/WhatsNew/WhatsNewDialog';
 import { useAppShortcuts } from '@/renderer/hooks/use-app-shortcuts';
@@ -24,6 +25,7 @@ export function App(): ReactElement {
       <div className="flex h-full flex-col bg-canvas text-ink">
         <TitleBar />
         {onBoard ? <Board /> : <LibraryScreen />}
+        <PaletteLibraryDialog />
         <WhatsNewDialog />
       </div>
     </Tooltip.Provider>

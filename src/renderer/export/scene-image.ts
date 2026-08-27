@@ -1,7 +1,7 @@
 import { PNG_MIME } from '@/constants/export.constants';
 import { LIGHT_PALETTE } from '@/constants/palette.constants';
 import { drawElement } from '@/renderer/board/render/element-renderer';
-import type { Bounds, Element, Size } from '@/types';
+import type { Bounds, Bytes, Element, Size } from '@/types';
 
 export function renderElements(
   elements: readonly Element[],
@@ -30,7 +30,7 @@ export function renderElements(
   return surface;
 }
 
-export async function canvasToPng(canvas: HTMLCanvasElement): Promise<Uint8Array> {
+export async function canvasToPng(canvas: HTMLCanvasElement): Promise<Bytes> {
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, PNG_MIME);
   });

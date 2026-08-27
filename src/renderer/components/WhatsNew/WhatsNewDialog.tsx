@@ -19,7 +19,7 @@ export function WhatsNewDialog(): ReactElement | null {
           <div className="flex items-center justify-between">
             <Dialog.Title className="flex items-center gap-2 text-[13px] font-medium text-ink">
               What&apos;s new
-              <span className="rounded-md bg-blue/15 px-1.5 pt-1 pb-[3px] font-mono text-[11px] leading-none text-blue">
+              <span className="rounded-md bg-blue/15 px-1.5 pt-1 pb-0.75 font-mono text-[11px] leading-none text-blue">
                 {release.version}
               </span>
             </Dialog.Title>
@@ -36,7 +36,7 @@ export function WhatsNewDialog(): ReactElement | null {
           </div>
 
           <div className="mt-5 flex justify-end">
-            <Dialog.Close className="rounded-lg bg-raised px-3 py-1.5 text-[12px] text-ink hover:bg-line">
+            <Dialog.Close className="rounded-lg bg-raised px-3 py-1.5 text-[12px] text-ink transition-colors hover:bg-line">
               Got it
             </Dialog.Close>
           </div>

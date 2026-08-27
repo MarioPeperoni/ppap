@@ -3,6 +3,8 @@
   --color-blue: #2563eb;
   --color-red: #dc2626;
   --color-green: #16a34a;
+  --color-violet: #7c3aed;
+  --color-orange: #ea580c;
 
   --color-canvas: #ffffff;
   --color-dots: #d4d4d4;
@@ -10,6 +12,27 @@
   --color-raised: #f4f4f5;
   --color-line: #e4e4e7;
   --color-muted: #71717a;
+
+  --animate-color-flash: color-flash 460ms ease-out forwards;
+
+  @keyframes color-flash {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,9 +41,11 @@
     --color-blue: #5b8def;
     --color-red: #f0616b;
     --color-green: #4ade80;
+    --color-violet: #a78bfa;
+    --color-orange: #fb923c;
 
     --color-canvas: #191919;
-    --color-dots: #333333;
+    --color-dots: #2f2f2f;
     --color-surface: #202020;
     --color-raised: #2c2c2c;
     --color-line: #333333;
@@ -33,9 +58,11 @@
   --color-blue: #5b8def;
   --color-red: #f0616b;
   --color-green: #4ade80;
+  --color-violet: #a78bfa;
+  --color-orange: #fb923c;
 
   --color-canvas: #191919;
-  --color-dots: #333333;
+  --color-dots: #2f2f2f;
   --color-surface: #202020;
   --color-raised: #2c2c2c;
   --color-line: #333333;

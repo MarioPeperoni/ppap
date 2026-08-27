@@ -2,6 +2,24 @@
 
 Just what changed.
 
+## 1.2.0 — 2026-08-26
+
+### Added
+
+- Six default colours.
+- Custom palletes, up to five colours each, endless combinations created in a new pop up.
+- Two active pen colours held at once, swapped with X.
+- A colour bar under the selected pen.
+- Rebindable keys for tools, colours, width and delete, two per action.
+
+### Changed
+
+- Width slider.
+- Softer grid dots in dark mode.
+- Scrollbars that follow the theme.
+- Board title can be changed in the board view.
+- Copy and cut now in system clipboard, ready to paste as an image.
+
 ## 1.1.0 — 2026-08-24
 
 ### Added

@@ -13,6 +13,7 @@ export type * from './grid.types';
 export type * from './history.types';
 export type * from './input.types';
 export type * from './ipc.types';
+export type * from './keymap.types';
 export type * from './library.types';
 export type * from './platform.types';
 export type * from './route.types';

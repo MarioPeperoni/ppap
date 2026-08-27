@@ -120,12 +120,14 @@ board rect.
 
 ### 2.6 State
 
-| Store          | Holds                                                                                   |
-| -------------- | --------------------------------------------------------------------------------------- |
-| `libraryStore` | Board metadata, sort order, loading state                                               |
-| `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>` |
-| `toolStore`    | Active tool, pen color, pen width, eraser width; persisted to settings                  |
-| `historyStore` | Undo and redo command stacks, capped at 200 commands per board                          |
+| Store          | Holds                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| `libraryStore` | Board metadata, sort order, loading state                                                                  |
+| `keymapStore`  | A primary and a secondary key per rebindable action; persisted to settings                                 |
+| `boardStore`   | Board id and name, `elements: Map<string, Element>`, `camera`, `selection: Set<string>`                    |
+| `toolStore`    | Active tool, pen colour pair, the id of the active palette, pen width, eraser width; persisted to settings |
+| `paletteStore` | The saved palettes; persisted to settings                                                                  |
+| `historyStore` | Undo and redo command stacks, capped at 200 commands per board                                             |
 
 Canvas layers subscribe to the vanilla store directly, so a pointer move never rerenders a React
 component. React components use narrow selectors with `useShallow`. Element mutations go through
@@ -175,10 +177,16 @@ board  = screen / camera.zoom + camera.xy
 `src/shared/types.ts` is the single source of truth.
 
 ```ts
-type ColorToken = 'ink' | 'blue' | 'red' | 'green';
+type ColorToken = 'ink' | 'blue' | 'red' | 'green' | 'violet' | 'orange';
 type HexColor = `#${string}`; // lowercase #rrggbb, a colour the user picked
 type StrokeColor = ColorToken | HexColor;
 type SizeToken = 's' | 'm' | 'l';
+
+interface SavedPalette {
+  id: string; // uuid v4
+  name: string;
+  colors: HexColor[]; // at most MAX_CUSTOM_COLORS
+}
 type NibToken = 'pen' | 'pencil';
 
 interface BoardMeta {
@@ -213,7 +221,7 @@ interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
   color: StrokeColor; // a token follows the theme, a hex is the ink the user picked
-  size: SizeToken; // s=4, m=8, l=16 board units
+  size: SizeToken; // s=4, m=8, l=16, xl=32 board units
   nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
 
@@ -241,6 +249,8 @@ mutation, and never written to disk.
 | `blue`     | `#2563EB` | `#5B8DEF` |
 | `red`      | `#DC2626` | `#F0616B` |
 | `green`    | `#16A34A` | `#4ADE80` |
+| `violet`   | `#7C3AED` | `#A78BFA` |
+| `orange`   | `#EA580C` | `#FB923C` |
 | background | `#FFFFFF` | `#191919` |
 | dots       | `#D4D4D4` | `#333333` |
 
@@ -260,7 +270,7 @@ pan and restore it on release. All pointer types drive the active tool identical
 
 The canvas host sets `touch-action: none` and calls `setPointerCapture` on pointerdown.
 
-### 6.1 Pen and pencil — pen `P` / `1`, pencil `N` / `2`
+### 6.1 Pen and pencil — pen `P`, pencil `N`
 
 - One `StrokeTool` drives both; the nib it carries is stored on every stroke it commits.
 - `perfect-freehand` with `{ size, thinning, smoothing: 0.5, streamline: 0.5, simulatePressure }`,
@@ -271,17 +281,28 @@ The canvas host sets `touch-action: none` and calls `setPointerCapture` on point
 - `event.getCoalescedEvents()` supplies the full input sample rate; every sample is appended.
 - The live stroke draws on `OverlayLayer`; `pointerup` commits it as one command and clears the
   overlay.
-- Four colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
-  cycle color, `[` and `]` step width. Choices persist per tool in settings.
-- Up to `MAX_CUSTOM_COLORS` own colors sit in a second row under the four, ending in a plus that
-  opens an HSV panel with a hex field and previews the colour in its own swatch. They are stored in
-  settings, while a stroke keeps the hex it was drawn with, so removing a swatch leaves the ink
+- Six colors × three widths in a popover above the icon, shared by both nibs. `C` and `Shift+C`
+  cycle the six and whatever the active palette holds, `[` and `]` step width. Choices persist in
+  settings.
+- Two colors are held at once: the active one and a pinned partner, and `X` swaps them. A click in
+  the popover sets the active color, `Shift`-click pins the partner, and a second `Shift`-click
+  unpins it. The active color wears a solid ring standing off the swatch and the partner a dashed
+  one, so the swatch shows its color whole and two swatches side by side never collide. Every
+  selected control in the popover wears that same standing ring, the mark of a choice everywhere in
+  the app. Picking the pinned color is the swap, so the pair never collapses into one color.
+  Both colors survive a restart, and a colour keeps its pin after its palette leaves the bar.
+- A change of color away from the popover flashes a dot in the new color beside the cursor and
+  fades it out, so the swap is legible without looking down at the toolbar.
+- Under the six sits the active palette: its `MAX_CUSTOM_COLORS` colors and, after them, a
+  swatch-sized button that opens the library, the two filling one row of six. The pen holds the
+  palette's id, never a copy of its colors, so editing the palette changes the row and deleting it
+  leaves the button alone. A stroke keeps the hex it was drawn with, so a palette going inactive leaves the ink
   alone and a board carries its colors wherever it travels.
 - A custom color is drawn as picked unless it would sink into the canvas under it. Below
   `MIN_INK_CONTRAST` in OKLCh lightness it is pushed away from the canvas, hue intact, which is
   what keeps it readable in both themes and in a PNG export.
 
-### 6.2 Eraser — `E` / `3`
+### 6.2 Eraser — `E`
 
 Splits strokes. For each pointer segment, with eraser radius `r`:
 
@@ -295,7 +316,7 @@ A whole `pointerdown … pointerup` gesture is one command holding `{ removed, a
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
 a circle outline on the overlay. `[` and `]` step its radius.
 
-### 6.3 Selection — marquee `V` / `4`, lasso `L` / `5`
+### 6.3 Selection — marquee `V`, lasso `L`
 
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
 - **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
@@ -304,10 +325,12 @@ A non-empty selection shows a bounding box with four corner handles:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
   widths scale with the selection.
-- `Delete` and `Backspace` delete. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
-  cursor. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all. `Escape` clears.
+- `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
+  cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
+  drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.
+  `Escape` clears.
 
-### 6.4 Hand — `H` / `6`
+### 6.4 Hand — `H`
 
 Drags the camera.
 
@@ -322,24 +345,35 @@ Drags the camera.
 
 ### 6.6 Keyboard reference
 
-| Keys                                                  | Action                                         |
-| ----------------------------------------------------- | ---------------------------------------------- |
-| `P` `1` `N` `2` `E` `3` `V` `4` `L` `5` `H` `6`       | Pen / pencil / eraser / marquee / lasso / hand |
-| `Space` held, middle-drag                             | Temporary pan                                  |
-| `C`, `Shift+C`                                        | Cycle color                                    |
-| `[`, `]`                                              | Step stroke or eraser width                    |
-| Wheel                                                 | Zoom at cursor, or pan when set that way       |
-| `Ctrl`+wheel                                          | Whatever the bare wheel does not do            |
-| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`                   | Zoom in / out / 100 % / fit                    |
-| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`                    | Undo, redo                                     |
-| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` `Delete` | Selection operations                           |
-| `Ctrl+Shift+C`                                        | Copy selection to the clipboard as PNG         |
-| `Ctrl+G`                                              | Toggle grid                                    |
-| `Ctrl+S`                                              | Flush pending save                             |
-| `Ctrl+N`                                              | New board                                      |
-| `F2`                                                  | Rename board                                   |
-| `Alt+←`                                               | Back to the library                            |
-| `Escape`                                              | Cancel gesture, clear selection                |
+Rebindable in Settings, a primary and a secondary stroke per action, modifiers allowed:
+
+| Primary                 | Secondary               | Action                                         |
+| ----------------------- | ----------------------- | ---------------------------------------------- |
+| `P` `N` `E` `V` `L` `H` | `1` `2` `3` `4` `5` `6` | Pen / pencil / eraser / marquee / lasso / hand |
+| `C`, `Shift+C`          | —                       | Next and previous color                        |
+| `X`                     | —                       | Swap the active color with the pinned one      |
+| `[`, `]`                | —                       | Step stroke or eraser width                    |
+| `Backspace`             | `Delete`                | Delete the selection                           |
+
+Fixed:
+
+| Keys                                         | Action                                   |
+| -------------------------------------------- | ---------------------------------------- |
+| `Space` held, middle-drag                    | Temporary pan                            |
+| `Escape`                                     | Cancel gesture, clear selection          |
+| Wheel                                        | Zoom at cursor, or pan when set that way |
+| `Ctrl`+wheel                                 | Whatever the bare wheel does not do      |
+| `Ctrl+=` `Ctrl+-` `Ctrl+0` `Ctrl+1`          | Zoom in / out / 100 % / fit              |
+| `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`           | Undo, redo                               |
+| `Ctrl+A` `Ctrl+C` `Ctrl+X` `Ctrl+V` `Ctrl+D` | Selection operations                     |
+| `Ctrl+G`                                     | Toggle grid                              |
+| `Ctrl+S`                                     | Flush pending save                       |
+| `Ctrl+N`                                     | New board                                |
+| `F2`                                         | Rename board                             |
+| `Alt+←`                                      | Back to the library                      |
+
+`Space` and `Escape` are refused as bindings. Every other fixed stroke can be taken by a
+rebindable action, which the Settings row calls out as an override.
 
 ---
 
@@ -370,7 +404,7 @@ and `meta.version` on read and runs migrations keyed by version.
   boards/<uuid>.ppap
   folders.json         [{ id, name, createdAt }]
   index.json           cache of BoardMeta, rebuilt by scanning boards/
-  settings.json        theme, active tool, pen color and width, custom colors, wheel, sort order
+  settings.json        theme, active tool, pen colour pair and width, saved palettes and the id of the active one, wheel, sort order, key bindings
 ```
 
 `index.json` is a cache. When it is missing, unparsable, or out of step with `boards/`,
@@ -406,7 +440,9 @@ failing `/^[0-9a-f-]{36}$/` and `/^[0-9a-f]{64}$/` respectively.
 - **Export .ppap** copies the archive through a native save dialog.
 - **Import .ppap** validates the archive, assigns a new `id`, and adds it to the library.
 - **Export PNG** renders the content bbox plus 40 units of padding at 2×.
-- **`Ctrl+Shift+C`** renders the selection bbox to the clipboard as `image/png`.
+- **`Ctrl+C`** renders the selection bbox to the clipboard as `image/png` beside the elements it
+  holds in-app, and remembers that PNG's digest, so a paste back into ppap restores strokes rather
+  than a picture of them.
 - Squirrel registers the `.ppap` extension through `fileAssociations`; opening a file from the
   shell imports it and navigates to that board.
 
@@ -465,16 +501,22 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, custom colors and widths for the pen and pencil, radius for the eraser. The popover closes on `Escape`,
-outside click, and selection. The zoom percentage sits in the bottom-right corner between a `−`
-and a `+` button; clicking it sets 100 %, and the step buttons grey out at the zoom limits.
+colors, the active palette and width for the pen and pencil, radius for the eraser. The width sits
+on a slider spanning the popover, stepped through the four sizes and named above it; its track is a
+wedge thickening left to right, notched at the inner stops and capped at both ends.
+The active pen or pencil carries a rounded color bar under its icon: the active color alone, or
+split 65 / 35 with the pinned partner. The popover closes on `Escape`, outside click, and
+selection. The zoom percentage sits in the bottom-right corner between a `−` and a `+` button;
+clicking it sets 100 %, and the step buttons grey out at the zoom limits.
 
 ### 8.3 Library grid
 
 - Tiles of thumbnail, name, and relative modified date, in a responsive grid.
 - The `+` tile comes first and opens the new board immediately.
-- Default name is the creation date (`23 Aug 2026`). A pencil beside the trash on hover renames,
-  as does `F2` on a focused tile.
+- The thumbnail opens the board; the name under it renames, so the row that lights up on hover is
+  the row that edits.
+- Default name is the creation date (`23 Aug 2026`). A pencil beside the trash on hover renames
+  too, as does `F2` anywhere on a focused tile.
 - Sorted by modified date descending, with name and creation date available.
 - `Delete` opens a Radix confirmation dialog, then removes the archive.
 - Empty state: one line of text and the `+` tile.
@@ -482,8 +524,31 @@ and a `+` button; clicking it sets 100 %, and the step buttons grey out at the z
 ### 8.4 Settings
 
 The gear in the library title bar opens a Radix dialog holding the theme control
-(`System | Light | Dark`), the default sort order, and the application version. `Escape` closes
-it. The board screen has no settings surface.
+(`System | Light | Dark`), the wheel action, the default sort order, and the application version.
+`Escape` closes it. The board screen has no settings surface.
+
+**Shortcuts** widens the dialog and swaps its body for the keymap panel, grouped as tools, color,
+stroke and selection. A row holds two boxes of one fixed width, primary and secondary, each
+clearing on its own `×` and cutting a long stroke to an ellipsis, and one button resetting the pair; the footer resets them all. Clicking a box arms it and the next
+keystroke lands, with the modifiers held. Taking a key from another action leaves that one unbound
+and says so; taking one from a fixed shortcut says what it overrides; `Space` and `Escape` are
+refused. `Escape` while armed cancels the capture.
+
+### 8.5 Palettes
+
+The palette button in the pen popover closes it and opens a Radix dialog of its own, so the popover
+never grows to hold a collection. The dialog is two panes: a scrolling list of up to
+`MAX_SAVED_PALETTES` palettes on the left, each a name over a strip of its dots, the active one
+tagged `Active` in green, and a button under them that makes a new one; the palette picked there
+opens in the editor on the right.
+
+The editor renames the palette in place, cut to `MAX_PALETTE_NAME`, shows its colors as swatches
+that drop on a click of their corner, and fills the rest of the pane with an HSV panel over a hex
+field and an `Add colour` button wearing the colour it would add, lettered dark or light against
+it. A palette takes a colour once and stops at `MAX_CUSTOM_COLORS`.
+`Activate palette` hands the pen its id and closes the dialog, and reads `Active` behind that same
+green dot for the palette already carried; the bin deletes the palette, leaving the pen with none
+when it was the active one. A palette with no colors is kept but cannot be activated.
 
 ---
 
@@ -593,7 +658,7 @@ and scaling a multi-stroke selection keeps relative positions and stroke weights
 
 `ArchiveCodec`, `BoardRepository`, `LibraryIndex`, autosave with the camera and element split,
 atomic writes, thumbnails, library grid with rename, delete and sort, export and import, PNG
-export, `Ctrl+Shift+C`, settings.
+export, the selection on the system clipboard, settings.
 
 **Done when** a board reopens with identical content and camera, a deleted `index.json` rebuilds
 silently, and killing the app mid-stroke leaves a valid archive.

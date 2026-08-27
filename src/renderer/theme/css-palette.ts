@@ -14,6 +14,8 @@ class CssPalette {
       blue: this.token(styles, '--color-blue', LIGHT_PALETTE.blue),
       red: this.token(styles, '--color-red', LIGHT_PALETTE.red),
       green: this.token(styles, '--color-green', LIGHT_PALETTE.green),
+      violet: this.token(styles, '--color-violet', LIGHT_PALETTE.violet),
+      orange: this.token(styles, '--color-orange', LIGHT_PALETTE.orange),
       canvas: this.token(styles, '--color-canvas', LIGHT_PALETTE.canvas),
       dots: this.token(styles, '--color-dots', LIGHT_PALETTE.dots),
     };

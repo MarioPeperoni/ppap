@@ -7,7 +7,7 @@ import { openBoard, renameBoard } from '@/renderer/session/board-session';
 import type { BoardMeta } from '@/types';
 
 const ACTION_CLASS =
-  'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm';
+  'flex h-7 w-7 items-center justify-center rounded-lg bg-surface/90 text-muted shadow-sm transition-colors';
 
 interface BoardTileProps {
   board: BoardMeta;
@@ -19,19 +19,21 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
   const thumbnail = useBoardThumbnail(board.id, board.modifiedAt);
 
   return (
-    <div className="group flex flex-col gap-2">
+    <div
+      className="group flex flex-col gap-2"
+      onKeyDown={(event) => {
+        if (event.key === 'Delete' || event.key === 'Backspace') onDelete(board);
+        if (event.key === 'F2') setEditing(true);
+      }}
+    >
       <div className="relative">
         <button
           type="button"
-          aria-label={board.name}
+          aria-label={`Open ${board.name}`}
           onClick={() => {
             void openBoard(board.id);
           }}
-          onKeyDown={(event) => {
-            if (event.key === 'Delete' || event.key === 'Backspace') onDelete(board);
-            if (event.key === 'F2') setEditing(true);
-          }}
-          className="block aspect-[8/5] w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
+          className="block aspect-8/5 w-full overflow-hidden rounded-xl border border-line bg-surface transition-colors hover:border-muted"
         >
           {thumbnail === null ? null : (
             <img src={thumbnail} alt="" className="h-full w-full object-cover" />
@@ -64,7 +66,7 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
       {editing ? (
         <NameInput
           value={board.name}
-          className="rounded bg-raised px-1.5 py-0.5 text-[12px] text-ink outline-none"
+          className="rounded-sm bg-raised px-1.5 py-0.5 text-[12px] text-ink outline-none"
           onCommit={(name) => {
             setEditing(false);
             void renameBoard(board.id, name);
@@ -76,10 +78,11 @@ export function BoardTile({ board, onDelete }: BoardTileProps): ReactElement {
       ) : (
         <button
           type="button"
+          aria-label={`Rename ${board.name}`}
           onClick={() => {
-            void openBoard(board.id);
+            setEditing(true);
           }}
-          className="truncate px-1.5 text-left text-[12px] text-ink"
+          className="truncate rounded-sm px-1.5 text-left text-[12px] text-ink transition-colors hover:bg-raised"
         >
           {board.name}
         </button>

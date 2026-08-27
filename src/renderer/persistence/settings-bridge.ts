@@ -1,5 +1,7 @@
 import { useInputStore } from '@/renderer/stores/input.store';
+import { useKeymapStore } from '@/renderer/stores/keymap.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
+import { usePaletteStore } from '@/renderer/stores/palette.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { watchStore } from '@/renderer/stores/watch-store';
 import type { SettingsPatch, Unsubscribe } from '@/types';
@@ -13,6 +15,8 @@ export async function hydrateSettings(): Promise<void> {
 
   useToolStore.getState().adopt(settings);
   useInputStore.getState().adopt(settings);
+  useKeymapStore.getState().adopt(settings);
+  usePaletteStore.getState().adopt(settings);
   useLibraryStore.getState().setSortOrder(settings.sortOrder);
 }
 
@@ -34,9 +38,23 @@ export function watchSettings(): Unsubscribe {
     ),
     watchStore(
       useToolStore,
-      (state) => state.customColors,
-      (customColors) => {
-        patch({ customColors });
+      (state) => state.swapColor,
+      (swapColor) => {
+        patch({ swapColor });
+      },
+    ),
+    watchStore(
+      useToolStore,
+      (state) => state.activePaletteId,
+      (activePaletteId) => {
+        patch({ activePaletteId });
+      },
+    ),
+    watchStore(
+      usePaletteStore,
+      (state) => state.palettes,
+      (savedPalettes) => {
+        patch({ savedPalettes });
       },
     ),
     watchStore(
@@ -58,6 +76,13 @@ export function watchSettings(): Unsubscribe {
       (state) => state.wheelAction,
       (wheelAction) => {
         patch({ wheelAction });
+      },
+    ),
+    watchStore(
+      useKeymapStore,
+      (state) => state.keymap,
+      (keymap) => {
+        patch({ keymap });
       },
     ),
     watchStore(

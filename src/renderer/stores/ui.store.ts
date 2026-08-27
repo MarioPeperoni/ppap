@@ -5,17 +5,20 @@ interface UiStore {
   route: Route;
   openPopover: ToolId | null;
   whatsNewOpen: boolean;
+  paletteLibraryOpen: boolean;
   showLibrary: () => void;
   showBoard: () => void;
   togglePopover: (tool: ToolId) => void;
   setPopover: (tool: ToolId | null) => void;
   setWhatsNew: (open: boolean) => void;
+  setPaletteLibrary: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiStore>()((set, get) => ({
   route: 'library',
   openPopover: null,
   whatsNewOpen: false,
+  paletteLibraryOpen: false,
 
   showLibrary: () => {
     set({ route: 'library', openPopover: null });
@@ -35,5 +38,9 @@ export const useUiStore = create<UiStore>()((set, get) => ({
 
   setWhatsNew: (whatsNewOpen) => {
     set({ whatsNewOpen });
+  },
+
+  setPaletteLibrary: (paletteLibraryOpen) => {
+    set({ paletteLibraryOpen });
   },
 }));
