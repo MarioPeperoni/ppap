@@ -1,0 +1,33 @@
+.step-track {
+  clip-path: polygon(0 44%, 100% 0, 100% 100%, 0 56%);
+}
+
+.step-slider {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.step-slider::-webkit-slider-runnable-track {
+  height: 14px;
+  background: transparent;
+}
+
+.step-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background-color: var(--color-ink);
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.step-slider:focus-visible {
+  outline: none;
+}
+
+.step-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 3px var(--color-muted);
+}

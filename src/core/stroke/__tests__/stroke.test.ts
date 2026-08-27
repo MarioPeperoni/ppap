@@ -7,6 +7,7 @@ import {
   NIB_WIDTH_PRESSURE,
   STROKE_SIZE_UNITS,
 } from '@/constants/stroke.constants';
+import { TOOL_SIZES } from '@/constants/tool.constants';
 import { createStroke } from '@/core/element/element.factory';
 import { strokeBounds } from '@/core/stroke/stroke-bounds';
 import { hasRealPressure, outlineForPoints, strokeOutline } from '@/core/stroke/stroke-outline';
@@ -109,6 +110,13 @@ describe('stroke width', () => {
     for (const nib of NIB_TOKENS) {
       expect(widthAtPressure(nib, NIB_WIDTH_PRESSURE)).toBeCloseTo(STROKE_SIZE_UNITS.m, 6);
     }
+  });
+
+  it('widens with every size the toolbar offers', () => {
+    const widths = TOOL_SIZES.map((size) => strokeWidth(size, DEFAULT_STROKE_SCALE, DEFAULT_NIB));
+
+    expect(widths).toHaveLength(4);
+    expect([...widths].sort((one, other) => one - other)).toEqual(widths);
   });
 
   it('keeps the picked width in the middle of the pen taper', () => {

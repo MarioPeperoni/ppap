@@ -7,6 +7,7 @@ import {
 } from '@/constants/color.constants';
 import { DEFAULT_KEYMAP } from '@/constants/keymap.constants';
 import { DEFAULT_SETTINGS } from '@/constants/settings.constants';
+import { ERASER_RADII, TOOL_SIZES } from '@/constants/tool.constants';
 import { parseSettings, parseSettingsPatch } from '@/validation/settings.validator';
 
 describe('settings validation', () => {
@@ -118,8 +119,17 @@ describe('settings validation', () => {
     expect(() => parseSettings({ keymap: 'p' })).toThrow('Keymap');
   });
 
+  it('takes every width and radius the toolbar can pick', () => {
+    for (const size of TOOL_SIZES) {
+      expect(parseSettingsPatch({ penSize: size })).toEqual({ penSize: size });
+    }
+    for (const radius of ERASER_RADII) {
+      expect(parseSettingsPatch({ eraserRadius: radius })).toEqual({ eraserRadius: radius });
+    }
+  });
+
   it('rejects a value outside its set', () => {
-    expect(() => parseSettings({ penSize: 'xl' })).toThrow('Pen size');
+    expect(() => parseSettings({ penSize: 'xxl' })).toThrow('Pen size');
     expect(() => parseSettings({ wheelAction: 'scroll' })).toThrow('Wheel action');
     expect(() => parseSettings({ eraserRadius: 999 })).toThrow('Eraser radius');
   });

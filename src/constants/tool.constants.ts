@@ -9,8 +9,15 @@ export const TOOL_COLORS: readonly ColorToken[] = [
   'violet',
   'orange',
 ];
-export const TOOL_SIZES: readonly SizeToken[] = ['s', 'm', 'l'];
+export const TOOL_SIZES: readonly SizeToken[] = ['s', 'm', 'l', 'xl'];
 export const ERASER_RADII: readonly number[] = [6, 12, 24, 48];
+export const SIZE_LABELS: Record<SizeToken, string> = {
+  s: 'Thin',
+  m: 'Medium',
+  l: 'Thick',
+  xl: 'Extra thick',
+};
+
 export const SELECTION_TOOLS: readonly ToolId[] = ['marquee', 'lasso'];
 export const INK_TOOLS: readonly ToolId[] = ['pen', 'pencil'];
 

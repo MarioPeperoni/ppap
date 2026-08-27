@@ -11,9 +11,11 @@ Just what changed.
 - Two pen colours held at once, swapped with X.
 - A colour bar under the selected pen.
 - Rebindable keys for tools, colours, width and delete, two per action, under Settings.
+- A fourth stroke width, twice the old thickest.
 
 ### Changed
 
+- Pen and pencil widths on a tapered slider across the popover, four stops and the size named.
 - Softer grid dots in dark mode.
 - Scrollbars that follow the theme.
 - One ring marks every pick, be it a colour, a width or a radius.

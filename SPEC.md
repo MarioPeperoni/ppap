@@ -221,7 +221,7 @@ interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: [x: number, y: number, pressure: number][]; // board coords, pressure 0..1
   color: StrokeColor; // a token follows the theme, a hex is the ink the user picked
-  size: SizeToken; // s=4, m=8, l=16 board units
+  size: SizeToken; // s=4, m=8, l=16, xl=32 board units
   nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
 
@@ -501,7 +501,9 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, the active palette and widths for the pen and pencil, radius for the eraser.
+colors, the active palette and width for the pen and pencil, radius for the eraser. The width sits
+on a slider spanning the popover, stepped through the four sizes and named above it; its track is a
+wedge thickening left to right, notched at the inner stops and capped at both ends.
 The active pen or pencil carries a rounded color bar under its icon: the active color alone, or
 split 65 / 35 with the pinned partner. The popover closes on `Escape`, outside click, and
 selection. The zoom percentage sits in the bottom-right corner between a `−` and a `+` button;
