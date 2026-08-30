@@ -19,14 +19,16 @@ export function WhatsNewDialog(): ReactElement | null {
         <Dialog.Content
           className={`fixed top-1/2 left-1/2 flex max-h-[70vh] w-96 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-line bg-surface p-5 shadow-xl ${DIALOG_PANEL}`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1.5">
             <Dialog.Title className="flex items-center gap-2 text-[13px] font-medium text-ink">
               What&apos;s new
               <span className="rounded-md bg-blue/15 px-1.5 pt-1 pb-0.75 font-mono text-[11px] leading-none text-blue">
                 {release.version}
               </span>
             </Dialog.Title>
-            <span className="text-[11px] text-muted">{release.date}</span>
+            {release.subtitle === undefined ? null : (
+              <p className="text-[12px] text-muted">{release.subtitle}</p>
+            )}
           </div>
           <Dialog.Description className="sr-only">
             Changes in version {release.version}
