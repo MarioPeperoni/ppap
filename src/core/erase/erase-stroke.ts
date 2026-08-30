@@ -23,6 +23,7 @@ export function eraseSegment(
 
     switch (element.type) {
       case 'image':
+      case 'text':
         if (boundsContainPoint(bounds, to) || boundsContainPoint(bounds, from)) {
           hits.push({ source: element, fragments: [] });
         }

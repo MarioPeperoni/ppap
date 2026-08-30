@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
 import { appInvokeHandlers } from '@/main/ipc/handlers/app.handlers';
 import { clipboardInvokeHandlers } from '@/main/ipc/handlers/clipboard.handlers';
+import { folderInvokeHandlers } from '@/main/ipc/handlers/folder.handlers';
 import { libraryInvokeHandlers } from '@/main/ipc/handlers/library.handlers';
 import {
   settingsInvokeHandlers,
@@ -20,6 +21,7 @@ const INVOKE_HANDLERS: IpcInvokeTable = {
   ...appInvokeHandlers,
   ...themeInvokeHandlers,
   ...libraryInvokeHandlers,
+  ...folderInvokeHandlers,
   ...settingsInvokeHandlers,
   ...clipboardInvokeHandlers,
 };

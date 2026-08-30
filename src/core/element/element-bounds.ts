@@ -7,6 +7,7 @@ export function elementBounds(element: Element): Bounds {
     case 'stroke':
       return strokeBounds(element);
     case 'image':
+    case 'text':
       return {
         minX: element.x,
         minY: element.y,

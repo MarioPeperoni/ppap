@@ -1,11 +1,13 @@
 import type { ReactElement } from 'react';
 import { EraserOptions } from '@/renderer/components/Toolbar/EraserOptions';
 import { PenOptions } from '@/renderer/components/Toolbar/PenOptions';
+import { TextOptions } from '@/renderer/components/Toolbar/TextOptions';
 import type { ToolId } from '@/types';
 
 const OPTIONS: Record<ToolId, (() => ReactElement) | null> = {
   pen: PenOptions,
   pencil: PenOptions,
+  text: TextOptions,
   eraser: EraserOptions,
   marquee: null,
   lasso: null,

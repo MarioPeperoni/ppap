@@ -37,6 +37,10 @@ export const libraryApi: LibraryApi = {
     await ipcRenderer.invoke(IPC_CHANNELS.libraryRemove, { id });
   },
 
+  setFolder: async (id, folderId) => {
+    await ipcRenderer.invoke(IPC_CHANNELS.librarySetFolder, { id, folderId });
+  },
+
   thumbnail: async (id) =>
     parseThumbnail(await ipcRenderer.invoke(IPC_CHANNELS.libraryThumbnail, { id })),
 

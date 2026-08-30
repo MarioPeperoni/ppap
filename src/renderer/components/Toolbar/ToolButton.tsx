@@ -1,13 +1,24 @@
 import type { ReactElement } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { Eraser, Hand, Lasso, Pencil, PenLine, SquareDashed, type LucideIcon } from 'lucide-react';
+import {
+  Eraser,
+  Hand,
+  Lasso,
+  Pencil,
+  PenLine,
+  SquareDashed,
+  Type,
+  type LucideIcon,
+} from 'lucide-react';
 import { INK_TOOLS } from '@/constants/tool.constants';
 import { boundStrokes } from '@/core/keymap/key-binding';
 import { formatStroke } from '@/core/keymap/key-stroke';
 import { getTool } from '@/renderer/board/tools/tool-registry';
 import { ToolColorBar } from '@/renderer/components/Toolbar/ToolColorBar';
 import { hasOptions, ToolOptions } from '@/renderer/components/Toolbar/ToolOptions';
+import { POPOVER_SURFACE } from '@/renderer/motion/popover-motion';
+import { TOOLTIP_HINT } from '@/renderer/motion/tooltip-motion';
 import { useKeymapStore } from '@/renderer/stores/keymap.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
@@ -16,6 +27,7 @@ import type { ToolId } from '@/types';
 const ICONS: Record<ToolId, LucideIcon> = {
   pen: PenLine,
   pencil: Pencil,
+  text: Type,
   eraser: Eraser,
   marquee: SquareDashed,
   lasso: Lasso,
@@ -62,11 +74,17 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
                 setTool(id);
                 setPopover(null);
               }}
-              className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition duration-150 ease-swift active:scale-95 ${
                 active ? 'bg-raised text-ink' : 'text-muted hover:bg-raised/60 hover:text-ink'
               }`}
             >
-              <Icon size={18} strokeWidth={1.75} className={inked ? '-translate-y-px' : ''} />
+              <Icon
+                size={18}
+                strokeWidth={1.75}
+                className={`transition-[translate] duration-150 ease-swift ${
+                  inked ? '-translate-y-px' : ''
+                }`}
+              />
               {inked ? <ToolColorBar /> : null}
             </button>
           </Popover.Trigger>
@@ -75,7 +93,7 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
           <Tooltip.Content
             side="top"
             sideOffset={10}
-            className="rounded-md bg-ink px-2 py-1 text-[11px] text-canvas"
+            className={`rounded-md bg-ink px-2 py-1 text-[11px] text-canvas ${TOOLTIP_HINT}`}
           >
             {tool.label}
             {stroke === undefined ? null : (
@@ -94,7 +112,7 @@ export function ToolButton({ id }: ToolButtonProps): ReactElement {
           onOpenAutoFocus={(event) => {
             event.preventDefault();
           }}
-          className="rounded-xl border border-line bg-surface p-3 shadow-lg"
+          className={`rounded-xl border border-line bg-surface p-3 shadow-lg ${POPOVER_SURFACE}`}
         >
           <ToolOptions tool={id} />
         </Popover.Content>

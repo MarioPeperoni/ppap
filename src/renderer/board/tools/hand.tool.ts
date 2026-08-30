@@ -6,6 +6,7 @@ export class HandTool implements Tool {
   readonly id = 'hand';
   readonly label = 'Hand';
   readonly cursor = 'grab';
+  readonly keepsFocus = false;
 
   private origin: PanOrigin | null = null;
 

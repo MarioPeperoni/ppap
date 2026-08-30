@@ -9,7 +9,7 @@ describe('findAction', () => {
   });
 
   it('resolves a secondary stroke', () => {
-    expect(findAction(DEFAULT_KEYMAP, '5')).toBe('tool.lasso');
+    expect(findAction(DEFAULT_KEYMAP, '6')).toBe('tool.lasso');
   });
 
   it('resolves nothing for a free stroke', () => {
@@ -21,7 +21,7 @@ describe('findAction', () => {
   });
 
   it('names the slot a stroke sits in', () => {
-    expect(findTarget(DEFAULT_KEYMAP, '3')).toEqual({ action: 'tool.eraser', slot: 'secondary' });
+    expect(findTarget(DEFAULT_KEYMAP, '4')).toEqual({ action: 'tool.eraser', slot: 'secondary' });
   });
 });
 
@@ -76,7 +76,7 @@ describe('judgeStroke', () => {
   });
 
   it('reports the action a secondary stroke would be taken from', () => {
-    expect(judgeStroke(DEFAULT_KEYMAP, penPrimary, '4')).toEqual({
+    expect(judgeStroke(DEFAULT_KEYMAP, penPrimary, '5')).toEqual({
       kind: 'steals',
       owner: 'tool.marquee',
     });
@@ -100,11 +100,12 @@ describe('action catalogue', () => {
   });
 
   it('gives every tool a number as its secondary key', () => {
-    const numbers = ['1', '2', '3', '4', '5', '6'];
+    const numbers = ['1', '2', '3', '4', '5', '6', '7'];
 
     expect(numbers.map((key) => findAction(DEFAULT_KEYMAP, key))).toEqual([
       'tool.pen',
       'tool.pencil',
+      'tool.text',
       'tool.eraser',
       'tool.marquee',
       'tool.lasso',

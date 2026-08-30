@@ -23,10 +23,11 @@ export const SLOT_LABELS: Record<BindSlot, string> = {
 export const DEFAULT_KEYMAP: Keymap = {
   'tool.pen': { primary: 'p', secondary: '1' },
   'tool.pencil': { primary: 'n', secondary: '2' },
-  'tool.eraser': { primary: 'e', secondary: '3' },
-  'tool.marquee': { primary: 'v', secondary: '4' },
-  'tool.lasso': { primary: 'l', secondary: '5' },
-  'tool.hand': { primary: 'h', secondary: '6' },
+  'tool.text': { primary: 't', secondary: '3' },
+  'tool.eraser': { primary: 'e', secondary: '4' },
+  'tool.marquee': { primary: 'v', secondary: '5' },
+  'tool.lasso': { primary: 'l', secondary: '6' },
+  'tool.hand': { primary: 'h', secondary: '7' },
   'color.next': { primary: 'c', secondary: '' },
   'color.previous': { primary: 'shift+c', secondary: '' },
   'color.swap': { primary: 'x', secondary: '' },
@@ -38,6 +39,7 @@ export const DEFAULT_KEYMAP: Keymap = {
 export const ACTION_LABELS: Record<ActionId, string> = {
   'tool.pen': 'Pen',
   'tool.pencil': 'Pencil',
+  'tool.text': 'Text',
   'tool.eraser': 'Eraser',
   'tool.marquee': 'Marquee',
   'tool.lasso': 'Lasso',

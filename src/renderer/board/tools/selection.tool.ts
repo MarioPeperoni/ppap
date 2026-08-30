@@ -27,6 +27,7 @@ import type {
 
 export class SelectionTool implements Tool {
   readonly cursor = 'crosshair';
+  readonly keepsFocus = false;
 
   private readonly drag = new SelectionDrag();
   private gesture: SelectionGesture = 'idle';

@@ -1,6 +1,7 @@
 import { WHEEL_ACTIONS } from '@/constants/camera.constants';
 import { CARRIED_PALETTE_ID } from '@/constants/color.constants';
 import { DEFAULT_SETTINGS, SORT_ORDERS } from '@/constants/settings.constants';
+import { FONT_TOKENS } from '@/constants/text.constants';
 import { ERASER_RADII, TOOL_IDS, TOOL_SIZES } from '@/constants/tool.constants';
 import { paletteOf } from '@/core/color/palettes';
 import type { SavedPalette, Settings, SettingsPatch } from '@/types';
@@ -28,6 +29,12 @@ export function parseSettingsPatch(value: unknown): SettingsPatch {
   }
   if (source.penSize !== undefined) {
     patch.penSize = expectOneOf(source.penSize, TOOL_SIZES, 'Pen size');
+  }
+  if (source.textSize !== undefined) {
+    patch.textSize = expectOneOf(source.textSize, TOOL_SIZES, 'Text size');
+  }
+  if (source.textFont !== undefined) {
+    patch.textFont = expectOneOf(source.textFont, FONT_TOKENS, 'Text font');
   }
   if (source.eraserRadius !== undefined) {
     patch.eraserRadius = expectOneOf(source.eraserRadius, ERASER_RADII, 'Eraser radius');

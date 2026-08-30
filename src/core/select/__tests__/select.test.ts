@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { boundsOfElements, elementBounds } from '@/core/element/element-bounds';
-import { createImage, createStroke } from '@/core/element/element.factory';
+import { createImage, createStroke, createText } from '@/core/element/element.factory';
 import { boundsCorners } from '@/core/geometry/bounds';
 import { pickElement } from '@/core/select/select-pick';
 import { selectInShape } from '@/core/select/select-region';
 import { scaleElement, translateElement } from '@/core/select/select-transform';
 import { polygonShape } from '@/core/select/selection-shape';
 import { strokeWidth } from '@/core/stroke/stroke-width';
-import type { Bounds, Element, Point, SelectionResult, StrokeElement, StrokePoint } from '@/types';
+import { fontSize } from '@/core/text/text-font';
+import type {
+  Bounds,
+  Element,
+  Point,
+  SelectionResult,
+  StrokeElement,
+  StrokePoint,
+  TextElement,
+} from '@/types';
 
 const SQUARE: Point[] = [
   { x: 0, y: 0 },
@@ -54,6 +63,20 @@ function selectedFragment(result: SelectionResult): StrokeElement | undefined {
 
 function aspect(bounds: Bounds): number {
   return (bounds.maxX - bounds.minX) / (bounds.maxY - bounds.minY);
+}
+
+function note(x: number, y: number): TextElement {
+  return createText({
+    text: 'note',
+    x,
+    y,
+    width: 40,
+    height: 20,
+    color: 'ink',
+    size: 'm',
+    font: 'sans',
+    scale: 1,
+  });
 }
 
 describe('selection region', () => {
@@ -126,6 +149,13 @@ describe('selection region', () => {
     expect(result.ids).toEqual([held.id]);
   });
 
+  it('takes a text box when the shape holds the centre of its box', () => {
+    const text = note(20, 20);
+    const taken = selectInShape([text], polygonShape(SQUARE));
+
+    expect(taken.ids).toEqual([text.id]);
+  });
+
   it('keeps the z-order of the scene in the selected ids', () => {
     const first = createStroke(line(0, 10, 10), 'ink', 'm');
     const second = createStroke(line(0, 10, 20), 'ink', 'm');
@@ -195,6 +225,15 @@ describe('selection transform', () => {
       strokeWidth(stroke.size, stroke.scale, stroke.nib) * 3,
       6,
     );
+  });
+
+  it('scales the text face with its box', () => {
+    const text = note(10, 10);
+    const scaled = scaleElement(text, { x: 0, y: 0 }, 2) as TextElement;
+
+    expect(scaled.width).toBeCloseTo(text.width * 2, 6);
+    expect(scaled.height).toBeCloseTo(text.height * 2, 6);
+    expect(fontSize(scaled.size, scaled.scale)).toBeCloseTo(fontSize(text.size, text.scale) * 2, 6);
   });
 
   it('returns to the original geometry when scaled back', () => {

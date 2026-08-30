@@ -38,6 +38,7 @@ function stepWidth(direction: number): () => void {
 export const BOARD_ACTIONS: Record<ActionId, () => void> = {
   'tool.pen': selectTool('pen'),
   'tool.pencil': selectTool('pencil'),
+  'tool.text': selectTool('text'),
   'tool.eraser': selectTool('eraser'),
   'tool.marquee': selectTool('marquee'),
   'tool.lasso': selectTool('lasso'),

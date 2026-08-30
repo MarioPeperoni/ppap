@@ -16,7 +16,7 @@ interface is a floating toolbar and a thin title bar.
 **Platform:** Windows first (Electron Forge + Vite + React 19 + TypeScript). macOS is one entry
 in the release matrix, not a design constraint.
 
-**Out of scope:** collaboration, cloud sync, shape and arrow tools, text elements, sticky notes,
+**Out of scope:** collaboration, cloud sync, shape and arrow tools, sticky notes, rich text,
 PDF and SVG export, element rotation, layers, grouping, freeform color picking, mobile and web
 builds, plugins.
 
@@ -188,6 +188,7 @@ interface SavedPalette {
   colors: HexColor[]; // at most MAX_CUSTOM_COLORS
 }
 type NibToken = 'pen' | 'pencil';
+type FontToken = 'sans' | 'serif' | 'mono' | 'hand';
 
 interface BoardMeta {
   format: 'ppap';
@@ -197,6 +198,12 @@ interface BoardMeta {
   createdAt: string; // ISO 8601
   modifiedAt: string; // ISO 8601
   folderId: string | null;
+}
+
+interface Folder {
+  id: string; // uuid v4
+  name: string;
+  createdAt: string; // ISO 8601
 }
 
 interface BoardContent {
@@ -210,7 +217,7 @@ interface BoardFile {
   content: BoardContent;
 }
 
-type Element = StrokeElement | ImageElement;
+type Element = StrokeElement | ImageElement | TextElement;
 
 interface ElementBase {
   id: string;
@@ -235,6 +242,19 @@ interface ImageElement extends ElementBase {
   height: number;
   naturalWidth: number;
   naturalHeight: number;
+}
+
+interface TextElement extends ElementBase {
+  type: 'text';
+  text: string; // newlines break lines, nothing else is markup
+  x: number;
+  y: number;
+  width: number; // the measured box, so bounds stay pure and synchronous
+  height: number;
+  color: StrokeColor;
+  size: SizeToken; // s=16, m=24, l=36, xl=56 board units
+  font: FontToken;
+  scale: number; // what a resize left behind, multiplied into the face
 }
 ```
 
@@ -310,7 +330,7 @@ Splits strokes. For each pointer segment, with eraser radius `r`:
 2. Mark stroke points within `r` of the segment.
 3. Drop marked points; each surviving run becomes a stroke inheriting color, size and order. Runs
    under 2 points are discarded.
-4. Images are removed when the eraser centre enters their bbox.
+4. Images and text boxes are removed when the eraser centre enters their bbox.
 
 A whole `pointerdown … pointerup` gesture is one command holding `{ removed, added }`. A single
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
@@ -319,12 +339,13 @@ a circle outline on the overlay. `[` and `]` step its radius.
 ### 6.3 Selection — marquee `V`, lasso `L`
 
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
-- **Lasso** selects strokes fully contained in the polygon and images whose bbox centre is inside.
+- **Lasso** selects strokes fully contained in the polygon, and images and text boxes whose bbox
+  centre is inside.
 
 A non-empty selection shows a bounding box with four corner handles:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
-  widths scale with the selection.
+  widths and text faces scale with the selection.
 - `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
   drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.
@@ -334,7 +355,22 @@ A non-empty selection shows a bounding box with four corner handles:
 
 Drags the camera.
 
-### 6.5 Images
+### 6.5 Text — `T`
+
+- Clicking bare canvas opens a caret there, its first line centred on the point. Clicking an
+  existing text box reopens that box with the caret at its end.
+- Typing runs in a transparent `<textarea>` laid over the canvas in the element's own font, size
+  and colour, so what is typed is already what the canvas will draw. The element it stands for is
+  held back from the scene layer until the box closes.
+- `Escape` and `Ctrl+Enter` close the box, as does reaching for another tool or clicking elsewhere.
+  `Enter` breaks a line. A box closed blank commits nothing, and blanking an existing one deletes
+  it.
+- Four faces, picked in the popover: sans, serif, mono and hand. `[` and `]` step the size through
+  the same four tokens the pen uses.
+- The box carries the measured width and height of its text, so selection, erasing and export treat
+  it as a placed rect the way an image is treated.
+
+### 6.6 Images
 
 - `Ctrl+V` with an image on the clipboard, and dropping image files on the canvas, insert an
   `ImageElement` centred at the cursor.
@@ -343,17 +379,17 @@ Drags the camera.
 - Initial size fits the natural size within 800 board units, preserving aspect ratio.
 - The renderer references `ppap-asset://<boardId>/<assetId>` and never holds the bytes.
 
-### 6.6 Keyboard reference
+### 6.7 Keyboard reference
 
 Rebindable in Settings, a primary and a secondary stroke per action, modifiers allowed:
 
-| Primary                 | Secondary               | Action                                         |
-| ----------------------- | ----------------------- | ---------------------------------------------- |
-| `P` `N` `E` `V` `L` `H` | `1` `2` `3` `4` `5` `6` | Pen / pencil / eraser / marquee / lasso / hand |
-| `C`, `Shift+C`          | —                       | Next and previous color                        |
-| `X`                     | —                       | Swap the active color with the pinned one      |
-| `[`, `]`                | —                       | Step stroke or eraser width                    |
-| `Backspace`             | `Delete`                | Delete the selection                           |
+| Primary                     | Secondary | Action                                                |
+| --------------------------- | --------- | ----------------------------------------------------- |
+| `P` `N` `T` `E` `V` `L` `H` | `1` … `7` | Pen / pencil / text / eraser / marquee / lasso / hand |
+| `C`, `Shift+C`              | —         | Next and previous color                               |
+| `X`                         | —         | Swap the active color with the pinned one             |
+| `[`, `]`                    | —         | Step stroke or eraser width                           |
+| `Backspace`                 | `Delete`  | Delete the selection                                  |
 
 Fixed:
 
@@ -461,6 +497,12 @@ window.ppap = {
     exportFile(id: string):            Promise<boolean>;
     importFile():                      Promise<BoardMeta | null>;
   },
+  folders: {
+    list():                            Promise<Folder[]>;
+    create(name: string):              Promise<Folder>;
+    rename(id: string, name: string):  Promise<void>;
+    remove(id: string):                Promise<void>;
+  },
   window:    { minimize(); toggleMaximize(); close(); onMaximizeChange(cb) },
   theme:     { get(): Promise<Theme>; set(t: Theme); onChange(cb) },
   clipboard: { writeImage(png: Uint8Array): Promise<void> },
@@ -501,10 +543,11 @@ is no menu bar.
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
 borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
-colors, the active palette and width for the pen and pencil, radius for the eraser. The width sits
+colors, the active palette and width for the pen and pencil, colors, the four faces and size for
+text, radius for the eraser. The width sits
 on a slider spanning the popover, stepped through the four sizes and named above it; its track is a
 wedge thickening left to right, notched at the inner stops and capped at both ends.
-The active pen or pencil carries a rounded color bar under its icon: the active color alone, or
+The active pen, pencil or text tool carries a rounded color bar under its icon: the active color alone, or
 split 65 / 35 with the pinned partner. The popover closes on `Escape`, outside click, and
 selection. The zoom percentage sits in the bottom-right corner between a `−` and a `+` button;
 clicking it sets 100 %, and the step buttons grey out at the zoom limits.
@@ -517,14 +560,22 @@ clicking it sets 100 %, and the step buttons grey out at the zoom limits.
   the row that edits.
 - Default name is the creation date (`23 Aug 2026`). A pencil beside the trash on hover renames
   too, as does `F2` anywhere on a focused tile.
-- Sorted by modified date descending, with name and creation date available.
+- A `Library` header sits over the grid with the sort control on its right: modified date
+  descending by default, with name and creation date available.
 - `Delete` opens a Radix confirmation dialog, then removes the archive.
 - Empty state: one line of text and the `+` tile.
+- Folder tiles sit between the `+` tile and the boards, each a mosaic of the four most recently
+  modified thumbnails it holds, its name and its board count. Clicking one opens it in place;
+  a breadcrumb takes the header's place and leads back, and the library holds no nesting.
+- The folder button in the library title bar makes a folder and starts its rename. A board tile
+  drags onto a folder tile to file it and onto `Library` in the breadcrumb to take it out. New and
+  imported boards land in the open folder.
+- Deleting a folder keeps its boards, which return to the library root.
 
 ### 8.4 Settings
 
 The gear in the library title bar opens a Radix dialog holding the theme control
-(`System | Light | Dark`), the wheel action, the default sort order, and the application version.
+(`System | Light | Dark`), the wheel action and the application version.
 `Escape` closes it. The board screen has no settings surface.
 
 **Shortcuts** widens the dialog and swaps its body for the keymap panel, grouped as tools, color,
@@ -549,6 +600,32 @@ it. A palette takes a colour once and stops at `MAX_CUSTOM_COLORS`.
 `Activate palette` hands the pen its id and closes the dialog, and reads `Active` behind that same
 green dot for the palette already carried; the bin deletes the palette, leaving the pen with none
 when it was the active one. A palette with no colors is kept but cannot be activated.
+
+### 8.6 Motion
+
+`renderer/styles/motion.css` holds every keyframe and `renderer/motion` the class strings that bind
+them to a Radix state, so all surfaces of one kind move alike. `--ease-swift` carries the lot and
+nothing runs past 300 ms.
+
+| Surface      | Enter                                                     | Leave                   |
+| ------------ | --------------------------------------------------------- | ----------------------- |
+| Screen       | 200 ms fade                                               | —                       |
+| Dialog veil  | 180 ms fade                                               | 130 ms fade             |
+| Dialog panel | 200 ms fade, 0.96 scale, 8 px rise                        | 130 ms fade, 0.98 scale |
+| Popover      | 160 ms fade, 0.94 scale                                   | 110 ms fade, 0.97 scale |
+| Tooltip      | 130 ms fade, 0.92 scale                                   | 90 ms fade              |
+| Library tile | 280 ms fade and 10 px rise, 26 ms apart to the thirteenth | —                       |
+| Swapped view | 170 ms fade, 4 px rise                                    | —                       |
+| Tool bar     | 220 ms fade and 0.2 scaleX                                | —                       |
+
+Popovers and tooltips take their origin from `--radix-*-content-transform-origin`, so they grow out
+of the control that opened them. Settings carries its width across the shortcuts swap and fades the
+body between the two. The board screen fades without a transform: `ViewportTracker` measures through
+`getBoundingClientRect`, and a scaled host would size the canvases wrong. Tile actions and swatch
+removers fade in on hover instead of appearing, and the toolbar buttons take a 0.95 press. The
+colour bar under an ink tool grows in, its partner segment rides `flex-grow` from nothing rather
+than appearing, and the icon eases its 1 px lift. Swatch outlines stand transparent when idle, so
+the pick fades on. Under `prefers-reduced-motion: reduce` every duration drops to 1 ms.
 
 ---
 

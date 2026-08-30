@@ -6,6 +6,7 @@ import type { OverlayLayer } from '@/renderer/board/layers/overlay-layer';
 import type { SceneLayer } from '@/renderer/board/layers/scene-layer';
 import type { RenderScheduler } from '@/renderer/board/render-scheduler';
 import { useBoardStore } from '@/renderer/stores/board.store';
+import { useTextStore } from '@/renderer/stores/text.store';
 import { useThemeStore } from '@/renderer/stores/theme.store';
 import { useToolStore } from '@/renderer/stores/tool.store';
 import { watchStore } from '@/renderer/stores/watch-store';
@@ -26,6 +27,7 @@ export class LayerSync {
       watchStore(useBoardStore, (state) => state.elements, this.onElementsChange),
       watchStore(useBoardStore, (state) => state.gridVisible, this.onGridChange),
       watchStore(useBoardStore, (state) => state.selection, this.onSelectionChange),
+      watchStore(useTextStore, (state) => state.draft?.id ?? null, this.onDraftChange),
       watchStore(useThemeStore, (state) => state.theme, this.onThemeChange),
       watchStore(useToolStore, (state) => state.tool, this.onToolChange),
       imageCache.subscribe(this.onImageLoaded),
@@ -57,6 +59,11 @@ export class LayerSync {
 
   private readonly onGridChange = (): void => {
     this.scheduler.markDirty('grid');
+  };
+
+  private readonly onDraftChange = (): void => {
+    this.layers.scene.invalidate();
+    this.scheduler.markDirty('scene');
   };
 
   private readonly onThemeChange = (): void => {

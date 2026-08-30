@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findRelease, parseChangelog } from '@/core/changelog/changelog-parse';
 
-const CHANGELOG = `# Changelog
-
-Every release, in plain language.
-
-## 1.1.0 — 2026-08-24
+const CHANGELOG = `## 1.1.0 — Pencil and zoom
 
 ### Added
 
@@ -16,34 +12,47 @@ Every release, in plain language.
 
 - A crash on export.
 
-## v1.0.0 - 2026-08-20
+## 1.0.1
 
-- Shipped the first build.
+- Shipped a fix.
+
+## v1.0.0 - Canvas, pen and boards
+
+### Added
+
+- The first build.
 `;
 
 describe('changelog parsing', () => {
-  it('reads a release with its date and grouped items', () => {
+  it('reads a release with its subtitle and grouped items', () => {
     const [release] = parseChangelog(CHANGELOG);
 
     expect(release?.version).toBe('1.1.0');
-    expect(release?.date).toBe('2026-08-24');
+    expect(release?.subtitle).toBe('Pencil and zoom');
     expect(release?.sections).toEqual([
       { title: 'Added', items: ["A What's new window.", 'Another line.'] },
       { title: 'Fixed', items: ['A crash on export.'] },
     ]);
   });
 
-  it('drops the v prefix and accepts a hyphen before the date', () => {
+  it('leaves the subtitle out of a release written without one', () => {
     const release = parseChangelog(CHANGELOG)[1];
 
+    expect(release?.version).toBe('1.0.1');
+    expect(release?.subtitle).toBeUndefined();
+  });
+
+  it('drops the v prefix and accepts a hyphen before the subtitle', () => {
+    const release = parseChangelog(CHANGELOG)[2];
+
     expect(release?.version).toBe('1.0.0');
-    expect(release?.date).toBe('2026-08-20');
+    expect(release?.subtitle).toBe('Canvas, pen and boards');
   });
 
   it('keeps items written without a section', () => {
     const release = parseChangelog(CHANGELOG)[1];
 
-    expect(release?.sections).toEqual([{ title: '', items: ['Shipped the first build.'] }]);
+    expect(release?.sections).toEqual([{ title: '', items: ['Shipped a fix.'] }]);
   });
 
   it('ignores everything above the first release', () => {

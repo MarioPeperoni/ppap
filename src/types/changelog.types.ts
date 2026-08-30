@@ -5,6 +5,6 @@ export interface ReleaseSection {
 
 export interface Release {
   version: string;
-  date: string;
+  subtitle?: string;
   sections: ReleaseSection[];
 }

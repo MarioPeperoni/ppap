@@ -20,6 +20,7 @@ export class EraserTool implements Tool {
   readonly id = 'eraser';
   readonly label = 'Eraser';
   readonly cursor = 'none';
+  readonly keepsFocus = false;
 
   private hover: Point | null = null;
   private previous: Point | null = null;

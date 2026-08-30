@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { elementBounds } from '@/core/element/element-bounds';
-import { createImage, createStroke } from '@/core/element/element.factory';
+import { createImage, createStroke, createText } from '@/core/element/element.factory';
 
 describe('element factory', () => {
   it('gives every element a unique id and a creation stamp', () => {
@@ -35,6 +35,22 @@ describe('element bounds', () => {
     });
 
     expect(elementBounds(image)).toEqual({ minX: 10, minY: 20, maxX: 210, maxY: 120 });
+  });
+
+  it('bounds a text by the box it was measured into', () => {
+    const text = createText({
+      text: 'hello',
+      x: 5,
+      y: 15,
+      width: 80,
+      height: 30,
+      color: 'ink',
+      size: 'm',
+      font: 'serif',
+      scale: 1,
+    });
+
+    expect(elementBounds(text)).toEqual({ minX: 5, minY: 15, maxX: 85, maxY: 45 });
   });
 
   it('bounds a stroke through its cached stroke bounds', () => {

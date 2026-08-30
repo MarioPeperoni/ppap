@@ -13,6 +13,7 @@ import {
   parseImageRequest,
   parseRenameRequest,
   parseSaveRequest,
+  parseSetFolderRequest,
 } from '@/validation/library-payload.validator';
 
 export const libraryInvokeHandlers: IpcInvokeTable = {
@@ -37,6 +38,12 @@ export const libraryInvokeHandlers: IpcInvokeTable = {
 
   [IPC_CHANNELS.libraryRemove]: (_window, payload) =>
     boardRepository.remove(parseBoardRequest(payload).id),
+
+  [IPC_CHANNELS.librarySetFolder]: (_window, payload) => {
+    const { id, folderId } = parseSetFolderRequest(payload);
+
+    return boardRepository.setFolder(id, folderId);
+  },
 
   [IPC_CHANNELS.libraryThumbnail]: (_window, payload) =>
     boardRepository.thumbnail(parseBoardRequest(payload).id),

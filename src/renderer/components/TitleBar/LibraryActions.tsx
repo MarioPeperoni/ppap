@@ -1,7 +1,8 @@
 import { useState, type ReactElement } from 'react';
-import { Download, Settings } from 'lucide-react';
+import { Download, FolderPlus, Settings } from 'lucide-react';
 import { SettingsDialog } from '@/renderer/components/Settings/SettingsDialog';
 import { importBoard } from '@/renderer/session/board-session';
+import { createFolder } from '@/renderer/session/folder-session';
 
 const BUTTON_CLASS =
   'flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-ink';
@@ -11,6 +12,16 @@ export function LibraryActions(): ReactElement {
 
   return (
     <div className="app-no-drag flex items-center gap-1">
+      <button
+        type="button"
+        aria-label="New folder"
+        onClick={() => {
+          void createFolder();
+        }}
+        className={BUTTON_CLASS}
+      >
+        <FolderPlus size={16} strokeWidth={1.75} />
+      </button>
       <button
         type="button"
         aria-label="Import board"

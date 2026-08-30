@@ -14,6 +14,13 @@ function openSection(release: Release): ReleaseSection {
   return untitled;
 }
 
+function startRelease(version: string, subtitle: string): Release {
+  const release: Release = { version, sections: [] };
+  if (subtitle !== '') release.subtitle = subtitle;
+
+  return release;
+}
+
 export function parseChangelog(markdown: string): Release[] {
   const releases: Release[] = [];
 
@@ -22,9 +29,9 @@ export function parseChangelog(markdown: string): Release[] {
 
     const heading = RELEASE_HEADING.exec(line);
     if (heading !== null) {
-      const [, version = '', date = ''] = heading;
+      const [, version = '', subtitle = ''] = heading;
 
-      releases.push({ version, date: date.trim(), sections: [] });
+      releases.push(startRelease(version, subtitle.trim()));
       continue;
     }
 

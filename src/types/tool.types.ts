@@ -3,7 +3,7 @@ import type { ViewState } from './canvas.types';
 import type { Point } from './geometry.types';
 import type { Palette } from './theme.types';
 
-export type ToolId = 'pen' | 'pencil' | 'eraser' | 'marquee' | 'lasso' | 'hand';
+export type ToolId = 'pen' | 'pencil' | 'text' | 'eraser' | 'marquee' | 'lasso' | 'hand';
 
 export interface PanOrigin {
   screen: Point;
@@ -29,6 +29,8 @@ export interface Tool {
   readonly id: ToolId;
   readonly label: string;
   readonly cursor: string;
+  /** Whether a press must leave the caret where it is instead of letting focus fall to the page. */
+  readonly keepsFocus: boolean;
   onPointerDown: (sample: PointerSample, context: ToolContext) => void;
   onPointerMove: (sample: PointerSample, context: ToolContext) => void;
   onPointerUp: (sample: PointerSample, context: ToolContext) => void;

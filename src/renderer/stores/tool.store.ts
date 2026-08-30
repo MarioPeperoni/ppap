@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { DEFAULT_FONT, DEFAULT_TEXT_SIZE } from '@/constants/text.constants';
 import {
   DEFAULT_COLOR,
   DEFAULT_ERASER_RADIUS,
@@ -8,7 +9,15 @@ import {
   TOOL_COLORS,
   TOOL_SIZES,
 } from '@/constants/tool.constants';
-import type { ColorPair, HexColor, Settings, SizeToken, StrokeColor, ToolId } from '@/types';
+import type {
+  ColorPair,
+  FontToken,
+  HexColor,
+  Settings,
+  SizeToken,
+  StrokeColor,
+  ToolId,
+} from '@/types';
 
 function stepped<T>(values: readonly T[], current: T, direction: number, fallback: T): T {
   const index = values.indexOf(current);
@@ -35,6 +44,8 @@ interface ToolStore extends ColorPair {
   tool: ToolId;
   activePaletteId: string | null;
   penSize: SizeToken;
+  textSize: SizeToken;
+  textFont: FontToken;
   eraserRadius: number;
   adopt: (settings: Settings) => void;
   setTool: (tool: ToolId) => void;
@@ -44,6 +55,8 @@ interface ToolStore extends ColorPair {
   cycleColor: (direction: number, colors: readonly HexColor[]) => void;
   carryPalette: (id: string | null) => void;
   setPenSize: (size: SizeToken) => void;
+  setTextSize: (size: SizeToken) => void;
+  setTextFont: (font: FontToken) => void;
   setEraserRadius: (radius: number) => void;
   stepWidth: (direction: number) => void;
 }
@@ -54,10 +67,21 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
   swapColor: null,
   activePaletteId: null,
   penSize: DEFAULT_SIZE,
+  textSize: DEFAULT_TEXT_SIZE,
+  textFont: DEFAULT_FONT,
   eraserRadius: DEFAULT_ERASER_RADIUS,
 
-  adopt: ({ tool, color, swapColor, activePaletteId, penSize, eraserRadius }) => {
-    set({ tool, color, swapColor, activePaletteId, penSize, eraserRadius });
+  adopt: ({
+    tool,
+    color,
+    swapColor,
+    activePaletteId,
+    penSize,
+    textSize,
+    textFont,
+    eraserRadius,
+  }) => {
+    set({ tool, color, swapColor, activePaletteId, penSize, textSize, textFont, eraserRadius });
   },
 
   setTool: (tool) => {
@@ -97,6 +121,14 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
     set({ penSize });
   },
 
+  setTextSize: (textSize) => {
+    set({ textSize });
+  },
+
+  setTextFont: (textFont) => {
+    set({ textFont });
+  },
+
   setEraserRadius: (eraserRadius) => {
     set({ eraserRadius });
   },
@@ -108,6 +140,11 @@ export const useToolStore = create<ToolStore>()((set, get) => ({
       set({
         eraserRadius: stepped(ERASER_RADII, state.eraserRadius, direction, DEFAULT_ERASER_RADIUS),
       });
+      return;
+    }
+
+    if (state.tool === 'text') {
+      set({ textSize: stepped(TOOL_SIZES, state.textSize, direction, DEFAULT_TEXT_SIZE) });
       return;
     }
 

@@ -1,14 +1,18 @@
 import { imageCache } from '@/renderer/assets/image-cache';
 import { clearAssets } from '@/renderer/assets/pending-assets';
+import { commitOpenText } from '@/renderer/board/text/text-draft';
 import { autosave } from '@/renderer/persistence/autosave';
+import { fileNewBoard } from '@/renderer/session/folder-session';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
 import { useLibraryStore } from '@/renderer/stores/library.store';
+import { useTextStore } from '@/renderer/stores/text.store';
 import { useUiStore } from '@/renderer/stores/ui.store';
 
 async function enter(id: string): Promise<void> {
   const file = await window.ppap.library.load(id);
 
+  useTextStore.getState().close();
   autosave.stop();
   clearAssets();
   imageCache.open(id);
@@ -24,13 +28,14 @@ export function openBoard(id: string): Promise<void> {
 }
 
 export async function createBoard(): Promise<void> {
-  const meta = await window.ppap.library.create();
+  const meta = await fileNewBoard(await window.ppap.library.create());
 
   useLibraryStore.getState().adopt(meta);
   await enter(meta.id);
 }
 
 export async function leaveBoard(): Promise<void> {
+  commitOpenText();
   await autosave.close();
   useUiStore.getState().showLibrary();
   useBoardStore.getState().close();
@@ -60,8 +65,10 @@ export async function exportBoard(): Promise<void> {
 }
 
 export async function importBoard(): Promise<void> {
-  const meta = await window.ppap.library.importFile();
-  if (meta === null) return;
+  const imported = await window.ppap.library.importFile();
+  if (imported === null) return;
+
+  const meta = await fileNewBoard(imported);
 
   useLibraryStore.getState().adopt(meta);
   await enter(meta.id);

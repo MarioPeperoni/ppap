@@ -1,8 +1,16 @@
-# Changelog
+## 1.3.0 — Text and folders
 
-Just what changed.
+### Added
 
-## 1.2.0 — 2026-08-26
+- A text tool with four default fonts.
+- Folders in the library view for arranging boards.
+- Smooth animations here and there, for a better feel.
+
+### Changed
+
+- Sort order picked in the library header, not in Settings.
+
+## 1.2.0 — Colours and shortcuts
 
 ### Added
 
@@ -20,7 +28,7 @@ Just what changed.
 - Board title can be changed in the board view.
 - Copy and cut now in system clipboard, ready to paste as an image.
 
-## 1.1.0 — 2026-08-24
+## 1.1.0 — Pencil and zoom
 
 ### Added
 
@@ -39,13 +47,13 @@ Just what changed.
 - Thicker strokes with no unusable hairline.
 - The pen draws the width you picked.
 
-## 1.0.1 — 2026-08-24
+## 1.0.1
 
 ### Fixed
 
 - Updates check the right feed.
 
-## 1.0.0 — 2026-08-24
+## 1.0.0 — Canvas, pen and boards
 
 ### Added
 

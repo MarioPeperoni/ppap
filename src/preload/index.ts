@@ -1,6 +1,7 @@
 import { contextBridge } from 'electron';
 import { appApi } from '@/preload/api/app.api';
 import { clipboardApi } from '@/preload/api/clipboard.api';
+import { folderApi } from '@/preload/api/folder.api';
 import { libraryApi } from '@/preload/api/library.api';
 import { settingsApi } from '@/preload/api/settings.api';
 import { themeApi } from '@/preload/api/theme.api';
@@ -14,6 +15,7 @@ const api: PpapApi = {
   window: windowApi,
   theme: themeApi,
   library: libraryApi,
+  folders: folderApi,
   settings: settingsApi,
   clipboard: clipboardApi,
 };

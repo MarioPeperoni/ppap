@@ -23,6 +23,7 @@ export interface BoardRepository {
   ) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  setFolder: (id: string, folderId: string | null) => Promise<void>;
   thumbnail: (id: string) => Promise<Uint8Array | null>;
   read: (id: string) => Promise<Uint8Array>;
   adopt: (archive: Uint8Array) => Promise<BoardMeta>;

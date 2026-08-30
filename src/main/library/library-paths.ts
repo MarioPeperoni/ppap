@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { app } from 'electron';
+import { FOLDERS_FILE } from '@/constants/folder.constants';
 import {
   BOARD_EXTENSION,
   BOARDS_DIRECTORY,
@@ -22,6 +23,10 @@ export function boardsDirectory(): string {
 
 export function indexPath(): string {
   return path.join(libraryDirectory(), INDEX_FILE);
+}
+
+export function foldersPath(): string {
+  return path.join(libraryDirectory(), FOLDERS_FILE);
 }
 
 export function settingsPath(): string {

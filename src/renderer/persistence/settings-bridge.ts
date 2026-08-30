@@ -66,6 +66,20 @@ export function watchSettings(): Unsubscribe {
     ),
     watchStore(
       useToolStore,
+      (state) => state.textSize,
+      (textSize) => {
+        patch({ textSize });
+      },
+    ),
+    watchStore(
+      useToolStore,
+      (state) => state.textFont,
+      (textFont) => {
+        patch({ textFont });
+      },
+    ),
+    watchStore(
+      useToolStore,
       (state) => state.eraserRadius,
       (eraserRadius) => {
         patch({ eraserRadius });
