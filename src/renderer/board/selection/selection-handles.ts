@@ -1,50 +1,67 @@
-import { HANDLE_HIT_PX, SELECTION_PADDING_PX } from '@/constants/select.constants';
+import { HANDLE_HIT_PX, ROTATE_REACH_PX, SELECTION_PADDING_PX } from '@/constants/select.constants';
 import { toScreen } from '@/core/camera/camera-transform';
-import { expandBounds } from '@/core/geometry/bounds';
-import type { Bounds, CameraState, Point, SelectionHandle } from '@/types';
+import {
+  frameContainsPoint,
+  frameCorner,
+  frameGrip,
+  handleAngle,
+  padFrame,
+  SELECTION_HANDLES,
+} from '@/core/select/selection-frame';
+import { ROTATE_CURSOR } from '@/renderer/board/selection/rotate-cursor';
+import type { CameraState, Point, PointerSample, SelectionFrame, SelectionGrip } from '@/types';
 
-export const SELECTION_HANDLES: readonly SelectionHandle[] = ['nw', 'ne', 'se', 'sw'];
+const RESIZE_CURSORS: readonly string[] = ['ew-resize', 'nwse-resize', 'ns-resize', 'nesw-resize'];
+const EIGHTH_TURN = Math.PI / 4;
 
-const OPPOSITE: Record<SelectionHandle, SelectionHandle> = {
-  nw: 'se',
-  ne: 'sw',
-  se: 'nw',
-  sw: 'ne',
-};
-
-export function selectionFrame(bounds: Bounds, zoom: number): Bounds {
-  return expandBounds(bounds, SELECTION_PADDING_PX / zoom);
+export function paddedFrame(frame: SelectionFrame, zoom: number): SelectionFrame {
+  return padFrame(frame, SELECTION_PADDING_PX / zoom);
 }
 
-export function handleCorner(bounds: Bounds, handle: SelectionHandle): Point {
-  return {
-    x: handle === 'nw' || handle === 'sw' ? bounds.minX : bounds.maxX,
-    y: handle === 'nw' || handle === 'ne' ? bounds.minY : bounds.maxY,
-  };
+export function rotateGrip(frame: SelectionFrame, zoom: number): Point {
+  return frameGrip(frame, ROTATE_REACH_PX / zoom);
 }
 
-export function oppositeCorner(bounds: Bounds, handle: SelectionHandle): Point {
-  return handleCorner(bounds, OPPOSITE[handle]);
+function withinHit(camera: CameraState, at: Point, screen: Point): boolean {
+  const target = toScreen(camera, at);
+
+  return (
+    Math.abs(target.x - screen.x) <= HANDLE_HIT_PX && Math.abs(target.y - screen.y) <= HANDLE_HIT_PX
+  );
 }
 
-export function handleCursor(handle: SelectionHandle): string {
-  return handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize';
-}
-
-export function handleAt(
-  bounds: Bounds,
+export function gripAt(
+  frame: SelectionFrame,
   camera: CameraState,
-  screen: Point,
-): SelectionHandle | null {
-  const frame = selectionFrame(bounds, camera.zoom);
+  sample: PointerSample,
+): SelectionGrip | null {
+  const padded = paddedFrame(frame, camera.zoom);
+
+  if (withinHit(camera, rotateGrip(padded, camera.zoom), sample.screen)) return { kind: 'rotate' };
 
   for (const handle of SELECTION_HANDLES) {
-    const corner = toScreen(camera, handleCorner(frame, handle));
-    if (Math.abs(corner.x - screen.x) > HANDLE_HIT_PX) continue;
-    if (Math.abs(corner.y - screen.y) > HANDLE_HIT_PX) continue;
-
-    return handle;
+    if (withinHit(camera, frameCorner(padded, handle), sample.screen)) {
+      return { kind: 'scale', handle };
+    }
   }
 
-  return null;
+  return frameContainsPoint(padded, sample.board) ? { kind: 'move' } : null;
+}
+
+/** The corner's own direction, turned with the frame, picks the arrow that matches it. */
+function resizeCursor(angle: number): string {
+  const index = ((Math.round(angle / EIGHTH_TURN) % 4) + 4) % 4;
+
+  return RESIZE_CURSORS[index] ?? 'nwse-resize';
+}
+
+export function gripCursor(grip: SelectionGrip, rotation: number): string {
+  switch (grip.kind) {
+    case 'move':
+      return 'move';
+    case 'rotate':
+      return ROTATE_CURSOR;
+    case 'scale':
+      return resizeCursor(handleAngle(grip.handle) + rotation);
+  }
 }

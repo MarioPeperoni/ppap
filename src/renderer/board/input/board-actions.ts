@@ -40,6 +40,7 @@ export const BOARD_ACTIONS: Record<ActionId, () => void> = {
   'tool.pencil': selectTool('pencil'),
   'tool.text': selectTool('text'),
   'tool.eraser': selectTool('eraser'),
+  'tool.pointer': selectTool('pointer'),
   'tool.marquee': selectTool('marquee'),
   'tool.lasso': selectTool('lasso'),
   'tool.hand': selectTool('hand'),

@@ -1,6 +1,6 @@
-import type { Element, StrokeElement } from './element.types';
+import type { StrokeElement } from './element.types';
 
 export interface EraseHit {
-  source: Element;
+  source: StrokeElement;
   fragments: StrokeElement[];
 }

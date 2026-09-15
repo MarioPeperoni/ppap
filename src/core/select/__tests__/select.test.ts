@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { boundsOfElements, elementBounds } from '@/core/element/element-bounds';
+import { placedCenter } from '@/core/element/element-placement';
 import { createImage, createStroke, createText } from '@/core/element/element.factory';
 import { boundsCorners } from '@/core/geometry/bounds';
 import { pickElement } from '@/core/select/select-pick';
 import { selectInShape } from '@/core/select/select-region';
-import { scaleElement, translateElement } from '@/core/select/select-transform';
+import { rotateElement, scaleElement, translateElement } from '@/core/select/select-transform';
+import { frameContainsPoint, frameCorner, frameOfElements } from '@/core/select/selection-frame';
 import { polygonShape } from '@/core/select/selection-shape';
 import { strokeWidth } from '@/core/stroke/stroke-width';
 import { fontSize } from '@/core/text/text-font';
 import type {
   Bounds,
   Element,
+  ImageElement,
   Point,
   SelectionResult,
   StrokeElement,
@@ -40,6 +43,7 @@ function image(x: number, y: number): Element {
     y,
     width: 40,
     height: 40,
+    rotation: 0,
     naturalWidth: 40,
     naturalHeight: 40,
   });
@@ -72,6 +76,7 @@ function note(x: number, y: number): TextElement {
     y,
     width: 40,
     height: 20,
+    rotation: 0,
     color: 'ink',
     size: 'm',
     font: 'sans',
@@ -243,5 +248,93 @@ describe('selection transform', () => {
 
     expect(restored.points.at(-1)?.[0]).toBeCloseTo(100, 6);
     expect(restored.scale).toBeCloseTo(stroke.scale, 6);
+  });
+});
+
+describe('selection rotation', () => {
+  const QUARTER = Math.PI / 2;
+
+  it('turns a placed rect about its own centre without resizing it', () => {
+    const placed = image(0, 0) as ImageElement;
+    const turned = rotateElement(placed, placedCenter(placed), QUARTER) as ImageElement;
+
+    expect(turned.rotation).toBeCloseTo(QUARTER, 6);
+    expect(turned.width).toBe(placed.width);
+    expect(turned.height).toBe(placed.height);
+    expect(placedCenter(turned).x).toBeCloseTo(placedCenter(placed).x, 6);
+    expect(placedCenter(turned).y).toBeCloseTo(placedCenter(placed).y, 6);
+  });
+
+  it('swings a rect around a pivot outside it', () => {
+    const placed = image(100, 0) as ImageElement;
+    const turned = rotateElement(placed, { x: 0, y: 0 }, QUARTER) as ImageElement;
+
+    expect(placedCenter(turned).x).toBeCloseTo(-20, 6);
+    expect(placedCenter(turned).y).toBeCloseTo(120, 6);
+  });
+
+  it('bakes the turn into the points of a stroke', () => {
+    const stroke = createStroke(line(0, 100, 0), 'ink', 'm');
+    const turned = rotateElement(stroke, { x: 0, y: 0 }, QUARTER) as StrokeElement;
+
+    expect(turned.points[0]?.[0]).toBeCloseTo(0, 6);
+    expect(turned.points.at(-1)?.[0]).toBeCloseTo(0, 6);
+    expect(turned.points.at(-1)?.[1]).toBeCloseTo(100, 6);
+  });
+
+  it('returns to the original geometry when turned back', () => {
+    const placed = note(10, 10);
+    const pivot: Point = { x: 0, y: 0 };
+    const restored = rotateElement(rotateElement(placed, pivot, 0.7), pivot, -0.7) as TextElement;
+
+    expect(restored.x).toBeCloseTo(placed.x, 6);
+    expect(restored.y).toBeCloseTo(placed.y, 6);
+    expect(restored.rotation).toBeCloseTo(0, 6);
+  });
+
+  it('bounds a turned rect by the box that holds its corners', () => {
+    const upright = image(0, 0) as ImageElement;
+    const turned = { ...upright, rotation: Math.PI / 4 };
+    const bounds = elementBounds(turned);
+
+    expect(bounds.maxX - bounds.minX).toBeCloseTo(40 * Math.SQRT2, 6);
+    expect(bounds.maxY - bounds.minY).toBeCloseTo(40 * Math.SQRT2, 6);
+  });
+
+  it('picks a turned rect where it is drawn, not where its box reaches', () => {
+    const turned = { ...(image(0, 0) as ImageElement), rotation: Math.PI / 4 };
+
+    expect(pickElement([turned], placedCenter(turned), 0)).toBe(turned.id);
+    expect(pickElement([turned], { x: 1, y: 1 }, 0)).toBeNull();
+  });
+});
+
+describe('selection frame', () => {
+  it('keeps the turn of a lone placed element', () => {
+    const turned = { ...(image(0, 0) as ImageElement), rotation: 0.4 };
+    const frame = frameOfElements([turned]);
+
+    expect(frame?.rotation).toBeCloseTo(0.4, 6);
+    expect(frame?.width).toBe(40);
+  });
+
+  it('stands upright around a group', () => {
+    const frame = frameOfElements([image(0, 0), note(100, 100)]);
+
+    expect(frame?.rotation).toBe(0);
+  });
+
+  it('turns its corners with the frame it belongs to', () => {
+    const frame = frameOfElements([{ ...(image(0, 0) as ImageElement), rotation: Math.PI / 2 }])!;
+
+    expect(frameCorner(frame, 'nw').x).toBeCloseTo(40, 6);
+    expect(frameCorner(frame, 'nw').y).toBeCloseTo(0, 6);
+  });
+
+  it('holds a point inside the turned box and drops one outside it', () => {
+    const frame = frameOfElements([{ ...(image(0, 0) as ImageElement), rotation: Math.PI / 4 }])!;
+
+    expect(frameContainsPoint(frame, { x: 20, y: 20 })).toBe(true);
+    expect(frameContainsPoint(frame, { x: 1, y: 1 })).toBe(false);
   });
 });

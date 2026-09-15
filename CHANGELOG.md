@@ -1,3 +1,16 @@
+## 1.4.0 — Pointer and rotation
+
+### Added
+
+- A pointer tool, the plain arrow, leading the selection tools.
+- A rotation grip on the selection, snapping to 15° with Shift.
+- Sections in the toolbar, parted by a hairline.
+
+### Changed
+
+- The eraser takes ink only; photos and text boxes go by selection.
+- Tool keys run 1 to 8, with the marquee on M.
+
 ## 1.3.0 — Text and folders
 
 ### Added

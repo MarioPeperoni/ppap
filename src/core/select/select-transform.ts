@@ -1,3 +1,5 @@
+import { placedCenter } from '@/core/element/element-placement';
+import { rotatePoint } from '@/core/geometry/rotation';
 import type { Element, Point, StrokePoint } from '@/types';
 
 export function translateElement(element: Element, deltaX: number, deltaY: number): Element {
@@ -46,5 +48,31 @@ export function scaleElement(element: Element, anchor: Point, factor: number): E
         height: element.height * factor,
         scale: element.scale * factor,
       };
+  }
+}
+
+/** A stroke turns by its points; a placed rect carries the angle and swings its centre. */
+export function rotateElement(element: Element, pivot: Point, angle: number): Element {
+  switch (element.type) {
+    case 'stroke':
+      return {
+        ...element,
+        points: element.points.map(([x, y, pressure]): StrokePoint => {
+          const turned = rotatePoint({ x, y }, pivot, angle);
+
+          return [turned.x, turned.y, pressure];
+        }),
+      };
+    case 'image':
+    case 'text': {
+      const center = rotatePoint(placedCenter(element), pivot, angle);
+
+      return {
+        ...element,
+        x: center.x - element.width / 2,
+        y: center.y - element.height / 2,
+        rotation: element.rotation + angle,
+      };
+    }
   }
 }

@@ -7,7 +7,18 @@ import type { PointerSample } from './tool.types';
 
 export type SelectionHandle = 'nw' | 'ne' | 'se' | 'sw';
 
+export type SelectionGrip =
+  { kind: 'move' } | { kind: 'scale'; handle: SelectionHandle } | { kind: 'rotate' };
+
 export type SelectionGesture = 'idle' | 'region' | 'transform';
+
+/** The box drawn around a selection: a lone placed element keeps its turn, a group is upright. */
+export interface SelectionFrame {
+  center: Point;
+  width: number;
+  height: number;
+  rotation: number;
+}
 
 export interface SelectionShape {
   readonly bounds: Bounds;

@@ -14,6 +14,15 @@ export interface ElementBase {
   createdAt: number;
 }
 
+/** A rect placed on the board, turned clockwise by `rotation` radians about its own centre. */
+export interface PlacedElement extends ElementBase {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+}
+
 export interface StrokeElement extends ElementBase {
   type: 'stroke';
   points: StrokePoint[];
@@ -23,25 +32,17 @@ export interface StrokeElement extends ElementBase {
   scale: number;
 }
 
-export interface ImageElement extends ElementBase {
+export interface ImageElement extends PlacedElement {
   type: 'image';
   assetId: string;
   mime: ImageMime;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   naturalWidth: number;
   naturalHeight: number;
 }
 
-export interface TextElement extends ElementBase {
+export interface TextElement extends PlacedElement {
   type: 'text';
   text: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   color: StrokeColor;
   size: SizeToken;
   font: FontToken;

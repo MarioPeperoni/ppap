@@ -5,12 +5,9 @@ import {
   SELECTION_LINE_PX,
 } from '@/constants/select.constants';
 import { toScreen } from '@/core/camera/camera-transform';
-import {
-  handleCorner,
-  SELECTION_HANDLES,
-  selectionFrame,
-} from '@/renderer/board/selection/selection-handles';
-import type { Bounds, Palette, Point, ViewState } from '@/types';
+import { frameCorner, frameCorners } from '@/core/select/selection-frame';
+import { paddedFrame, rotateGrip } from '@/renderer/board/selection/selection-handles';
+import type { Palette, Point, SelectionFrame, ViewState } from '@/types';
 
 function screenPath(camera: ViewState['camera'], points: readonly Point[]): Path2D {
   const path = new Path2D();
@@ -28,6 +25,41 @@ function screenPath(camera: ViewState['camera'], points: readonly Point[]): Path
   path.closePath();
 
   return path;
+}
+
+function drawHandle(ctx: CanvasRenderingContext2D, at: Point): void {
+  ctx.fillRect(
+    at.x - HANDLE_SIZE_PX / 2,
+    at.y - HANDLE_SIZE_PX / 2,
+    HANDLE_SIZE_PX,
+    HANDLE_SIZE_PX,
+  );
+  ctx.strokeRect(
+    at.x - HANDLE_SIZE_PX / 2,
+    at.y - HANDLE_SIZE_PX / 2,
+    HANDLE_SIZE_PX,
+    HANDLE_SIZE_PX,
+  );
+}
+
+function drawRotateGrip(
+  ctx: CanvasRenderingContext2D,
+  view: ViewState,
+  frame: SelectionFrame,
+): void {
+  const grip = toScreen(view.camera, rotateGrip(frame, view.camera.zoom));
+  const north = toScreen(view.camera, frameCorner(frame, 'nw'));
+  const east = toScreen(view.camera, frameCorner(frame, 'ne'));
+
+  ctx.beginPath();
+  ctx.moveTo((north.x + east.x) / 2, (north.y + east.y) / 2);
+  ctx.lineTo(grip.x, grip.y);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(grip.x, grip.y, HANDLE_SIZE_PX / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 }
 
 export function drawRegion(
@@ -54,23 +86,16 @@ export function drawSelectionBox(
   ctx: CanvasRenderingContext2D,
   view: ViewState,
   colors: Palette,
-  bounds: Bounds,
+  frame: SelectionFrame,
 ): void {
-  const frame = selectionFrame(bounds, view.camera.zoom);
-  const topLeft = toScreen(view.camera, { x: frame.minX, y: frame.minY });
-  const bottomRight = toScreen(view.camera, { x: frame.maxX, y: frame.maxY });
+  const padded = paddedFrame(frame, view.camera.zoom);
 
   ctx.strokeStyle = colors.blue;
   ctx.lineWidth = SELECTION_LINE_PX;
-  ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+  ctx.stroke(screenPath(view.camera, frameCorners(padded)));
 
   ctx.fillStyle = colors.canvas;
+  drawRotateGrip(ctx, view, padded);
 
-  for (const handle of SELECTION_HANDLES) {
-    const corner = toScreen(view.camera, handleCorner(frame, handle));
-    const origin = { x: corner.x - HANDLE_SIZE_PX / 2, y: corner.y - HANDLE_SIZE_PX / 2 };
-
-    ctx.fillRect(origin.x, origin.y, HANDLE_SIZE_PX, HANDLE_SIZE_PX);
-    ctx.strokeRect(origin.x, origin.y, HANDLE_SIZE_PX, HANDLE_SIZE_PX);
-  }
+  for (const corner of frameCorners(padded)) drawHandle(ctx, toScreen(view.camera, corner));
 }

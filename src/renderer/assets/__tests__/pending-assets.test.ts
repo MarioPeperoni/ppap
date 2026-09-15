@@ -20,6 +20,7 @@ function imageElement(id: string, assetId: string): Element {
     y: 0,
     width: 10,
     height: 10,
+    rotation: 0,
     naturalWidth: 10,
     naturalHeight: 10,
   };

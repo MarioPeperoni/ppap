@@ -1,5 +1,4 @@
-import { elementBounds } from '@/core/element/element-bounds';
-import { boundsContainPoint } from '@/core/geometry/bounds';
+import { placedContainsPoint } from '@/core/element/element-placement';
 import type { Element, Point, TextElement } from '@/types';
 
 /** The topmost text under the point, so a click lands back in what it looks like it hit. */
@@ -8,7 +7,7 @@ export function pickText(elements: Iterable<Element>, point: Point): TextElement
 
   for (const element of elements) {
     if (element.type !== 'text') continue;
-    if (boundsContainPoint(elementBounds(element), point)) picked = element;
+    if (placedContainsPoint(element, point, 0)) picked = element;
   }
 
   return picked;

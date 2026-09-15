@@ -1,14 +1,12 @@
 import type { ColorToken, SizeToken, ToolId } from '@/types';
 
-export const TOOL_IDS: readonly ToolId[] = [
-  'pen',
-  'pencil',
-  'text',
-  'eraser',
-  'marquee',
-  'lasso',
-  'hand',
+export const TOOL_GROUPS: readonly (readonly ToolId[])[] = [
+  ['pen', 'pencil', 'text', 'eraser'],
+  ['pointer', 'marquee', 'lasso'],
+  ['hand'],
 ];
+
+export const TOOL_IDS: readonly ToolId[] = TOOL_GROUPS.flat();
 export const TOOL_COLORS: readonly ColorToken[] = [
   'ink',
   'blue',
@@ -26,11 +24,11 @@ export const SIZE_LABELS: Record<SizeToken, string> = {
   xl: 'Extra thick',
 };
 
-export const SELECTION_TOOLS: readonly ToolId[] = ['marquee', 'lasso'];
+export const SELECTION_TOOLS: readonly ToolId[] = ['pointer', 'marquee', 'lasso'];
 export const INK_TOOLS: readonly ToolId[] = ['pen', 'pencil', 'text'];
 
 export const DEFAULT_TOOL: ToolId = 'pen';
 export const DEFAULT_COLOR: ColorToken = 'ink';
 export const DEFAULT_SIZE: SizeToken = 'm';
 export const DEFAULT_ERASER_RADIUS = 12;
-export const DEFAULT_SELECTION_TOOL: ToolId = 'marquee';
+export const DEFAULT_SELECTION_TOOL: ToolId = 'pointer';

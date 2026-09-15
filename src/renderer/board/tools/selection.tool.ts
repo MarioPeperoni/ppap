@@ -1,15 +1,10 @@
 import { CLICK_SLOP_PX, PICK_SLOP_PX } from '@/constants/select.constants';
-import { boundsContainPoint } from '@/core/geometry/bounds';
 import { isEmptyPatch } from '@/core/scene/scene-patch';
 import { pickElement } from '@/core/select/select-pick';
 import { SelectionDrag } from '@/renderer/board/selection/selection-drag';
-import {
-  handleAt,
-  handleCursor,
-  selectionFrame,
-} from '@/renderer/board/selection/selection-handles';
+import { gripAt, gripCursor } from '@/renderer/board/selection/selection-handles';
 import { drawSelectionBox } from '@/renderer/board/selection/selection-overlay';
-import { selectedBounds, selectedElements } from '@/renderer/board/selection/selection-query';
+import { selectedElements, selectedFrame } from '@/renderer/board/selection/selection-query';
 import { commitSelectionPatch } from '@/renderer/commands/selection.command';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import type {
@@ -26,7 +21,6 @@ import type {
 } from '@/types';
 
 export class SelectionTool implements Tool {
-  readonly cursor = 'crosshair';
   readonly keepsFocus = false;
 
   private readonly drag = new SelectionDrag();
@@ -36,6 +30,7 @@ export class SelectionTool implements Tool {
   constructor(
     readonly id: ToolId,
     readonly label: string,
+    readonly cursor: string,
     private readonly region: SelectionRegion,
   ) {}
 
@@ -52,7 +47,7 @@ export class SelectionTool implements Tool {
   onPointerMove(sample: PointerSample, context: ToolContext): void {
     switch (this.gesture) {
       case 'transform':
-        this.drag.update(sample.board);
+        this.drag.update(sample.board, sample.shiftKey);
         break;
       case 'region':
         this.region.extend(sample);
@@ -97,8 +92,8 @@ export class SelectionTool implements Tool {
   drawOverlay(ctx: CanvasRenderingContext2D, view: ViewState, colors: Palette): void {
     this.region.draw(ctx, view, colors);
 
-    const bounds = selectedBounds();
-    if (bounds !== null) drawSelectionBox(ctx, view, colors, bounds);
+    const frame = selectedFrame();
+    if (frame !== null) drawSelectionBox(ctx, view, colors, frame);
   }
 
   private finishRegion(sample: PointerSample, context: ToolContext): void {
@@ -134,32 +129,25 @@ export class SelectionTool implements Tool {
   }
 
   private beginTransform(sample: PointerSample, context: ToolContext): boolean {
-    const bounds = selectedBounds();
-    if (bounds === null) return false;
+    const frame = selectedFrame();
+    if (frame === null) return false;
 
-    const handle = handleAt(bounds, context.view.camera, sample.screen);
-    const inside = boundsContainPoint(
-      selectionFrame(bounds, context.view.camera.zoom),
-      sample.board,
-    );
-    if (handle === null && !inside) return false;
+    const grip = gripAt(frame, context.view.camera, sample);
+    if (grip === null) return false;
 
     this.gesture = 'transform';
-    this.drag.begin(selectedElements(), bounds, sample.board, handle);
-    context.setCursor(handle === null ? 'move' : handleCursor(handle));
+    this.drag.begin(selectedElements(), frame, sample.board, grip);
+    context.setCursor(gripCursor(grip, frame.rotation));
 
     return true;
   }
 
   private hoverCursor(sample: PointerSample, view: ViewState): string | null {
-    const bounds = selectedBounds();
-    if (bounds === null) return null;
+    const frame = selectedFrame();
+    if (frame === null) return null;
 
-    const handle = handleAt(bounds, view.camera, sample.screen);
-    if (handle !== null) return handleCursor(handle);
+    const grip = gripAt(frame, view.camera, sample);
 
-    return boundsContainPoint(selectionFrame(bounds, view.camera.zoom), sample.board)
-      ? 'move'
-      : null;
+    return grip === null ? null : gripCursor(grip, frame.rotation);
   }
 }

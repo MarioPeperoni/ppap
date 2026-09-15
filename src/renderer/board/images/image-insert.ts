@@ -32,6 +32,7 @@ async function readImage(source: Blob, at: Point): Promise<ImageElement | null> 
     y: at.y - size.height / 2,
     width: size.width,
     height: size.height,
+    rotation: 0,
     naturalWidth: bitmap.width,
     naturalHeight: bitmap.height,
   });
