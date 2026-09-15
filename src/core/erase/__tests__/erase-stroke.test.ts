@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_STROKE_FRAGMENTS } from '@/constants/fragment.constants';
 import { DEFAULT_NIB, DEFAULT_STROKE_SCALE } from '@/constants/stroke.constants';
-import { createImage, createStroke } from '@/core/element/element.factory';
+import { createImage, createStroke, createText } from '@/core/element/element.factory';
 import { eraseSegment } from '@/core/erase/erase-stroke';
 import { strokeWidth } from '@/core/stroke/stroke-width';
 import type { EraseHit, SizeToken, StrokeElement, StrokePoint } from '@/types';
@@ -156,7 +156,7 @@ describe('erase stroke', () => {
     expect(fragmentsOf(hits[0])).toHaveLength(0);
   });
 
-  it('removes an image when the eraser centre enters it', () => {
+  it('leaves an image standing under the eraser', () => {
     const image = createImage({
       assetId: 'a'.repeat(64),
       mime: 'image/png',
@@ -169,7 +169,43 @@ describe('erase stroke', () => {
       naturalHeight: 100,
     });
 
-    expect(eraseSegment([image], { x: 50, y: 50 }, { x: 50, y: 50 }, 4)).toHaveLength(1);
-    expect(eraseSegment([image], { x: -20, y: 50 }, { x: -12, y: 50 }, 4)).toHaveLength(0);
+    expect(eraseSegment([image], { x: 50, y: 50 }, { x: 50, y: 50 }, 4)).toHaveLength(0);
+  });
+
+  it('leaves a text box standing under the eraser', () => {
+    const text = createText({
+      text: 'note',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 40,
+      rotation: 0,
+      color: 'ink',
+      size: 'm',
+      font: 'sans',
+      scale: 1,
+    });
+
+    expect(eraseSegment([text], { x: 50, y: 20 }, { x: 50, y: 20 }, 4)).toHaveLength(0);
+  });
+
+  it('cuts the ink over an image without touching the image', () => {
+    const image = createImage({
+      assetId: 'a'.repeat(64),
+      mime: 'image/png',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      rotation: 0,
+      naturalWidth: 100,
+      naturalHeight: 100,
+    });
+    const stroke = createStroke(line(0, 100, 1, 50), 'ink', 'm');
+    const hits = eraseSegment([image, stroke], { x: 50, y: 50 }, { x: 50, y: 50 }, 5);
+
+    expect(hits).toHaveLength(1);
+    expect(hits[0]?.source.id).toBe(stroke.id);
+    expect(fragmentsOf(hits[0])).toHaveLength(2);
   });
 });

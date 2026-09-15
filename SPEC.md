@@ -330,7 +330,8 @@ Splits strokes. For each pointer segment, with eraser radius `r`:
 2. Mark stroke points within `r` of the segment.
 3. Drop marked points; each surviving run becomes a stroke inheriting color, size and order. Runs
    under 2 points are discarded.
-4. Images and text boxes are removed when the eraser centre enters their bbox.
+4. Images and text boxes are left standing: the eraser is an ink tool, and what is placed on the
+   canvas is removed by selecting it.
 
 A whole `pointerdown … pointerup` gesture is one command holding `{ removed, added }`. A single
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
@@ -673,7 +674,7 @@ guards a second instance and routes file-open arguments to the running one. The 
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `camera`    | Round-trip, zoom-at-point keeps its anchor fixed, clamping, zoom-to-fit                                                                       |
 | `geometry`  | Point-segment distance, concave and self-intersecting polygon containment, rect intersection                                                  |
-| `erase`     | Middle cut yields two strokes, end cut trims, full cover removes, style inherited, 64-fragment cap                                            |
+| `erase`     | Middle cut yields two strokes, end cut trims, full cover removes, style inherited, 64-fragment cap, images and text untouched                 |
 | `select`    | Marquee intersects, lasso contains, uniform scaling preserves aspect and scales widths, turning is reversible and picks follow the turned box |
 | `grid`      | Level selection and fade alpha across the zoom range                                                                                          |
 | `history`   | Command apply and revert restore identical state                                                                                              |

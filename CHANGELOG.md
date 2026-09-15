@@ -8,6 +8,7 @@
 
 ### Changed
 
+- The eraser takes ink only; photos and text boxes go by selection.
 - Tool keys run 1 to 8, with the marquee on M.
 
 ## 1.3.0 — Text and folders
