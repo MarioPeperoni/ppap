@@ -5,6 +5,7 @@ import { LassoTool } from '@/renderer/board/tools/lasso.tool';
 import { MarqueeTool } from '@/renderer/board/tools/marquee.tool';
 import { PenTool } from '@/renderer/board/tools/pen.tool';
 import { PencilTool } from '@/renderer/board/tools/pencil.tool';
+import { PointerTool } from '@/renderer/board/tools/pointer.tool';
 import { TextTool } from '@/renderer/board/tools/text.tool';
 import type { Tool, ToolId } from '@/types';
 
@@ -13,6 +14,7 @@ const TOOLS: Record<ToolId, Tool> = {
   pencil: new PencilTool(),
   text: new TextTool(),
   eraser: new EraserTool(),
+  pointer: new PointerTool(),
   marquee: new MarqueeTool(),
   lasso: new LassoTool(),
   hand: new HandTool(),

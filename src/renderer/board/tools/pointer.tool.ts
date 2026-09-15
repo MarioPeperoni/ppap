@@ -1,8 +1,8 @@
 import { MarqueeRegion } from '@/renderer/board/selection/marquee-region';
 import { SelectionTool } from '@/renderer/board/tools/selection.tool';
 
-export class MarqueeTool extends SelectionTool {
+export class PointerTool extends SelectionTool {
   constructor() {
-    super('marquee', 'Marquee', 'crosshair', new MarqueeRegion());
+    super('pointer', 'Pointer', 'default', new MarqueeRegion());
   }
 }

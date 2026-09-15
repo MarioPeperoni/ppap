@@ -21,7 +21,6 @@ import type {
 } from '@/types';
 
 export class SelectionTool implements Tool {
-  readonly cursor = 'crosshair';
   readonly keepsFocus = false;
 
   private readonly drag = new SelectionDrag();
@@ -31,6 +30,7 @@ export class SelectionTool implements Tool {
   constructor(
     readonly id: ToolId,
     readonly label: string,
+    readonly cursor: string,
     private readonly region: SelectionRegion,
   ) {}
 

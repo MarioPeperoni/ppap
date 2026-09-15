@@ -86,7 +86,7 @@ src/
       Board.tsx           canvas host, pointer routing, keyboard map
       layers/             GridLayer, SceneLayer, OverlayLayer
       render/             ElementRenderer registry
-      tools/              pen, pencil, eraser, marquee, lasso, hand + ToolRegistry
+      tools/              pen, pencil, text, eraser, pointer, marquee, lasso, hand + ToolRegistry
     components/           Toolbar, TitleBar, ToolPopover
 ```
 
@@ -336,8 +336,9 @@ A whole `pointerdown … pointerup` gesture is one command holding `{ removed, a
 source stroke yields at most 64 fragments; past that it is removed outright. The eraser cursor is
 a circle outline on the overlay. `[` and `]` step its radius.
 
-### 6.3 Selection — marquee `V`, lasso `L`
+### 6.3 Selection — pointer `V`, marquee `M`, lasso `L`
 
+- **Pointer** is the plain arrow: it clicks things, and dragging bare canvas pulls a marquee.
 - **Marquee** selects elements whose bbox intersects the dragged rectangle.
 - **Lasso** selects strokes fully contained in the polygon, and images and text boxes whose bbox
   centre is inside.
@@ -389,13 +390,13 @@ Drags the camera.
 
 Rebindable in Settings, a primary and a secondary stroke per action, modifiers allowed:
 
-| Primary                     | Secondary | Action                                                |
-| --------------------------- | --------- | ----------------------------------------------------- |
-| `P` `N` `T` `E` `V` `L` `H` | `1` … `7` | Pen / pencil / text / eraser / marquee / lasso / hand |
-| `C`, `Shift+C`              | —         | Next and previous color                               |
-| `X`                         | —         | Swap the active color with the pinned one             |
-| `[`, `]`                    | —         | Step stroke or eraser width                           |
-| `Backspace`                 | `Delete`  | Delete the selection                                  |
+| Primary                         | Secondary | Action                                                          |
+| ------------------------------- | --------- | --------------------------------------------------------------- |
+| `P` `N` `T` `E` `V` `M` `L` `H` | `1` … `8` | Pen / pencil / text / eraser / pointer / marquee / lasso / hand |
+| `C`, `Shift+C`                  | —         | Next and previous color                                         |
+| `X`                             | —         | Swap the active color with the pinned one                       |
+| `[`, `]`                        | —         | Step stroke or eraser width                                     |
+| `Backspace`                     | `Delete`  | Delete the selection                                            |
 
 Fixed:
 
@@ -535,7 +536,7 @@ of opening a second. Frameless, `titleBarStyle: 'hidden'`, shown on `ready-to-sh
 ├───────────────────────────────────────────────┤
 │                    canvas                     │
 │              ┌────────────────┐               │
-│              │  ✎  ⌫  ▭  ⌾  ✋ │               │
+│              │ ✎ ⌫ │ ↖ ▭ ⌾ │ ✋ │               │
 └──────────────┴────────────────┴───────────────┘
 ```
 
@@ -547,7 +548,8 @@ is no menu bar.
 ### 8.2 Toolbar
 
 One floating pill, horizontally centred, 16 px above the bottom edge. Icons only, no labels, no
-borders. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
+borders. A hairline rule parts the three sections: the tools that mark the canvas, the tools that
+select, and the hand. The active tool carries a subtle filled background. Hover shows a Radix tooltip with the
 name and shortcut. Clicking the active tool, or pressing its shortcut again, opens its popover:
 colors, the active palette and width for the pen and pencil, colors, the four faces and size for
 text, radius for the eraser. The width sits

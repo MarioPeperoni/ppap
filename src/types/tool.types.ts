@@ -3,7 +3,8 @@ import type { ViewState } from './canvas.types';
 import type { Point } from './geometry.types';
 import type { Palette } from './theme.types';
 
-export type ToolId = 'pen' | 'pencil' | 'text' | 'eraser' | 'marquee' | 'lasso' | 'hand';
+export type ToolId =
+  'pointer' | 'pen' | 'pencil' | 'text' | 'eraser' | 'marquee' | 'lasso' | 'hand';
 
 export interface PanOrigin {
   screen: Point;

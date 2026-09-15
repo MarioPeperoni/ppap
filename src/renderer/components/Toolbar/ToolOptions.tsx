@@ -9,6 +9,7 @@ const OPTIONS: Record<ToolId, (() => ReactElement) | null> = {
   pencil: PenOptions,
   text: TextOptions,
   eraser: EraserOptions,
+  pointer: null,
   marquee: null,
   lasso: null,
   hand: null,
