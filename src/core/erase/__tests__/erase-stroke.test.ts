@@ -164,6 +164,7 @@ describe('erase stroke', () => {
       y: 0,
       width: 100,
       height: 100,
+      rotation: 0,
       naturalWidth: 100,
       naturalHeight: 100,
     });

@@ -55,6 +55,7 @@ export function cloneElement(element: Element): Element {
         y: element.y,
         width: element.width,
         height: element.height,
+        rotation: element.rotation,
         naturalWidth: element.naturalWidth,
         naturalHeight: element.naturalHeight,
       });
@@ -65,6 +66,7 @@ export function cloneElement(element: Element): Element {
         y: element.y,
         width: element.width,
         height: element.height,
+        rotation: element.rotation,
         color: element.color,
         size: element.size,
         font: element.font,

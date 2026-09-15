@@ -1,4 +1,5 @@
 import { elementBounds } from '@/core/element/element-bounds';
+import { placedContainsPoint } from '@/core/element/element-placement';
 import { boundsContainPoint, expandBounds } from '@/core/geometry/bounds';
 import { pointSegmentDistance } from '@/core/geometry/distance';
 import { toPoint } from '@/core/stroke/stroke-point';
@@ -25,6 +26,16 @@ function touchesStroke(stroke: StrokeElement, point: Point, slop: number): boole
   return false;
 }
 
+function touchesElement(element: Element, point: Point, slop: number): boolean {
+  switch (element.type) {
+    case 'stroke':
+      return touchesStroke(element, point, slop);
+    case 'image':
+    case 'text':
+      return placedContainsPoint(element, point, slop);
+  }
+}
+
 /** The topmost element under the point, or null when the point sits on bare canvas. */
 export function pickElement(
   elements: Iterable<Element>,
@@ -36,7 +47,7 @@ export function pickElement(
   for (const element of elements) {
     if (!boundsContainPoint(expandBounds(elementBounds(element), slop), point)) continue;
 
-    if (element.type !== 'stroke' || touchesStroke(element, point, slop)) picked = element.id;
+    if (touchesElement(element, point, slop)) picked = element.id;
   }
 
   return picked;

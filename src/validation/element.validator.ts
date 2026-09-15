@@ -24,6 +24,10 @@ function parseStrokePoint(value: unknown): StrokePoint {
   ];
 }
 
+function parseRotation(value: unknown, label: string): number {
+  return value === undefined ? 0 : expectNumber(value, label);
+}
+
 function parseStroke(source: Record<string, unknown>): StrokeElement {
   return {
     id: expectString(source.id, 'Element id'),
@@ -48,6 +52,7 @@ function parseImage(source: Record<string, unknown>): ImageElement {
     y: expectNumber(source.y, 'Image y'),
     width: expectNumber(source.width, 'Image width'),
     height: expectNumber(source.height, 'Image height'),
+    rotation: parseRotation(source.rotation, 'Image rotation'),
     naturalWidth: expectNumber(source.naturalWidth, 'Image naturalWidth'),
     naturalHeight: expectNumber(source.naturalHeight, 'Image naturalHeight'),
   };
@@ -63,6 +68,7 @@ function parseText(source: Record<string, unknown>): TextElement {
     y: expectNumber(source.y, 'Text y'),
     width: expectNumber(source.width, 'Text width'),
     height: expectNumber(source.height, 'Text height'),
+    rotation: parseRotation(source.rotation, 'Text rotation'),
     color: parseStrokeColor(source.color, 'Text color'),
     size: expectOneOf(source.size, TOOL_SIZES, 'Text size'),
     font: expectOneOf(source.font, FONT_TOKENS, 'Text font'),

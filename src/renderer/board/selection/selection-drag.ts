@@ -1,11 +1,19 @@
-import { MIN_SELECTION_SCALE } from '@/constants/select.constants';
+import { MIN_SELECTION_SCALE, ROTATE_SNAP_RADIANS } from '@/constants/select.constants';
+import { angleTo, snapAngle } from '@/core/geometry/rotation';
 import { updatePatch } from '@/core/scene/scene-patch';
-import { scaleElement, translateElement } from '@/core/select/select-transform';
-import { handleCorner, oppositeCorner } from '@/renderer/board/selection/selection-handles';
+import { rotateElement, scaleElement, translateElement } from '@/core/select/select-transform';
+import { frameCorner, oppositeCorner } from '@/core/select/selection-frame';
 import { sceneCommand } from '@/renderer/commands/scene.command';
 import { useBoardStore } from '@/renderer/stores/board.store';
 import { useHistoryStore } from '@/renderer/stores/history.store';
-import type { Bounds, Element, Point, SelectionHandle } from '@/types';
+import type { Element, Point, SelectionFrame, SelectionGrip } from '@/types';
+
+interface DragGesture {
+  origin: readonly Element[];
+  frame: SelectionFrame;
+  start: Point;
+  grip: SelectionGrip;
+}
 
 /** Uniform scale: the pointer is projected onto the diagonal running out of the anchor. */
 function scaleFactor(anchor: Point, corner: Point, point: Point): number {
@@ -20,46 +28,50 @@ function scaleFactor(anchor: Point, corner: Point, point: Point): number {
   return Math.max(projection, MIN_SELECTION_SCALE);
 }
 
+function turned(gesture: DragGesture, point: Point, snap: boolean): number {
+  const { center } = gesture.frame;
+  const angle = angleTo(center, point) - angleTo(center, gesture.start);
+
+  return snap ? snapAngle(angle, ROTATE_SNAP_RADIANS) : angle;
+}
+
 export class SelectionDrag {
-  private origin: readonly Element[] = [];
+  private gesture: DragGesture | null = null;
   private latest: readonly Element[] = [];
-  private bounds: Bounds | null = null;
-  private start: Point = { x: 0, y: 0 };
-  private handle: SelectionHandle | null = null;
   private changed = false;
 
   begin(
     elements: readonly Element[],
-    bounds: Bounds,
+    frame: SelectionFrame,
     start: Point,
-    handle: SelectionHandle | null,
+    grip: SelectionGrip,
   ): void {
-    this.origin = elements;
+    this.gesture = { origin: elements, frame, start, grip };
     this.latest = elements;
-    this.bounds = bounds;
-    this.start = start;
-    this.handle = handle;
     this.changed = false;
   }
 
-  update(point: Point): void {
-    if (this.origin.length === 0) return;
-    if (!this.changed && point.x === this.start.x && point.y === this.start.y) return;
+  update(point: Point, snap: boolean): void {
+    const gesture = this.gesture;
+    if (gesture === null || gesture.origin.length === 0) return;
+    if (!this.changed && point.x === gesture.start.x && point.y === gesture.start.y) return;
 
-    this.latest = this.transform(point);
+    this.latest = this.transform(gesture, point, snap);
     this.changed = true;
     useBoardStore.getState().applyScenePatch(updatePatch(this.latest));
   }
 
   finish(): void {
-    if (this.changed) {
+    const gesture = this.gesture;
+
+    if (gesture !== null && this.changed) {
       useHistoryStore
         .getState()
         .record(
           sceneCommand(
-            this.handle === null ? 'move' : 'scale',
+            gesture.grip.kind,
             [updatePatch(this.latest)],
-            [updatePatch(this.origin)],
+            [updatePatch(gesture.origin)],
           ),
         );
     }
@@ -68,32 +80,39 @@ export class SelectionDrag {
   }
 
   cancel(): void {
-    if (this.changed) useBoardStore.getState().applyScenePatch(updatePatch(this.origin));
+    const gesture = this.gesture;
+    if (gesture !== null && this.changed) {
+      useBoardStore.getState().applyScenePatch(updatePatch(gesture.origin));
+    }
 
     this.reset();
   }
 
-  private transform(point: Point): Element[] {
-    const { bounds, handle } = this;
+  private transform(gesture: DragGesture, point: Point, snap: boolean): Element[] {
+    const { origin, frame, grip, start } = gesture;
 
-    if (bounds === null || handle === null) {
-      const deltaX = point.x - this.start.x;
-      const deltaY = point.y - this.start.y;
+    switch (grip.kind) {
+      case 'move':
+        return origin.map((element) =>
+          translateElement(element, point.x - start.x, point.y - start.y),
+        );
+      case 'scale': {
+        const anchor = oppositeCorner(frame, grip.handle);
+        const factor = scaleFactor(anchor, frameCorner(frame, grip.handle), point);
 
-      return this.origin.map((element) => translateElement(element, deltaX, deltaY));
+        return origin.map((element) => scaleElement(element, anchor, factor));
+      }
+      case 'rotate': {
+        const angle = turned(gesture, point, snap);
+
+        return origin.map((element) => rotateElement(element, frame.center, angle));
+      }
     }
-
-    const anchor = oppositeCorner(bounds, handle);
-    const factor = scaleFactor(anchor, handleCorner(bounds, handle), point);
-
-    return this.origin.map((element) => scaleElement(element, anchor, factor));
   }
 
   private reset(): void {
-    this.origin = [];
+    this.gesture = null;
     this.latest = [];
-    this.bounds = null;
-    this.handle = null;
     this.changed = false;
   }
 }

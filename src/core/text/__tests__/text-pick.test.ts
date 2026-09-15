@@ -10,6 +10,7 @@ function textAt(x: number, y: number): TextElement {
     y,
     width: 100,
     height: 40,
+    rotation: 0,
     color: 'ink',
     size: 'm',
     font: 'sans',

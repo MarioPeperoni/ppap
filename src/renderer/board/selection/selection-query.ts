@@ -1,6 +1,6 @@
-import { boundsOfElements } from '@/core/element/element-bounds';
+import { frameOfElements } from '@/core/select/selection-frame';
 import { useBoardStore } from '@/renderer/stores/board.store';
-import type { Bounds, Element } from '@/types';
+import type { Element, SelectionFrame } from '@/types';
 
 export function selectedElements(): Element[] {
   const { elements, selection } = useBoardStore.getState();
@@ -13,6 +13,6 @@ export function selectedElements(): Element[] {
   return selected;
 }
 
-export function selectedBounds(): Bounds | null {
-  return boundsOfElements(selectedElements());
+export function selectedFrame(): SelectionFrame | null {
+  return frameOfElements(selectedElements());
 }

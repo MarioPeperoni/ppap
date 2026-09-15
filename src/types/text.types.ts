@@ -6,6 +6,7 @@ export interface TextDraft {
   id: string;
   x: number;
   y: number;
+  rotation: number;
   text: string;
   color: StrokeColor;
   size: SizeToken;

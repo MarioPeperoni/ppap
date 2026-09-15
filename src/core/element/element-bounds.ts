@@ -1,3 +1,4 @@
+import { placedBounds } from '@/core/element/element-placement';
 import { unionBounds } from '@/core/geometry/bounds';
 import { strokeBounds } from '@/core/stroke/stroke-bounds';
 import type { Bounds, Element } from '@/types';
@@ -8,12 +9,7 @@ export function elementBounds(element: Element): Bounds {
       return strokeBounds(element);
     case 'image':
     case 'text':
-      return {
-        minX: element.x,
-        minY: element.y,
-        maxX: element.x + element.width,
-        maxY: element.y + element.height,
-      };
+      return placedBounds(element);
   }
 }
 

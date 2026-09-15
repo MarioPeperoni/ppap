@@ -85,6 +85,30 @@ describe('board file validation', () => {
     expect(parsed.content.elements[0]).toEqual(stroke);
   });
 
+  it('reads an image saved before rotation as an upright one', () => {
+    const source = clone();
+    const upright = {
+      id: 'i1',
+      createdAt: 1_756_000_000_000,
+      type: 'image',
+      assetId: 'a'.repeat(64),
+      mime: 'image/png',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 80,
+      naturalWidth: 100,
+      naturalHeight: 80,
+    };
+
+    const parsed = parseBoardFile({
+      meta: source.meta,
+      content: { ...source.content, elements: [upright] },
+    });
+
+    expect(parsed.content.elements[0]).toEqual({ ...upright, rotation: 0 });
+  });
+
   it('carries a custom colour on a stroke', () => {
     const source = clone();
     const [stroke] = source.content.elements;

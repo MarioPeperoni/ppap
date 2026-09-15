@@ -1,3 +1,9 @@
+## 1.4.0 — Rotation
+
+### Added
+
+- A rotation grip on the selection, snapping to 15° with Shift.
+
 ## 1.3.0 — Text and folders
 
 ### Added

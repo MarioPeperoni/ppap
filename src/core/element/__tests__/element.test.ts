@@ -30,6 +30,7 @@ describe('element bounds', () => {
       y: 20,
       width: 200,
       height: 100,
+      rotation: 0,
       naturalWidth: 400,
       naturalHeight: 200,
     });
@@ -44,6 +45,7 @@ describe('element bounds', () => {
       y: 15,
       width: 80,
       height: 30,
+      rotation: 0,
       color: 'ink',
       size: 'm',
       font: 'serif',

@@ -17,8 +17,7 @@ interface is a floating toolbar and a thin title bar.
 in the release matrix, not a design constraint.
 
 **Out of scope:** collaboration, cloud sync, shape and arrow tools, sticky notes, rich text,
-PDF and SVG export, element rotation, layers, grouping, freeform color picking, mobile and web
-builds, plugins.
+PDF and SVG export, layers, grouping, freeform color picking, mobile and web builds, plugins.
 
 ---
 
@@ -232,25 +231,26 @@ interface StrokeElement extends ElementBase {
   nib: NibToken; // pen tapers with pressure, pencil holds one width
 }
 
-interface ImageElement extends ElementBase {
-  type: 'image';
-  assetId: string; // sha256 of the bytes
-  mime: string;
+interface PlacedElement extends ElementBase {
   x: number;
   y: number;
   width: number;
   height: number;
+  rotation: number; // clockwise radians about the centre of the box, 0 for a file written before it existed
+}
+
+interface ImageElement extends PlacedElement {
+  type: 'image';
+  assetId: string; // sha256 of the bytes
+  mime: string;
   naturalWidth: number;
   naturalHeight: number;
 }
 
-interface TextElement extends ElementBase {
+interface TextElement extends PlacedElement {
   type: 'text';
   text: string; // newlines break lines, nothing else is markup
-  x: number;
-  y: number;
-  width: number; // the measured box, so bounds stay pure and synchronous
-  height: number;
+  // width and height hold the measured box, so bounds stay pure and synchronous
   color: StrokeColor;
   size: SizeToken; // s=16, m=24, l=36, xl=56 board units
   font: FontToken;
@@ -342,10 +342,15 @@ a circle outline on the overlay. `[` and `]` step its radius.
 - **Lasso** selects strokes fully contained in the polygon, and images and text boxes whose bbox
   centre is inside.
 
-A non-empty selection shows a bounding box with four corner handles:
+A non-empty selection shows a frame with four corner handles and a rotation grip standing off its
+top edge. A lone image or text box lends the frame its own angle; any other selection frames the
+upright hull:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
   widths and text faces scale with the selection.
+- Dragging the grip turns the selection about the centre of the frame, `Shift` snapping to 15°.
+  Strokes take the turn into their points; images and text boxes carry it as an angle, so a photo
+  keeps its pixels and a text box stays editable in place.
 - `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
   drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.
@@ -378,6 +383,7 @@ Drags the camera.
   occupies one archive entry.
 - Initial size fits the natural size within 800 board units, preserving aspect ratio.
 - The renderer references `ppap-asset://<boardId>/<assetId>` and never holds the bytes.
+- A turned photo keeps its bytes and its box; only `rotation` moves, so turning it back is exact.
 
 ### 6.7 Keyboard reference
 
@@ -661,16 +667,16 @@ guards a second instance and routes file-open arguments to the running one. The 
 
 `vitest` over `src/core`, run with `npm test` and `npm run test:watch`:
 
-| Module      | Covered behaviour                                                                                  |
-| ----------- | -------------------------------------------------------------------------------------------------- |
-| `camera`    | Round-trip, zoom-at-point keeps its anchor fixed, clamping, zoom-to-fit                            |
-| `geometry`  | Point-segment distance, concave and self-intersecting polygon containment, rect intersection       |
-| `erase`     | Middle cut yields two strokes, end cut trims, full cover removes, style inherited, 64-fragment cap |
-| `select`    | Marquee intersects, lasso contains, uniform scaling preserves aspect and scales widths             |
-| `grid`      | Level selection and fade alpha across the zoom range                                               |
-| `history`   | Command apply and revert restore identical state                                                   |
-| `serialize` | Archive round-trip, malformed input rejected, migration path                                       |
-| `elements`  | Factory defaults, asset hashing and dedup                                                          |
+| Module      | Covered behaviour                                                                                                                             |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `camera`    | Round-trip, zoom-at-point keeps its anchor fixed, clamping, zoom-to-fit                                                                       |
+| `geometry`  | Point-segment distance, concave and self-intersecting polygon containment, rect intersection                                                  |
+| `erase`     | Middle cut yields two strokes, end cut trims, full cover removes, style inherited, 64-fragment cap                                            |
+| `select`    | Marquee intersects, lasso contains, uniform scaling preserves aspect and scales widths, turning is reversible and picks follow the turned box |
+| `grid`      | Level selection and fade alpha across the zoom range                                                                                          |
+| `history`   | Command apply and revert restore identical state                                                                                              |
+| `serialize` | Archive round-trip, malformed input rejected, migration path                                                                                  |
+| `elements`  | Factory defaults, asset hashing and dedup                                                                                                     |
 
 In development builds only, `window.__ppapDev.seed(n)` fills the open board with `n` generated
 strokes for hands-on checks of the targets in §9.5.

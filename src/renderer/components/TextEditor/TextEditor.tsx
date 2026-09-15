@@ -61,6 +61,8 @@ export function TextEditor(): ReactElement | null {
           lineHeight: `${lineHeight(draft.size, draft.scale) * zoom}px`,
           color: ink,
           caretColor: ink,
+          transform: `rotate(${draft.rotation}rad)`,
+          transformOrigin: `${(layout.width * zoom) / 2}px ${(layout.height * zoom) / 2}px`,
         }}
         className="pointer-events-auto absolute m-0 resize-none overflow-hidden border-0 bg-transparent p-0 whitespace-pre outline-none"
       />
