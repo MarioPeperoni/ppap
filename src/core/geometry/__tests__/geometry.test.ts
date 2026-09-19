@@ -7,6 +7,7 @@ import {
 } from '@/core/geometry/bounds';
 import { pointSegmentDistance } from '@/core/geometry/distance';
 import { pointInPolygon } from '@/core/geometry/polygon';
+import { normalizeAngle, snapTurn } from '@/core/geometry/rotation';
 
 describe('distance', () => {
   it('measures distance to a segment, clamped at its ends', () => {
@@ -75,5 +76,23 @@ describe('bounds', () => {
     expect(bounds).toEqual({ minX: -3, minY: -2, maxX: 4, maxY: 7 });
     expect(boundsOf([])).toBeNull();
     expect(bounds && expandBounds(bounds, 1)).toEqual({ minX: -4, minY: -3, maxX: 5, maxY: 8 });
+  });
+});
+
+describe('rotation', () => {
+  it('folds an angle into a single turn around zero', () => {
+    expect(normalizeAngle(Math.PI * 2 + 0.4)).toBeCloseTo(0.4, 10);
+    expect(normalizeAngle(-Math.PI * 4 - 0.4)).toBeCloseTo(-0.4, 10);
+    expect(normalizeAngle(Math.PI * 3)).toBeCloseTo(Math.PI, 10);
+    expect(normalizeAngle(0.4)).toBeCloseTo(0.4, 10);
+  });
+
+  it('snaps a turn to where it lands, not to how far it goes', () => {
+    const step = Math.PI / 4;
+    const askew = 0.1;
+
+    expect(snapTurn(askew, 0.05, step)).toBeCloseTo(-askew, 10);
+    expect(snapTurn(askew, step, step)).toBeCloseTo(step - askew, 10);
+    expect(snapTurn(0, 0.6, step)).toBeCloseTo(step, 10);
   });
 });

@@ -273,13 +273,21 @@ describe('selection rotation', () => {
     expect(placedCenter(turned).y).toBeCloseTo(120, 6);
   });
 
-  it('bakes the turn into the points of a stroke', () => {
+  it('bakes the turn into the points of a stroke and keeps the angle it holds', () => {
     const stroke = createStroke(line(0, 100, 0), 'ink', 'm');
     const turned = rotateElement(stroke, { x: 0, y: 0 }, QUARTER) as StrokeElement;
 
     expect(turned.points[0]?.[0]).toBeCloseTo(0, 6);
     expect(turned.points.at(-1)?.[0]).toBeCloseTo(0, 6);
     expect(turned.points.at(-1)?.[1]).toBeCloseTo(100, 6);
+    expect(turned.rotation).toBeCloseTo(QUARTER, 6);
+  });
+
+  it('folds a turn past a full circle back into one turn', () => {
+    const stroke = createStroke(line(0, 100, 0), 'ink', 'm');
+    const turned = rotateElement(stroke, { x: 0, y: 0 }, Math.PI * 2 + 0.3) as StrokeElement;
+
+    expect(turned.rotation).toBeCloseTo(0.3, 6);
   });
 
   it('returns to the original geometry when turned back', () => {
@@ -318,10 +326,42 @@ describe('selection frame', () => {
     expect(frame?.width).toBe(40);
   });
 
-  it('stands upright around a group', () => {
-    const frame = frameOfElements([image(0, 0), note(100, 100)]);
+  it('stands upright around a group of mixed angles', () => {
+    const frame = frameOfElements([image(0, 0), { ...note(100, 100), rotation: 0.4 }]);
 
     expect(frame?.rotation).toBe(0);
+  });
+
+  it('lends the frame the one angle a whole group shares', () => {
+    const frame = frameOfElements([
+      { ...(image(0, 0) as ImageElement), rotation: 0.4 },
+      { ...note(100, 100), rotation: 0.4 },
+    ]);
+
+    expect(frame?.rotation).toBeCloseTo(0.4, 6);
+  });
+
+  it('holds a stroke frame at the same size through a turn', () => {
+    const stroke = createStroke(line(0, 100, 20), 'ink', 'm');
+    const upright = frameOfElements([stroke])!;
+    const turned = frameOfElements([rotateElement(stroke, { x: 40, y: 40 }, 0.7)])!;
+
+    expect(turned.width).toBeCloseTo(upright.width, 6);
+    expect(turned.height).toBeCloseTo(upright.height, 6);
+    expect(turned.rotation).toBeCloseTo(0.7, 6);
+  });
+
+  it('holds a group frame at the same size through a turn', () => {
+    const elements = [createStroke(line(0, 100, 0), 'ink', 'm'), image(200, 60)];
+    const upright = frameOfElements(elements)!;
+    const pivot: Point = { x: 50, y: 50 };
+    const turned = frameOfElements(
+      elements.map((element) => rotateElement(element, pivot, Math.PI / 2)),
+    )!;
+
+    expect(turned.width).toBeCloseTo(upright.width, 6);
+    expect(turned.height).toBeCloseTo(upright.height, 6);
+    expect(turned.rotation).toBeCloseTo(Math.PI / 2, 6);
   });
 
   it('turns its corners with the frame it belongs to', () => {

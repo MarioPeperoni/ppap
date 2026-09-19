@@ -1,8 +1,9 @@
-import { boundsOfElements } from '@/core/element/element-bounds';
-import { placedCenter } from '@/core/element/element-placement';
-import { boundsCenter } from '@/core/geometry/bounds';
-import { rotatePoint } from '@/core/geometry/rotation';
+import { elementFrame } from '@/core/element/element-frame';
+import { boundsCenter, boundsOf } from '@/core/geometry/bounds';
+import { normalizeAngle, ORIGIN, rotatePoint } from '@/core/geometry/rotation';
 import type { Element, Point, SelectionFrame, SelectionHandle } from '@/types';
+
+const SHARED_ANGLE_EPSILON = 1e-9;
 
 export const SELECTION_HANDLES: readonly SelectionHandle[] = ['nw', 'ne', 'se', 'sw'];
 
@@ -20,26 +21,34 @@ const OPPOSITE: Record<SelectionHandle, SelectionHandle> = {
   sw: 'ne',
 };
 
+/** One angle shared by everything selected lends the frame its turn; a mix of angles is upright. */
+function sharedRotation(elements: readonly Element[]): number {
+  const first = elements[0];
+  if (first === undefined) return 0;
+
+  const shared = elements.every(
+    (element) => Math.abs(normalizeAngle(element.rotation - first.rotation)) < SHARED_ANGLE_EPSILON,
+  );
+
+  return shared ? first.rotation : 0;
+}
+
 export function frameOfElements(elements: readonly Element[]): SelectionFrame | null {
   const only = elements.length === 1 ? elements[0] : undefined;
+  if (only !== undefined) return elementFrame(only);
 
-  if (only !== undefined && only.type !== 'stroke') {
-    return {
-      center: placedCenter(only),
-      width: only.width,
-      height: only.height,
-      rotation: only.rotation,
-    };
-  }
-
-  const bounds = boundsOfElements(elements);
+  const rotation = sharedRotation(elements);
+  const corners = elements
+    .flatMap((element) => frameCorners(elementFrame(element)))
+    .map((corner) => rotatePoint(corner, ORIGIN, -rotation));
+  const bounds = boundsOf(corners);
   if (bounds === null) return null;
 
   return {
-    center: boundsCenter(bounds),
+    center: rotatePoint(boundsCenter(bounds), ORIGIN, rotation),
     width: bounds.maxX - bounds.minX,
     height: bounds.maxY - bounds.minY,
-    rotation: 0,
+    rotation,
   };
 }
 

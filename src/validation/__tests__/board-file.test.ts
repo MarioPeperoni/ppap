@@ -28,6 +28,7 @@ const FILE: BoardFile = {
         size: 'm',
         nib: 'pen',
         scale: 1,
+        rotation: 0,
       },
     ],
   },

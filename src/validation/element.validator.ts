@@ -38,6 +38,7 @@ function parseStroke(source: Record<string, unknown>): StrokeElement {
     size: expectOneOf(source.size, TOOL_SIZES, 'Stroke size'),
     nib: source.nib === undefined ? DEFAULT_NIB : expectOneOf(source.nib, NIB_TOKENS, 'Stroke nib'),
     scale: expectNumber(source.scale, 'Stroke scale'),
+    rotation: parseRotation(source.rotation, 'Stroke rotation'),
   };
 }
 

@@ -1,3 +1,10 @@
+## 1.4.1
+
+### Fixed
+
+- The selection frame stays fixed through a turn.
+- Snapping counts from the angle an element started at, so anything can be set straight again.
+
 ## 1.4.0 — Pointer and rotation
 
 ### Added

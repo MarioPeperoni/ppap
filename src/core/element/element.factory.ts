@@ -16,6 +16,7 @@ export function createStroke(
   size: SizeToken,
   nib: NibToken = DEFAULT_NIB,
   scale: number = DEFAULT_STROKE_SCALE,
+  rotation = 0,
 ): StrokeElement {
   return {
     id: crypto.randomUUID(),
@@ -26,6 +27,7 @@ export function createStroke(
     size,
     nib,
     scale,
+    rotation,
   };
 }
 
@@ -46,6 +48,7 @@ export function cloneElement(element: Element): Element {
         element.size,
         element.nib,
         element.scale,
+        element.rotation,
       );
     case 'image':
       return createImage({

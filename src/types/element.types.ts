@@ -9,18 +9,18 @@ export type FontToken = 'sans' | 'serif' | 'mono' | 'hand';
 
 export type StrokePoint = [x: number, y: number, pressure: number];
 
+/** Every element carries `rotation`: clockwise radians turned about its own centre. */
 export interface ElementBase {
   id: string;
   createdAt: number;
+  rotation: number;
 }
 
-/** A rect placed on the board, turned clockwise by `rotation` radians about its own centre. */
 export interface PlacedElement extends ElementBase {
   x: number;
   y: number;
   width: number;
   height: number;
-  rotation: number;
 }
 
 export interface StrokeElement extends ElementBase {

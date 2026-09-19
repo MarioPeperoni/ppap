@@ -38,6 +38,7 @@ const ARCHIVE: BoardArchive = {
         size: 'l',
         nib: 'pen',
         scale: 1.25,
+        rotation: 0,
       },
     ],
   },
