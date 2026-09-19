@@ -221,6 +221,7 @@ type Element = StrokeElement | ImageElement | TextElement;
 interface ElementBase {
   id: string;
   createdAt: number;
+  rotation: number; // clockwise radians about the centre of the element, 0 for a file written before it existed
 }
 
 interface StrokeElement extends ElementBase {
@@ -236,7 +237,6 @@ interface PlacedElement extends ElementBase {
   y: number;
   width: number;
   height: number;
-  rotation: number; // clockwise radians about the centre of the box, 0 for a file written before it existed
 }
 
 interface ImageElement extends PlacedElement {
@@ -344,15 +344,19 @@ a circle outline on the overlay. `[` and `]` step its radius.
 - **Lasso** selects strokes fully contained in the polygon, and images and text boxes whose bbox
   centre is inside.
 
-A non-empty selection shows a frame with four corner handles and a rotation grip standing off its
-top edge. A lone image or text box lends the frame its own angle; any other selection frames the
-upright hull:
+A non-empty selection shows a frame with four corner handles, square to the frame and turning with
+it, and a rotation grip standing off its top edge. A lone element lends the frame its own angle,
+and so does a group whose elements all share one; a selection of mixed angles frames the upright
+hull. The frame is measured once a gesture starts and rides along with it, so it holds its size
+through a turn:
 
 - Dragging inside moves. Dragging a handle scales **uniformly** about the opposite corner; stroke
   widths and text faces scale with the selection.
-- Dragging the grip turns the selection about the centre of the frame, `Shift` snapping to 15°.
-  Strokes take the turn into their points; images and text boxes carry it as an angle, so a photo
-  keeps its pixels and a text box stays editable in place.
+- Dragging the grip turns the selection about the centre of the frame. `Shift` snaps the angle the
+  frame lands on to 15°, counted from upright rather than from where the drag began, so anything can
+  be set square again. Strokes take the turn into their points; images and text boxes carry it as an
+  angle, so a photo keeps its pixels and a text box stays editable in place. Every element keeps the
+  angle it holds, so the frame hugs it wherever it is turned.
 - `Backspace` deletes. `Ctrl+C` / `Ctrl+X` / `Ctrl+V` copy, cut and paste at the
   cursor, and both copy and cut lay the selection on the system clipboard as PNG, so the fragment
   drops into any other application. `Ctrl+D` duplicates offset by 24 units. `Ctrl+A` selects all.

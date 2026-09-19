@@ -92,7 +92,7 @@ export class SelectionTool implements Tool {
   drawOverlay(ctx: CanvasRenderingContext2D, view: ViewState, colors: Palette): void {
     this.region.draw(ctx, view, colors);
 
-    const frame = selectedFrame();
+    const frame = this.drag.frame() ?? selectedFrame();
     if (frame !== null) drawSelectionBox(ctx, view, colors, frame);
   }
 

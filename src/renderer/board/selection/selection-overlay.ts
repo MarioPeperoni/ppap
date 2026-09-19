@@ -27,19 +27,14 @@ function screenPath(camera: ViewState['camera'], points: readonly Point[]): Path
   return path;
 }
 
-function drawHandle(ctx: CanvasRenderingContext2D, at: Point): void {
-  ctx.fillRect(
-    at.x - HANDLE_SIZE_PX / 2,
-    at.y - HANDLE_SIZE_PX / 2,
-    HANDLE_SIZE_PX,
-    HANDLE_SIZE_PX,
-  );
-  ctx.strokeRect(
-    at.x - HANDLE_SIZE_PX / 2,
-    at.y - HANDLE_SIZE_PX / 2,
-    HANDLE_SIZE_PX,
-    HANDLE_SIZE_PX,
-  );
+/** The handle squares sit square to the frame, so they turn along with it. */
+function drawHandle(ctx: CanvasRenderingContext2D, at: Point, rotation: number): void {
+  ctx.save();
+  ctx.translate(at.x, at.y);
+  ctx.rotate(rotation);
+  ctx.fillRect(-HANDLE_SIZE_PX / 2, -HANDLE_SIZE_PX / 2, HANDLE_SIZE_PX, HANDLE_SIZE_PX);
+  ctx.strokeRect(-HANDLE_SIZE_PX / 2, -HANDLE_SIZE_PX / 2, HANDLE_SIZE_PX, HANDLE_SIZE_PX);
+  ctx.restore();
 }
 
 function drawRotateGrip(
@@ -97,5 +92,7 @@ export function drawSelectionBox(
   ctx.fillStyle = colors.canvas;
   drawRotateGrip(ctx, view, padded);
 
-  for (const corner of frameCorners(padded)) drawHandle(ctx, toScreen(view.camera, corner));
+  for (const corner of frameCorners(padded)) {
+    drawHandle(ctx, toScreen(view.camera, corner), padded.rotation);
+  }
 }
